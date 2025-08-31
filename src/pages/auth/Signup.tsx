@@ -7,6 +7,7 @@ import PhoneVerification from '@/components/verification/PhoneVerification';
 import PasswordField from '@/components/auth/PasswordField';
 import TermsAgreement from '@/components/auth/TermsAgreement';
 // import SuccessModal from '@/components/common/SuccessModal';
+import BusinessCertUploadSheet from '@/components/auth/BusinessCertUploadSheet';
 
 type Agreements = {
   terms: boolean;
@@ -39,6 +40,7 @@ const Signup: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [showBizUpload, setShowBizUpload] = useState(false);
 
   // 1단계: 회원 유형
   const [memberType, setMemberType] = useState<MemberType | null>(null);
@@ -525,7 +527,11 @@ const Signup: React.FC = () => {
               </p>
             </div>
 
-            <button className="w-full border rounded-md py-3 my-5 text-gray-500 cursor-pointer hover:bg-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowBizUpload(true)}
+              className="w-full border rounded-md py-3 my-5 text-gray-500 cursor-pointer hover:bg-slate-100"
+            >
               <div className="flex items-center justify-center gap-2">
                 <i className="fa-solid fa-file-arrow-up fa-lg leading-none"></i>
                 <span className="font-extrabold text-sm">
@@ -690,6 +696,12 @@ const Signup: React.FC = () => {
           onClose={handleSuccessConfirm}
         />
       )} */}
+
+      <BusinessCertUploadSheet
+        open={showBizUpload}
+        onClose={() => setShowBizUpload(false)}
+        onSelectFile={() => setShowBizUpload(false)}
+      />
 
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
