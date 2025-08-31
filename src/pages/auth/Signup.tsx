@@ -24,27 +24,37 @@ type Member = {
 
 type MemberType = 'GENERAL' | 'BUSINESS';
 
+type BusinessInfo = {
+  bno1: string; // 사업자등록번호 앞자리 3
+  bno2: string; // 중간 2
+  bno3: string; // 뒤 5
+  companyName: string;
+  industry: string;
+  openDate: string; // yyyy-mm-dd
+  address: string;
+};
+
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+
+  // 1단계: 회원 유형
+  const [memberType, setMemberType] = useState<MemberType | null>(null);
 
   // 검증 상태
   const [emailVerified, setEmailVerified] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [passwordValidated, setPasswordValidated] = useState(false);
 
-  // 1단계: 회원 유형
-  const [memberType, setMemberType] = useState<MemberType | null>(null);
-
-  // 약관 동의 (2단계)
+  // 2단계: 약관 동의
   const [agreements, setAgreements] = useState<Agreements>({
     terms: false,
     privacy: false,
   });
 
-  // 회원 정보 (3-4단계)
+  // 3-4단계: 회원 정보
   const [member, setMember] = useState<Member>({
     email: '',
     password: '',
@@ -54,7 +64,23 @@ const Signup: React.FC = () => {
     birth: '',
   });
 
-  // 유효성들
+  // 5단계: 사업자 정보 (UI 전용)
+  const [biz, setBiz] = useState<BusinessInfo>({
+    bno1: '',
+    bno2: '',
+    bno3: '',
+    companyName: '',
+    industry: '',
+    openDate: '',
+    address: '',
+  });
+
+  const totalSteps = useMemo(
+    () => (memberType === 'BUSINESS' ? 5 : 4),
+    [memberType],
+  );
+
+  // 유효성
   const isMemberTypeSelected = useMemo(() => !!memberType, [memberType]);
   const allAgreed = useMemo(
     () => agreements.terms && agreements.privacy,
@@ -72,6 +98,17 @@ const Signup: React.FC = () => {
       phoneVerified,
     [member.name, member.gender, member.birth, phoneVerified],
   );
+  const isBusinessInfoValid = useMemo(
+    () =>
+      biz.bno1.trim() !== '' &&
+      biz.bno2.trim() !== '' &&
+      biz.bno3.trim() !== '' &&
+      biz.companyName.trim() !== '' &&
+      biz.industry.trim() !== '' &&
+      biz.openDate.trim() !== '' &&
+      biz.address.trim() !== '',
+    [biz],
+  );
 
   // 뒤로가기
   const goBack = useCallback(() => {
@@ -80,7 +117,7 @@ const Signup: React.FC = () => {
 
   // 이전/다음
   const goToPreviousStep = useCallback(() => {
-    setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3 | 4) : s));
+    setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3 | 4 | 5) : s));
   }, []);
 
   const goToNextStep = useCallback(() => {
@@ -112,6 +149,29 @@ const Signup: React.FC = () => {
         }
       }
       setCurrentStep(4);
+      return;
+    }
+    if (currentStep === 4 && memberType === 'BUSINESS') {
+      if (!isProfileValid) {
+        if (member.name.trim() === '') {
+          window.alert('이름을 입력해주세요');
+          return;
+        }
+        if (!member.gender) {
+          window.alert('성별을 선택해주세요');
+          return;
+        }
+        if (member.birth === '') {
+          window.alert('생년월일을 입력해주세요');
+          return;
+        }
+        if (!phoneVerified) {
+          window.alert('전화번호 인증을 완료해주세요');
+          return;
+        }
+      }
+      setCurrentStep(5);
+      return;
     }
   }, [
     currentStep,
@@ -120,9 +180,13 @@ const Signup: React.FC = () => {
     isAccountValid,
     emailVerified,
     passwordValidated,
+    memberType,
+    isProfileValid,
+    member,
+    phoneVerified,
   ]);
 
-  // 회원가입 완료
+  // 회원가입 완료 (일반 회원: 4단계에서 호출)
   const completeSignup = useCallback(async () => {
     if (!isProfileValid) {
       if (member.name.trim() === '') {
@@ -192,9 +256,7 @@ const Signup: React.FC = () => {
         {currentStep === 1 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
-              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                1/4
-              </span>
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`1/${totalSteps}`}</span>
             </div>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-slate-800 mb-1">
@@ -211,7 +273,7 @@ const Signup: React.FC = () => {
                 className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'GENERAL' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
               >
                 <i className="fa-solid fa-user fa-4x text-slate-700"></i>
-                <span className="font-semibold">일반 회원</span>
+                <span className="font-semibold text-md">일반 회원</span>
               </button>
               <button
                 type="button"
@@ -236,9 +298,7 @@ const Signup: React.FC = () => {
         {currentStep === 2 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
-              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                2/4
-              </span>
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`2/${totalSteps}`}</span>
             </div>
 
             <div className="mb-8">
@@ -274,9 +334,7 @@ const Signup: React.FC = () => {
         {currentStep === 3 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
-              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                3/4
-              </span>
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`3/${totalSteps}`}</span>
             </div>
 
             <div className="mb-6">
@@ -328,9 +386,7 @@ const Signup: React.FC = () => {
         {currentStep === 4 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
-              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                4/4
-              </span>
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`4/${totalSteps}`}</span>
             </div>
 
             <div className="mb-6">
@@ -427,9 +483,187 @@ const Signup: React.FC = () => {
               >
                 이전
               </button>
+              {memberType === 'BUSINESS' ? (
+                <button
+                  onClick={goToNextStep}
+                  disabled={!isProfileValid}
+                  className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  다음
+                </button>
+              ) : (
+                <button
+                  onClick={completeSignup}
+                  disabled={!isProfileValid || isSubmitting}
+                  className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent inline-block mr-2" />
+                      가입 중...
+                    </>
+                  ) : (
+                    '가입 완료'
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: 사업자 정보 (사업자 회원 전용) */}
+        {currentStep === 5 && memberType === 'BUSINESS' && (
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
+            <div className="absolute top-6 right-6">
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`5/${totalSteps}`}</span>
+            </div>
+
+            <div className="mb-2">
+              <h2 className="text-xl font-bold text-slate-800">사업자 정보</h2>
+              <p className="text-slate-600 text-sm">
+                유효한 사업자 정보를 입력해주세요.
+              </p>
+            </div>
+
+            <button className="w-full border rounded-md py-3 my-5 text-gray-500 cursor-pointer hover:bg-slate-100">
+              <div className="flex items-center justify-center gap-2">
+                <i className="fa-solid fa-file-arrow-up fa-lg leading-none"></i>
+                <span className="font-extrabold text-sm">
+                  사업자등록증으로 자동입력
+                </span>
+              </div>
+            </button>
+
+            {/* 사업자 등록 번호 */}
+            <div className="mb-4">
+              <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
+                <span className="ps-1">사업자 등록 번호</span>
+                <button
+                  type="button"
+                  className="ml-auto px-2.5 py-1 rounded-md text-xs font-bold transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  사업자번호 인증
+                </button>
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  value={biz.bno1}
+                  onChange={(e) =>
+                    setBiz((s) => ({
+                      ...s,
+                      bno1: e.target.value.replace(/[^0-9]/g, '').slice(0, 3),
+                    }))
+                  }
+                  className="w-1/3 px-3 py-2 border-2 border-slate-200 rounded-lg text-center"
+                />
+                <span className="text-slate-500">-</span>
+                <input
+                  value={biz.bno2}
+                  onChange={(e) =>
+                    setBiz((s) => ({
+                      ...s,
+                      bno2: e.target.value.replace(/[^0-9]/g, '').slice(0, 2),
+                    }))
+                  }
+                  className="w-1/3 px-3 py-2 border-2 border-slate-200 rounded-lg text-center"
+                />
+                <span className="text-slate-500">-</span>
+                <input
+                  value={biz.bno3}
+                  onChange={(e) =>
+                    setBiz((s) => ({
+                      ...s,
+                      bno3: e.target.value.replace(/[^0-9]/g, '').slice(0, 5),
+                    }))
+                  }
+                  className="w-1/3 px-3 py-2 border-2 border-slate-200 rounded-lg text-center"
+                />
+              </div>
+            </div>
+
+            {/* 업체명 */}
+            <div className="mb-4">
+              <label className="flex text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+                업체명
+              </label>
+              <input
+                value={biz.companyName}
+                onChange={(e) =>
+                  setBiz((s) => ({ ...s, companyName: e.target.value }))
+                }
+                className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg"
+              />
+            </div>
+
+            {/* 업종 */}
+            <div className="mb-4">
+              <label className="flex text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+                업종
+              </label>
+              <div className="flex gap-2">
+                <input
+                  value={biz.industry}
+                  onChange={(e) =>
+                    setBiz((s) => ({ ...s, industry: e.target.value }))
+                  }
+                  className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg"
+                />
+                <button
+                  type="button"
+                  className="px-2 border-2 border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  업종선택
+                </button>
+              </div>
+            </div>
+
+            {/* 개업일자 */}
+            <div className="mb-4">
+              <label className="flex text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+                개업일자
+              </label>
+              <input
+                type="date"
+                value={biz.openDate}
+                onChange={(e) =>
+                  setBiz((s) => ({ ...s, openDate: e.target.value }))
+                }
+                className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg"
+              />
+            </div>
+
+            {/* 사업장 주소 */}
+            <div className="mb-6">
+              <label className="flex text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+                사업장 주소
+              </label>
+              <div className="flex gap-2">
+                <input
+                  value={biz.address}
+                  onChange={(e) =>
+                    setBiz((s) => ({ ...s, address: e.target.value }))
+                  }
+                  className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg"
+                />
+                <button
+                  type="button"
+                  className="px-4 border-2 border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  검색
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={goToPreviousStep}
+                className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-md font-bold text-sm transition-all duration-200 hover:bg-slate-300"
+              >
+                이전
+              </button>
               <button
                 onClick={completeSignup}
-                disabled={!isProfileValid || isSubmitting}
+                disabled={!isBusinessInfoValid || isSubmitting}
                 className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
@@ -438,7 +672,7 @@ const Signup: React.FC = () => {
                     가입 중...
                   </>
                 ) : (
-                  '가입 완료'
+                  '가입하기'
                 )}
               </button>
             </div>
