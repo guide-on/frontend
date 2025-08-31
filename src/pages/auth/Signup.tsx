@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import memberApi from '@/api/memberApi';
-// 아래 컴포넌트들은 React 버전이 존재한다고 가정합니다.
 import EmailVerification from '@/components/verification/EmailVerificaition';
 import PhoneVerification from '@/components/verification/PhoneVerification';
 import PasswordField from '@/components/auth/PasswordField';
@@ -23,25 +22,29 @@ type Member = {
   birth: string; // yyyy-mm-dd
 };
 
+type MemberType = 'GENERAL' | 'BUSINESS';
+
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  // const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
   // 검증 상태
   const [emailVerified, setEmailVerified] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [passwordValidated, setPasswordValidated] = useState(false);
 
-  // 약관 동의
+  // 1단계: 회원 유형
+  const [memberType, setMemberType] = useState<MemberType | null>(null);
+
+  // 약관 동의 (2단계)
   const [agreements, setAgreements] = useState<Agreements>({
     terms: false,
     privacy: false,
   });
 
-  // 회원 정보
+  // 회원 정보 (3-4단계)
   const [member, setMember] = useState<Member>({
     email: '',
     password: '',
@@ -51,19 +54,17 @@ const Signup: React.FC = () => {
     birth: '',
   });
 
-  // 모든 필수 약관 동의
+  // 유효성들
+  const isMemberTypeSelected = useMemo(() => !!memberType, [memberType]);
   const allAgreed = useMemo(
     () => agreements.terms && agreements.privacy,
     [agreements.terms, agreements.privacy],
   );
-
-  // 단계별 유효성
-  const isStep2Valid = useMemo(
+  const isAccountValid = useMemo(
     () => emailVerified && passwordValidated,
     [emailVerified, passwordValidated],
   );
-
-  const isStep3Valid = useMemo(
+  const isProfileValid = useMemo(
     () =>
       member.name.trim() !== '' &&
       !!member.gender &&
@@ -79,20 +80,28 @@ const Signup: React.FC = () => {
 
   // 이전/다음
   const goToPreviousStep = useCallback(() => {
-    setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3) : s));
+    setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3 | 4) : s));
   }, []);
 
   const goToNextStep = useCallback(() => {
     if (currentStep === 1) {
-      if (!allAgreed) {
-        window.alert('필수 약관에 모두 동의해주세요.');
+      if (!isMemberTypeSelected) {
+        window.alert('회원 유형을 선택해주세요.');
         return;
       }
       setCurrentStep(2);
       return;
     }
     if (currentStep === 2) {
-      if (!isStep2Valid) {
+      if (!allAgreed) {
+        window.alert('필수 약관에 모두 동의해주세요.');
+        return;
+      }
+      setCurrentStep(3);
+      return;
+    }
+    if (currentStep === 3) {
+      if (!isAccountValid) {
         if (!emailVerified) {
           window.alert('이메일 인증을 완료해주세요.');
           return;
@@ -102,13 +111,20 @@ const Signup: React.FC = () => {
           return;
         }
       }
-      setCurrentStep(3);
+      setCurrentStep(4);
     }
-  }, [currentStep, allAgreed, isStep2Valid, emailVerified, passwordValidated]);
+  }, [
+    currentStep,
+    isMemberTypeSelected,
+    allAgreed,
+    isAccountValid,
+    emailVerified,
+    passwordValidated,
+  ]);
 
   // 회원가입 완료
   const completeSignup = useCallback(async () => {
-    if (!isStep3Valid) {
+    if (!isProfileValid) {
       if (member.name.trim() === '') {
         window.alert('이름을 입력해주세요');
         return;
@@ -137,7 +153,7 @@ const Signup: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isStep3Valid, member, phoneVerified]);
+  }, [isProfileValid, member, phoneVerified]);
 
   // 성공 모달 확인
   const handleSuccessConfirm = useCallback(() => {
@@ -172,45 +188,94 @@ const Signup: React.FC = () => {
           <div className="w-10" />
         </div>
 
-        {/* Step 1: 약관 동의 */}
+        {/* Step 1: 회원가입 유형 선택 */}
         {currentStep === 1 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
               <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                1/3
+                1/4
+              </span>
+            </div>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-slate-800 mb-1">
+                회원가입 유형
+              </h2>
+              <p className="text-slate-600 text-sm">
+                가입할 서비스 유형을 선택해주세요
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <button
+                type="button"
+                onClick={() => setMemberType('GENERAL')}
+                className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'GENERAL' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+              >
+                <i className="fa-solid fa-user fa-4x text-slate-700"></i>
+                <span className="font-semibold">일반 회원</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMemberType('BUSINESS')}
+                className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'BUSINESS' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+              >
+                <i className="fa-solid fa-store fa-4x text-slate-700"></i>
+                <span className="font-semibold">사업자 회원</span>
+              </button>
+            </div>
+            <button
+              onClick={goToNextStep}
+              disabled={!isMemberTypeSelected}
+              className="next-button w-full text-white py-3 rounded-md font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
+          </div>
+        )}
+
+        {/* Step 2: 약관 동의 */}
+        {currentStep === 2 && (
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
+            <div className="absolute top-6 right-6">
+              <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
+                2/4
               </span>
             </div>
 
             <div className="mb-8">
               <h2 className="text-xl font-bold text-slate-800 mb-2">
-                가입을
-                <br />
-                환영합니다!
+                약관 동의
               </h2>
               <p className="text-slate-600 text-sm">
                 서비스 이용을 위해 약관에 동의해주세요
               </p>
             </div>
 
-            {/* 약관 동의: v-model → value/onChange로 변환 */}
             <TermsAgreement value={agreements} onChange={setAgreements} />
 
-            <button
-              onClick={goToNextStep}
-              disabled={!allAgreed}
-              className="next-button w-full bg-gradient-to-r text-white py-3 rounded-md font-bold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              동의하고 계속하기
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={goToPreviousStep}
+                className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-md font-bold text-sm transition-all duration-200 hover:bg-slate-300"
+              >
+                이전
+              </button>
+              <button
+                onClick={goToNextStep}
+                disabled={!allAgreed}
+                className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                다음
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Step 2: 계정 정보 */}
-        {currentStep === 2 && (
+        {/* Step 3: 계정 정보 */}
+        {currentStep === 3 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
               <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                2/3
+                3/4
               </span>
             </div>
 
@@ -224,7 +289,6 @@ const Signup: React.FC = () => {
             </div>
 
             <div className="space-y-4 mb-6">
-              {/* EmailVerification: v-model:email & @verified → value/onChange/onVerified */}
               <EmailVerification
                 value={member.email}
                 onChange={(email: string) =>
@@ -233,7 +297,6 @@ const Signup: React.FC = () => {
                 onVerified={(ok: boolean) => setEmailVerified(ok)}
               />
 
-              {/* PasswordField: v-model:password & @validated → value/onChange/onValidated */}
               <PasswordField
                 value={member.password}
                 onChange={(password: string) =>
@@ -252,8 +315,8 @@ const Signup: React.FC = () => {
               </button>
               <button
                 onClick={goToNextStep}
-                disabled={!isStep2Valid}
-                className="flex-1 next-button bg-gradient-to-r text-white py-3 rounded-md font-bold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={!isAccountValid}
+                className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 다음
               </button>
@@ -261,12 +324,12 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3: 개인 정보 */}
-        {currentStep === 3 && (
+        {/* Step 4: 개인 정보 */}
+        {currentStep === 4 && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
               <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                3/3
+                4/4
               </span>
             </div>
 
@@ -366,8 +429,8 @@ const Signup: React.FC = () => {
               </button>
               <button
                 onClick={completeSignup}
-                disabled={!isStep3Valid || isSubmitting}
-                className="flex-1 next-button bg-gradient-to-r text-white py-3 rounded-md font-bold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={!isProfileValid || isSubmitting}
+                className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
