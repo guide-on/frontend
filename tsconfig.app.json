@@ -21,7 +21,12 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".", // 루트 기준
+    "paths": {
+      "@/*": ["src/*"] // 별칭 매핑
+    }
   },
   "include": ["src"]
 }
