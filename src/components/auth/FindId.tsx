@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import memberApi from '@/api/memberApi';
 import PhoneVerification from '@/components/verification/PhoneVerification';
 
-type Provider = 'LOCAL' | 'KAKAO' | string;
-
 type FindUserPayload = {
   name: string;
   birth: string; // yyyy-MM-dd
@@ -22,7 +20,6 @@ const FindId: React.FC = () => {
 
   const [userId, setUserId] = useState<string>('');
   const [joinDate, setJoinDate] = useState<string>('');
-  const [provider, setProvider] = useState<Provider>('LOCAL');
   const [message, setMessage] = useState<string>('');
   const [searching, setSearching] = useState<boolean>(false);
   const [phoneVerified, setPhoneVerified] = useState<boolean>(false);
@@ -35,7 +32,6 @@ const FindId: React.FC = () => {
       // 서버 스키마에 맞게 조정
       setUserId(result.email);
       setJoinDate(result.regDate);
-      setProvider(result.provider as Provider);
     } catch (error: any) {
       setMessage(
         error?.response?.data?.message ?? '조회 중 오류가 발생했습니다.',
@@ -122,37 +118,26 @@ const FindId: React.FC = () => {
               className="whitespace-pre-line text-slate-700 font-medium mb-4"
               style={{ fontSize: '0.88rem' }}
             >
-              {provider === 'LOCAL'
-                ? '입력하신 개인 정보와 일치하는 \n아이디입니다'
-                : '카카오 소셜 계정으로 가입한 아이디입니다\n카카오 로그인을 이용해주세요'}
+              입력하신 개인 정보와 일치하는 아이디입니다
             </p>
 
             <div className="bg-white rounded-lg border border-slate-200 p-4">
               <div className="flex items-center justify-center gap-2 mb-2">
-                {provider === 'LOCAL' && (
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                )}
-                {provider === 'KAKAO' && (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center">
-                    <img src="/assets/kakao-circle.png" alt="카카오 로고" />
-                    {/* Vite alias 사용 시: src='/assets/...'
-                       혹은 import kakao from '@/assets/kakao-circle.png' */}
-                  </div>
-                )}
+                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
                 <span className="text-lg font-semibold text-slate-800">
                   {userId}
                 </span>

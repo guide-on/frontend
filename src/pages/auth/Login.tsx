@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
-import kakaoLoginLarge from '@/assets/kakao_login_large_wide.png';
 
 type Member = {
   username: string;
@@ -49,14 +48,6 @@ const Login: React.FC = () => {
     },
     [disableSubmit, isLoggingIn, loginAction, member, navigate],
   );
-
-  const kakaoLogin = useCallback(() => {
-    const base =
-      (import.meta as any)?.env?.VITE_API_BASE_URL ||
-      process.env.REACT_APP_API_BASE_URL ||
-      'http://localhost:8080';
-    window.location.href = `${base}/oauth2/authorization/kakao`;
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-6 px-4">
@@ -131,23 +122,11 @@ const Login: React.FC = () => {
           </form>
 
           {/* Divider */}
-          <div className="my-5 flex items-center">
+          {/* <div className="my-5 flex items-center">
             <div className="flex-1 border-t border-slate-200" />
             <span className="px-3 text-xs text-slate-500 bg-white">또는</span>
             <div className="flex-1 border-t border-slate-200" />
-          </div>
-
-          {/* Social Login Buttons */}
-          <div className="space-y-3">
-            <div>
-              <img
-                src={kakaoLoginLarge}
-                alt="카카오 로그인"
-                onClick={kakaoLogin}
-                style={{ cursor: 'pointer' }}
-              />
-            </div>
-          </div>
+          </div> */}
 
           {/* Signup Link */}
           <div className="mt-5 text-center">
