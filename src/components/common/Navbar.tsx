@@ -20,8 +20,11 @@ const Navbar = () => {
   const location = useLocation();
   return (
     <nav
-      className="absolute bottom-0 w-full flex bg-grey-50 z-50"
-      style={{ borderTop: `1px solid ${colors.gray}` }}
+      className="absolute bottom-0 w-full flex z-50"
+      style={{
+        borderTop: `1px solid ${colors.gray}`,
+        backgroundColor: colors.gray,
+      }}
     >
       {navItems.map((item) => (
         <Link
