@@ -6,6 +6,9 @@ import Guide from './pages/Guide';
 import Support from './pages/Support';
 import Community from './pages/Community';
 import MyPage from './pages/MyPage';
+import Login from '@/pages/auth/Login';
+import Signup from '@/pages/auth/Signup';
+import FindIdPw from '@/pages/auth/FindIdPw';
 
 function App() {
   return (
@@ -30,6 +33,9 @@ function App() {
             <Route path="/support" element={<Support />} />
             <Route path="/community" element={<Community />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/auth/login" element={<Login />} />
+            <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/auth/find" element={<FindIdPw />} />
           </Routes>
         </main>
         <Navbar />
