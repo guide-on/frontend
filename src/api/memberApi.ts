@@ -1,22 +1,45 @@
 import api from '@/api';
 
+export type Gender = 'MALE' | 'FEMALE';
+export type MemberType = 'GENERAL' | 'SOLE_PROPRIETOR';
+
+export type PreferenceInfo = {
+  regionCodes?: string[];
+  industryTags?: string[];
+};
+
+export type BusinessInfo = {
+  bizRegNo: string; // "1234512345" (하이픈 제거)
+  bizName: string;
+  ksicCode: string;
+  openDate: string; // yyyy-MM-dd
+  businessSggCode: string; // 5자리
+  addrRoad: string; // 도로명 주소
+  addrDetail: string | null; // 상세주소 (nullable)
+};
+
+/** 가입 요청 payload – GENERAL/SOLE_PROPRIETOR 공용 */
 export type MemberCreatePayload = {
+  memberType: MemberType;
   email: string;
   password: string;
   name: string;
   phone: string;
-  gender?: 'MALE' | 'FEMALE';
-  birth: string; // yyyy-MM-dd
+  gender: Gender;
+  birth: string;
+  residenceSggCode?: string;
+
+  // GENERAL일 때는 선택적
+  preference?: PreferenceInfo;
+
+  // SOLE_PROPRIETOR일 때는 선택적 (실제로는 필수지만 백엔드에서 판단)
+  business?: BusinessInfo;
 };
 
 export type FindUserIdResponse = {
   email: string; // 예: "user@example.com"
   regDate: string; // 예: "2025-01-01"
-  provider: 'LOCAL' | 'KAKAO' | string;
 };
-
-/** 소셜 로그인 공급자 */
-export type OAuthProvider = 'kakao' | 'naver' | (string & {});
 
 /** 서버 응답 타입(필요 시 실제 스키마에 맞게 교체) */
 export type UsernameExistResponse =
@@ -53,20 +76,6 @@ export const memberApi = {
    */
   async create(payload: MemberCreatePayload): Promise<CreateMemberResponse> {
     const { data } = await api.post<CreateMemberResponse>(BASE_URL, payload);
-    return data;
-  },
-
-  /**
-   * 소셜 로그인 (인가코드 교환)
-   */
-  async socialLogin(
-    provider: OAuthProvider,
-    code: string,
-  ): Promise<SocialLoginResponse> {
-    const { data } = await api.get<SocialLoginResponse>(
-      `/api/oauth/${String(provider).toLowerCase()}/login`,
-      { params: { code } },
-    );
     return data;
   },
 

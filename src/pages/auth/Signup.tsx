@@ -1,6 +1,7 @@
 // src/pages/auth/Signup.tsx
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DaumPostcode from 'react-daum-postcode';
 import memberApi from '@/api/memberApi';
 import EmailVerification from '@/components/verification/EmailVerificaition';
 import PhoneVerification from '@/components/verification/PhoneVerification';
@@ -9,38 +10,140 @@ import TermsAgreement from '@/components/auth/TermsAgreement';
 // import SuccessModal from '@/components/common/SuccessModal';
 import BusinessCertUploadSheet from '@/components/auth/BusinessCertUploadSheet';
 
+/* =========================
+ * Types
+ * ========================= */
 type Agreements = {
   terms: boolean;
   privacy: boolean;
 };
 
+type MemberType = 'GENERAL' | 'SOLE_PROPRIETOR';
+
+type BusinessInfo = {
+  bno1: string; // 앞 3
+  bno2: string; // 중간 2
+  bno3: string; // 뒤 5
+  bizName: string;
+  ksicCode: string;
+  openDate: string; // yyyy-mm-dd
+  // 주소 관련(요구사항 반영)
+  businessSggCode: string; // 5자리 (sigunguCode)
+  addrRoad: string; // 도로명 주소
+  addrDetail: string; // 상세주소 (nullable)
+};
+
+type PreferenceInfo = {
+  regionCodes?: string[]; // nullable/empty 허용
+  industryTags?: string[]; // 라벨 ID들
+};
+
 type Member = {
+  memberType: MemberType;
   email: string;
   password: string;
   name: string;
   phone: string;
   gender?: 'MALE' | 'FEMALE';
   birth: string; // yyyy-mm-dd
+  residenceSggCode?: string;
+  business?: BusinessInfo; // SOLE_PROPRIETOR 전용 (UI 상태)
+  preference?: PreferenceInfo; // GENERAL 전용 (UI 상태)
 };
 
-type MemberType = 'GENERAL' | 'BUSINESS';
-
-type BusinessInfo = {
-  bno1: string; // 사업자등록번호 앞자리 3
-  bno2: string; // 중간 2
-  bno3: string; // 뒤 5
-  companyName: string;
-  industry: string;
-  openDate: string; // yyyy-mm-dd
-  address: string;
+/** preference가 비어있으면 payload에서 제거하기 위한 정규화 */
+const normalizePreference = (pref?: PreferenceInfo) => {
+  if (!pref) return undefined;
+  const regionOk =
+    Array.isArray(pref.regionCodes) && pref.regionCodes.length > 0;
+  const industryOk =
+    Array.isArray(pref.industryTags) && pref.industryTags.length > 0;
+  if (!regionOk && !industryOk) return undefined;
+  return {
+    ...(regionOk ? { regionCodes: pref.regionCodes } : {}),
+    ...(industryOk ? { industryTags: pref.industryTags } : {}),
+  };
 };
 
+/** 사업자번호 3-2-5를 합쳐 단일 문자열로 반환 (기본: 하이픈 제거) */
+const buildBusinessNo = (
+  b1: string,
+  b2: string,
+  b3: string,
+  withHyphen = false,
+) => {
+  const n1 = (b1 || '').replace(/\D/g, '').slice(0, 3);
+  const n2 = (b2 || '').replace(/\D/g, '').slice(0, 2);
+  const n3 = (b3 || '').replace(/\D/g, '').slice(0, 5);
+  return withHyphen ? `${n1}-${n2}-${n3}` : `${n1}${n2}${n3}`;
+};
+
+/**
+ * API로 보낼 가입 Payload 생성기
+ * - GENERAL: preference가 비어있으면 제외
+ * - SOLE_PROPRIETOR: business 필수 + businessNo(합쳐진 값)로 전송
+ *   (서버 스펙에 맞춰 key 이름이 다르면 아래를 수정하세요)
+ */
+const buildSignupPayload = (args: {
+  memberType: MemberType;
+  base: {
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    gender: 'MALE' | 'FEMALE';
+    birth: string;
+    residenceSggCode?: string;
+  };
+  preference?: PreferenceInfo;
+  business?: BusinessInfo;
+}) => {
+  const { memberType, base, preference, business } = args;
+
+  if (memberType === 'SOLE_PROPRIETOR') {
+    if (!business) throw new Error('사업자 회원은 사업 정보가 필수입니다.');
+    const bizRegNo = buildBusinessNo(
+      business.bno1,
+      business.bno2,
+      business.bno3,
+      false,
+    );
+    return {
+      memberType,
+      ...base,
+      business: {
+        bizRegNo, // 하이픈 없는 10자리 문자열
+        bizName: business.bizName,
+        ksicCode: business.ksicCode,
+        openDate: business.openDate,
+        businessSggCode: business.businessSggCode, // 5자리
+        addrRoad: business.addrRoad,
+        addrDetail: business.addrDetail || null, // nullable
+      },
+    };
+  }
+
+  // GENERAL
+  const pref = normalizePreference(preference);
+  return {
+    memberType,
+    ...base,
+    ...(pref ? { preference: pref } : {}),
+  };
+};
+
+/* =========================
+ * Component
+ * ========================= */
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [showBizUpload, setShowBizUpload] = useState(false);
+
+  // 다음(카카오) 주소 검색 모달
+  const [openPostcode, setOpenPostcode] = useState(false);
 
   // 1단계: 회원 유형
   const [memberType, setMemberType] = useState<MemberType | null>(null);
@@ -58,6 +161,7 @@ const Signup: React.FC = () => {
 
   // 3-4단계: 회원 정보
   const [member, setMember] = useState<Member>({
+    memberType: 'GENERAL',
     email: '',
     password: '',
     name: '',
@@ -66,19 +170,27 @@ const Signup: React.FC = () => {
     birth: '',
   });
 
+  // 일반 유형 선호도(건너뛰기 가능)
+  const [preference, setPreference] = useState<PreferenceInfo>({
+    regionCodes: [],
+    industryTags: [],
+  });
+
   // 5단계: 사업자 정보 (UI 전용)
   const [biz, setBiz] = useState<BusinessInfo>({
     bno1: '',
     bno2: '',
     bno3: '',
-    companyName: '',
-    industry: '',
+    bizName: '',
+    ksicCode: '',
     openDate: '',
-    address: '',
+    businessSggCode: '',
+    addrRoad: '',
+    addrDetail: '',
   });
 
   const totalSteps = useMemo(
-    () => (memberType === 'BUSINESS' ? 5 : 4),
+    () => (memberType === 'SOLE_PROPRIETOR' ? 5 : 4),
     [memberType],
   );
 
@@ -100,17 +212,23 @@ const Signup: React.FC = () => {
       phoneVerified,
     [member.name, member.gender, member.birth, phoneVerified],
   );
-  const isBusinessInfoValid = useMemo(
-    () =>
-      biz.bno1.trim() !== '' &&
-      biz.bno2.trim() !== '' &&
-      biz.bno3.trim() !== '' &&
-      biz.companyName.trim() !== '' &&
-      biz.industry.trim() !== '' &&
+
+  // 사업자 입력 자릿수 검증 강화(3-2-5)
+  const isBusinessInfoValid = useMemo(() => {
+    const b1 = biz.bno1.replace(/\D/g, '');
+    const b2 = biz.bno2.replace(/\D/g, '');
+    const b3 = biz.bno3.replace(/\D/g, '');
+    return (
+      b1.length === 3 &&
+      b2.length === 2 &&
+      b3.length === 5 &&
+      biz.bizName.trim() !== '' &&
+      biz.ksicCode.trim() !== '' &&
       biz.openDate.trim() !== '' &&
-      biz.address.trim() !== '',
-    [biz],
-  );
+      biz.businessSggCode.trim().length === 5 &&
+      biz.addrRoad.trim() !== ''
+    );
+  }, [biz]);
 
   // 뒤로가기
   const goBack = useCallback(() => {
@@ -153,7 +271,7 @@ const Signup: React.FC = () => {
       setCurrentStep(4);
       return;
     }
-    if (currentStep === 4 && memberType === 'BUSINESS') {
+    if (currentStep === 4 && memberType === 'SOLE_PROPRIETOR') {
       if (!isProfileValid) {
         if (member.name.trim() === '') {
           window.alert('이름을 입력해주세요');
@@ -188,38 +306,90 @@ const Signup: React.FC = () => {
     phoneVerified,
   ]);
 
-  // 회원가입 완료 (일반 회원: 4단계에서 호출)
+  const handleCompletePostcode = useCallback((data: any) => {
+    // 도로명 주소 우선, 없으면 기본 address 사용
+    const road = data.roadAddress || data.address || '';
+    // 시군구코드(5자리). 제공 안 되면 법정동코드(bcode 10자리)의 앞 5자리로 대체
+    const sggCode: string =
+      (data.sigunguCode as string) ||
+      (data.bcode ? String(data.bcode).slice(0, 5) : '');
+
+    setBiz((prev) => ({
+      ...prev,
+      businessSggCode: (sggCode || '').slice(0, 5),
+      addrRoad: road,
+      // addrDetail은 사용자가 따로 입력
+    }));
+    setOpenPostcode(false);
+  }, []);
+
+  // 회원가입 완료
   const completeSignup = useCallback(async () => {
+    // 프로필 공통 검증
     if (!isProfileValid) {
-      if (member.name.trim() === '') {
-        window.alert('이름을 입력해주세요');
-        return;
-      }
-      if (!member.gender) {
-        window.alert('성별을 선택해주세요');
-        return;
-      }
-      if (member.birth === '') {
-        window.alert('생년월일을 입력해주세요');
-        return;
-      }
-      if (!phoneVerified) {
-        window.alert('전화번호 인증을 완료해주세요');
-        return;
-      }
+      if (!member.name.trim()) return alert('이름을 입력해주세요');
+      if (!member.gender) return alert('성별을 선택해주세요');
+      if (!member.birth) return alert('생년월일을 입력해주세요');
+      if (!phoneVerified) return alert('전화번호 인증을 완료해주세요');
+    }
+
+    // 사업자 유형은 사업자 정보 필수
+    if (memberType === 'SOLE_PROPRIETOR' && !isBusinessInfoValid) {
+      return alert('사업자 정보를 정확히 입력해주세요');
     }
 
     setIsSubmitting(true);
     try {
-      await memberApi.create(member);
-      // setShowSuccessModal(true);
+      // 공통 필드
+      const baseCommon = {
+        email: member.email,
+        password: member.password,
+        name: member.name,
+        phone: member.phone,
+        gender: member.gender!, // 위에서 검증됨
+        birth: member.birth,
+        residenceSggCode: member.residenceSggCode,
+      };
+
+      // payload 생성
+      const payload = buildSignupPayload({
+        memberType: (memberType ?? 'GENERAL') as MemberType,
+        base: baseCommon,
+        preference: memberType === 'GENERAL' ? preference : undefined,
+        business:
+          memberType === 'SOLE_PROPRIETOR'
+            ? {
+                bno1: biz.bno1,
+                bno2: biz.bno2,
+                bno3: biz.bno3,
+                bizName: biz.bizName,
+                ksicCode: biz.ksicCode,
+                openDate: biz.openDate,
+                businessSggCode: biz.businessSggCode,
+                addrRoad: biz.addrRoad,
+                addrDetail: biz.addrDetail,
+              }
+            : undefined,
+      });
+
+      await memberApi.create(payload);
+      navigate('/auth/login');
     } catch (e) {
       console.error(e);
       window.alert('가입 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [isProfileValid, member, phoneVerified]);
+  }, [
+    isProfileValid,
+    isBusinessInfoValid,
+    member,
+    memberType,
+    preference,
+    biz,
+    phoneVerified,
+    navigate,
+  ]);
 
   // 성공 모달 확인
   const handleSuccessConfirm = useCallback(() => {
@@ -279,8 +449,8 @@ const Signup: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setMemberType('BUSINESS')}
-                className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'BUSINESS' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+                onClick={() => setMemberType('SOLE_PROPRIETOR')}
+                className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'SOLE_PROPRIETOR' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
               >
                 <i className="fa-solid fa-store fa-4x text-slate-700"></i>
                 <span className="font-semibold">사업자 회원</span>
@@ -485,7 +655,7 @@ const Signup: React.FC = () => {
               >
                 이전
               </button>
-              {memberType === 'BUSINESS' ? (
+              {memberType === 'SOLE_PROPRIETOR' ? (
                 <button
                   onClick={goToNextStep}
                   disabled={!isProfileValid}
@@ -514,7 +684,7 @@ const Signup: React.FC = () => {
         )}
 
         {/* Step 5: 사업자 정보 (사업자 회원 전용) */}
-        {currentStep === 5 && memberType === 'BUSINESS' && (
+        {currentStep === 5 && memberType === 'SOLE_PROPRIETOR' && (
           <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
             <div className="absolute top-6 right-6">
               <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`5/${totalSteps}`}</span>
@@ -593,9 +763,9 @@ const Signup: React.FC = () => {
                 업체명
               </label>
               <input
-                value={biz.companyName}
+                value={biz.bizName}
                 onChange={(e) =>
-                  setBiz((s) => ({ ...s, companyName: e.target.value }))
+                  setBiz((s) => ({ ...s, bizName: e.target.value }))
                 }
                 className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg"
               />
@@ -608,9 +778,9 @@ const Signup: React.FC = () => {
               </label>
               <div className="flex gap-2">
                 <input
-                  value={biz.industry}
+                  value={biz.ksicCode}
                   onChange={(e) =>
-                    setBiz((s) => ({ ...s, industry: e.target.value }))
+                    setBiz((s) => ({ ...s, ksicCode: e.target.value }))
                   }
                   className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg"
                 />
@@ -643,21 +813,33 @@ const Signup: React.FC = () => {
               <label className="flex text-sm font-semibold text-slate-700 mb-1.5 ps-1">
                 사업장 주소
               </label>
-              <div className="flex gap-2">
+
+              {/* 도로명 주소 + 검색 버튼 (표시 전용, 읽기전용) */}
+              <div className="flex gap-2 mb-2">
                 <input
-                  value={biz.address}
-                  onChange={(e) =>
-                    setBiz((s) => ({ ...s, address: e.target.value }))
-                  }
-                  className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg"
+                  value={biz.addrRoad}
+                  readOnly
+                  placeholder="도로명 주소(주소 검색으로 입력)"
+                  className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg bg-slate-50 text-slate-700"
                 />
                 <button
                   type="button"
+                  onClick={() => setOpenPostcode(true)}
                   className="px-4 border-2 border-slate-300 rounded-md text-sm text-slate-700 hover:bg-slate-50"
                 >
                   검색
                 </button>
               </div>
+
+              {/* 상세주소(직접 입력, nullable) */}
+              <input
+                value={biz.addrDetail}
+                onChange={(e) =>
+                  setBiz((s) => ({ ...s, addrDetail: e.target.value }))
+                }
+                placeholder="상세주소 (선택)"
+                className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg"
+              />
             </div>
 
             <div className="flex gap-3">
@@ -685,6 +867,29 @@ const Signup: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* 다음 주소검색 모달 */}
+      {openPostcode && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <strong className="text-slate-800">주소 검색</strong>
+              <button
+                onClick={() => setOpenPostcode(false)}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="p-2">
+              <DaumPostcode
+                onComplete={handleCompletePostcode}
+                style={{ width: '100%', height: 470 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 성공 모달 */}
       {/* {showSuccessModal && (
