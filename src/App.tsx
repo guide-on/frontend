@@ -26,7 +26,7 @@ function App() {
     >
       <BrowserRouter>
         <Header />
-        <main className="pb-20" style={{ flex: 1 }}>
+        <main className="pb-20" style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/guide" element={<Guide />} />
