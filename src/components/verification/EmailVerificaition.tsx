@@ -6,6 +6,7 @@ type Props = {
   value: string; // 부모의 email
   onChange: (next: string) => void; // 이메일 입력 변경
   onVerified?: (ok: boolean) => void; // 최종 인증 완료 알림
+  verified?: boolean; // 부모에서 제어하는 인증 완료 상태(선택)
 };
 
 function formatTime(seconds: number) {
@@ -18,6 +19,7 @@ const EmailVerification: React.FC<Props> = ({
   value,
   onChange,
   onVerified,
+  verified: verifiedProp,
 }) => {
   const [code, setCode] = useState('');
   const [verified, setVerified] = useState(false);
@@ -109,6 +111,19 @@ const EmailVerification: React.FC<Props> = ({
       setIsVerifying(false);
     }
   };
+
+  // 부모 제어 verified 반영
+  useEffect(() => {
+    if (typeof verifiedProp === 'boolean') {
+      setVerified(verifiedProp);
+      if (verifiedProp) {
+        setVerificationSent(false);
+        setTimer(0);
+        setResendTimer(0);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verifiedProp]);
 
   // 타이머
   useEffect(() => {

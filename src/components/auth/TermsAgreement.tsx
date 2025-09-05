@@ -138,7 +138,7 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
       {showTermsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h3 className="text-lg font-bold text-slate-800">
                 서비스 이용약관
               </h3>
@@ -279,7 +279,7 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
       {showPrivacyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h3 className="text-lg font-bold text-slate-800">
                 개인정보 수집·이용 동의서
               </h3>
