@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { colors } from '../styles/colors';
 
 import FilterSheet from '../components/support/FilterSheet';
 import FundDetailModal from '../components/support/FundDetailModal';
@@ -47,12 +48,8 @@ const Support: React.FC = () => {
   const [selectedFund, setSelectedFund] = useState<FundDetail | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
+  const [activeMainFilter, setActiveMainFilter] = useState<'none' | 'filter' | 'map' | 'receiving' | 'bookmark'>('none');
   const [activeTab, setActiveTab] = useState('keyword');
-  const [showBookmarkList, setShowBookmarkList] = useState(false);
-  const [bookmarkFunds, setBookmarkFunds] = useState<FundListItem[]>([]);
-  const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filters>({
     keywords: [],
     types: [],
@@ -60,6 +57,8 @@ const Support: React.FC = () => {
     rates: [],
     limit: [0, 100000000],
   });
+  const [bookmarkFunds, setBookmarkFunds] = useState<FundListItem[]>([]);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   // Refs for filter sheet
   const keywordRef = React.useRef<HTMLDivElement>(null);
@@ -116,8 +115,6 @@ const Support: React.FC = () => {
     });
   };
 
-  
-
   const openDetail = async (id: number) => {
     setLoading(true);
     try {
@@ -148,42 +145,30 @@ const Support: React.FC = () => {
     }
   };
 
-  const handleBookmarkListToggle = async () => {
-    setShowBookmarkList((prev) => !prev);
-
-    if (!showBookmarkList) {
-      setBookmarkLoading(true);
-      try {
-        const res = await getBookmarkedFunds();
-        if (res.status === 200 && Array.isArray(res.data)) {
-          setBookmarkFunds(
-            res.data.map((fund: any) => ({ ...fund, saved: true })),
-          );
-        } else {
-          setBookmarkFunds([]);
-        }
-      } finally {
-        setBookmarkLoading(false);
-      }
-    }
-  };
-
-  const handleMapToggle = () => {
-    setShowMap((prev) => !prev);
-    window.scrollTo(0, 0);
-  };
-
   // Effects
   useEffect(() => {
-    setLoading(true);
-    getFundsList()
-      .then((res) => {
+    const fetchFunds = async () => {
+      setLoading(true);
+      try {
+        const res = await getFundsList();
         if (res.status === 200 && Array.isArray(res.data)) {
-          setFunds(res.data);
+          let fundsToSet = res.data;
+          if (activeMainFilter === 'receiving') {
+            fundsToSet = res.data.filter((fund: FundListItem) => fund.status === '접수중');
+          }
+          setFunds(fundsToSet);
+        } else {
+          setFunds([]);
         }
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeMainFilter === 'none' || activeMainFilter === 'receiving') {
+      fetchFunds();
+    }
+  }, [activeMainFilter]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-4">
@@ -222,50 +207,96 @@ const Support: React.FC = () => {
       {/* 필터 버튼들 */}
       <div className="flex gap-2 mb-4 w-full max-w-md px-2">
         <button
-          className="px-3 py-2 rounded bg-gray-200 text-xs font-semibold"
-          onClick={() => setShowFilter(true)}
+          className={`px-3 py-2 rounded text-xs font-semibold ${activeMainFilter === 'filter' ? 'bg-navy text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveMainFilter(activeMainFilter === 'filter' ? 'none' : 'filter')}
         >
           :: 필터
         </button>
         <button
-          className="px-3 py-2 rounded bg-gray-200 text-xs font-semibold"
-          onClick={handleMapToggle}
+          className={`px-3 py-2 rounded text-xs font-semibold ${activeMainFilter === 'map' ? 'bg-navy text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveMainFilter(activeMainFilter === 'map' ? 'none' : 'map')}
         >
           내센터
         </button>
         <button
-          className="px-3 py-2 rounded bg-gray-200 text-xs font-semibold"
+          className={`px-3 py-2 rounded text-xs font-semibold ${activeMainFilter === 'receiving' ? 'bg-navy text-white' : 'bg-gray-200'}`}
           onClick={async () => {
-            setLoading(true);
-            try {
-              const res = await getFundsList();
-              if (res.status === 200 && Array.isArray(res.data)) {
-                const filteredFunds = res.data.filter((fund: FundListItem) => fund.status === '접수중');
-                setFunds(filteredFunds);
-              } else {
-                setFunds([]);
+            if (activeMainFilter === 'receiving') {
+              setActiveMainFilter('none');
+              setLoading(true);
+              try {
+                const res = await getFundsList();
+                if (res.status === 200 && Array.isArray(res.data)) {
+                  setFunds(res.data);
+                } else {
+                  setFunds([]);
+                }
+              } finally {
+                setLoading(false);
               }
-            } finally {
-              setLoading(false);
+            } else {
+              setActiveMainFilter('receiving');
+              setLoading(true);
+              try {
+                const res = await getFundsList();
+                if (res.status === 200 && Array.isArray(res.data)) {
+                  const filteredFunds = res.data.filter((fund: FundListItem) => fund.status === '접수중');
+                  setFunds(filteredFunds);
+                } else {
+                  setFunds([]);
+                }
+              } finally {
+                setLoading(false);
+              }
             }
           }}
         >
           접수중
         </button>
         <button
-          className="px-3 py-2 rounded bg-gray-200 text-xl font-semibold flex items-center justify-center"
+          className={`px-3 py-2 rounded text-xl font-semibold flex items-center justify-center ${activeMainFilter === 'bookmark' ? 'bg-navy text-white' : 'bg-gray-200'}`}
           aria-label="북마크"
-          onClick={handleBookmarkListToggle}
+          onClick={async () => {
+            if (activeMainFilter === 'bookmark') {
+              setActiveMainFilter('none');
+              setLoading(true);
+              try {
+                const res = await getFundsList();
+                if (res.status === 200 && Array.isArray(res.data)) {
+                  setFunds(res.data);
+                } else {
+                  setFunds([]);
+                }
+              } finally {
+                setLoading(false);
+              }
+            } else {
+              setActiveMainFilter('bookmark');
+              setBookmarkLoading(true);
+              try {
+                const res = await getBookmarkedFunds();
+                if (res.status === 200 && Array.isArray(res.data)) {
+                  setBookmarkFunds(
+                    res.data.map((fund: any) => ({ ...fund, saved: true })),
+                  );
+                } else {
+                  setBookmarkFunds([]);
+                }
+              } finally {
+                setBookmarkLoading(false);
+              }
+            }
+          }}
         >
           <span className="text-yellow-400">★</span>
         </button>
       </div>
 
       {/* 필터 시트 */}
-      {showFilter && (
+      {activeMainFilter === 'filter' && (
         <FilterSheet
-          showFilter={showFilter}
-          setShowFilter={setShowFilter}
+          showFilter={true}
+          setShowFilter={() => setActiveMainFilter('none')}
           activeFilters={activeFilters}
           setActiveFilters={setActiveFilters}
           activeTab={activeTab}
@@ -278,16 +309,15 @@ const Support: React.FC = () => {
           handleFilterChange={handleFilterChange}
           handleRangeChange={handleRangeChange}
           removeFilter={removeFilter}
-          
         />
       )}
 
       {/* 메인 컨텐츠 */}
       <div
-        key={showMap ? 'map' : showBookmarkList ? 'bookmark' : 'list'}
+        key={activeMainFilter}
         className="w-full max-w-md px-2"
       >
-        {showBookmarkList ? (
+        {activeMainFilter === 'bookmark' ? (
           // 북마크 리스트
           <div className="flex flex-col gap-3">
             {bookmarkLoading && (
@@ -307,7 +337,7 @@ const Support: React.FC = () => {
               />
             ))}
           </div>
-        ) : showMap ? (
+        ) : activeMainFilter === 'map' ? (
           // 지도 뷰
           <div className="flex flex-col gap-4">
             <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 text-sm mb-2">
@@ -335,7 +365,7 @@ const Support: React.FC = () => {
             </div>
           </div>
         ) : (
-          // 일반 펀드 리스트
+          // 일반 펀드 리스트 (or when activeMainFilter is 'receiving' or 'none')
           <div className="flex flex-col gap-3">
             {loading && (
               <div className="text-center text-gray-400 py-8">. . .</div>

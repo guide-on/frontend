@@ -32,7 +32,7 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({
   if (!open || !fund) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-30 p-4">
-      <div className="bg-white rounded-3xl p-6 w-full max-w-md relative shadow-xl flex flex-col" style={{ maxHeight: '90vh' }}>
+      <div className="bg-white rounded-3xl p-6 w-full max-w-sm relative shadow-xl flex flex-col overflow-hidden" style={{ maxHeight: '80vh' }}>
         
         <h2 className="font-bold text-2xl mb-4 text-gray-800" style={{ color: colors.navy }}>{fund.name}</h2>
 
