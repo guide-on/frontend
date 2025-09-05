@@ -7,15 +7,6 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-body::-webkit-scrollbar {
-  display: none;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
