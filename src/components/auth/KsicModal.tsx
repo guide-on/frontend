@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Pagination from '@/components/common/Pagination';
 import industryApi, { type KsicItem } from '@/api/industryApi';
 
 type Props = {
@@ -110,6 +111,22 @@ const KsicModal: React.FC<Props> = ({ open, onClose, onSelect }) => {
             </button>
           </div>
 
+          <p className="text-xs text-center mb-2">
+            <a
+              href="https://kssc.kostat.go.kr:8443/ksscNew_web/kssc/common/ClassificationContent.do?gubun=1&strCategoryNameCode=001&categoryMenu=007&addGubun=no"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue hover:underline"
+            >
+              [산업분류검색 바로가기]
+            </a>
+            <br></br>
+            <span className="text-slate-500">
+              통계청의 산업분류 검색서비스를 이용하여 업종코드를 검색한 후 해당
+              업종코드를 본 화면의 업종코드란에 입력하여 조회하셔도 됩니다.
+            </span>
+          </p>
+
           <div className="text-sm text-slate-600 mb-2">총 {total}건</div>
           <div className="border rounded-lg overflow-hidden">
             {/* 헤더: 실제 요소 + sticky */}
@@ -164,20 +181,13 @@ const KsicModal: React.FC<Props> = ({ open, onClose, onSelect }) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mt-3">
-            {Array.from({ length: totalPages }).map((_, idx) => {
-              const p = idx + 1;
-              const active = p === page;
-              return (
-                <button
-                  key={p}
-                  onClick={() => fetchPage(p)}
-                  className={`w-7 h-7 rounded-full text-sm ${active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
-                >
-                  {p}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-center mt-3">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={fetchPage}
+              siblingCount={2}
+            />
           </div>
         </div>
       </div>
