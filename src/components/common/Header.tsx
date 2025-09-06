@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaRegBuilding } from 'react-icons/fa';
 
 const pageNames: { [key: string]: string } = {
@@ -15,7 +15,9 @@ const Header = () => {
   return (
     <header className="w-full py-6 px-4">
       <div className="flex items-center w-full relative">
-        <FaRegBuilding size={32} className="absolute left-0" />
+        <Link to="/">
+          <FaRegBuilding size={32} className="absolute left-0" />
+        </Link>
         <span className="text-xl font-bold mx-auto">{pageName}</span>
       </div>
     </header>

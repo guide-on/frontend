@@ -36,7 +36,7 @@ const Navbar = () => {
           }}
         >
           {item.icon}
-          <span>{item.label}</span>
+          <span className="text-xs">{item.label}</span>
         </Link>
       ))}
     </nav>
