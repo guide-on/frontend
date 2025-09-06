@@ -7,7 +7,13 @@ import StepTerms from '@/components/auth/signup/StepTerms';
 import StepAccount from '@/components/auth/signup/StepAccount';
 import StepProfile from '@/components/auth/signup/StepProfile';
 import StepBusiness from '@/components/auth/signup/StepBusiness';
-import { buildSignupPayload, type Agreements, type BusinessInfoUI, type MemberType, type PreferenceInfo } from '@/utils/signup';
+import {
+  buildSignupPayload,
+  type Agreements,
+  type BusinessInfoUI,
+  type MemberType,
+  type PreferenceInfo,
+} from '@/utils/signup';
 import { useSignupStore } from '@/stores/useSignupStore';
 
 const Signup: React.FC = () => {
@@ -20,13 +26,17 @@ const Signup: React.FC = () => {
   // 1단계: 회원 유형
   const [memberType, setMemberType] = useState<MemberType | null>(null);
 
-  // 검�� 상태
+  // 검증 상태
   const [emailVerified, setEmailVerified] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [passwordValidated, setPasswordValidated] = useState(false);
+  const [bizVerified, setBizVerified] = useState(false);
 
   // 2단계: 약관 동의
-  const [agreements, setAgreements] = useState<Agreements>({ terms: false, privacy: false });
+  const [agreements, setAgreements] = useState<Agreements>({
+    terms: false,
+    privacy: false,
+  });
 
   // 3-4단계: 회원 정보
   const [member, setMember] = useState({
@@ -42,7 +52,10 @@ const Signup: React.FC = () => {
   const [password2, setPassword2] = useState('');
 
   // 일반 유형 선호도(건너뛰기 가능) – 본 화면에서는 보관만, 실제 전송은 온보딩에서 처리
-  const [preference] = useState<PreferenceInfo>({ regionCodes: [], industryTags: [] });
+  const [preference] = useState<PreferenceInfo>({
+    regionCodes: [],
+    industryTags: [],
+  });
 
   // 5단계: 사업자 정보 (UI 전용)
   const [biz, setBiz] = useState<BusinessInfoUI>({
@@ -58,25 +71,51 @@ const Signup: React.FC = () => {
     addrDetail: '',
   });
 
-  const totalSteps = useMemo(() => (memberType === 'SOLE_PROPRIETOR' ? 5 : 4), [memberType]);
+  const totalSteps = useMemo(
+    () => (memberType === 'SOLE_PROPRIETOR' ? 5 : 4),
+    [memberType],
+  );
 
   // 유효성
   const isMemberTypeSelected = useMemo(() => !!memberType, [memberType]);
-  const allAgreed = useMemo(() => agreements.terms && agreements.privacy, [agreements.terms, agreements.privacy]);
-  const isAccountValid = useMemo(() => emailVerified && passwordValidated, [emailVerified, passwordValidated]);
+  const allAgreed = useMemo(
+    () => agreements.terms && agreements.privacy,
+    [agreements.terms, agreements.privacy],
+  );
+  const isAccountValid = useMemo(
+    () => emailVerified && passwordValidated,
+    [emailVerified, passwordValidated],
+  );
   const isProfileValid = useMemo(
-    () => member.name.trim() !== '' && !!member.gender && member.birth !== '' && phoneVerified,
+    () =>
+      member.name.trim() !== '' &&
+      !!member.gender &&
+      member.birth !== '' &&
+      phoneVerified,
     [member.name, member.gender, member.birth, phoneVerified],
   );
   const isBusinessInfoValid = useMemo(() => {
     const b1 = biz.bno1.replace(/\D/g, '');
     const b2 = biz.bno2.replace(/\D/g, '');
     const b3 = biz.bno3.replace(/\D/g, '');
-    return b1.length === 3 && b2.length === 2 && b3.length === 5 && biz.bizName.trim() !== '' && biz.ksicCode.trim() !== '' && biz.openDate.trim() !== '' && biz.businessSggCode.trim().length === 5 && biz.addrRoad.trim() !== '';
-  }, [biz]);
+    return (
+      b1.length === 3 &&
+      b2.length === 2 &&
+      b3.length === 5 &&
+      biz.bizName.trim() !== '' &&
+      biz.ksicCode.trim() !== '' &&
+      biz.openDate.trim() !== '' &&
+      biz.businessSggCode.trim().length === 5 &&
+      biz.addrRoad.trim() !== '' &&
+      bizVerified
+    );
+  }, [biz, bizVerified]);
 
   const goBack = useCallback(() => navigate('/auth/login'), [navigate]);
-  const goToPreviousStep = useCallback(() => setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3 | 4 | 5) : s)), []);
+  const goToPreviousStep = useCallback(
+    () => setCurrentStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3 | 4 | 5) : s)),
+    [],
+  );
 
   const goToNextStep = useCallback(() => {
     if (currentStep === 1) {
@@ -107,7 +146,18 @@ const Signup: React.FC = () => {
       setCurrentStep(5);
       return;
     }
-  }, [currentStep, isMemberTypeSelected, allAgreed, isAccountValid, emailVerified, passwordValidated, memberType, isProfileValid, member, phoneVerified]);
+  }, [
+    currentStep,
+    isMemberTypeSelected,
+    allAgreed,
+    isAccountValid,
+    emailVerified,
+    passwordValidated,
+    memberType,
+    isProfileValid,
+    member,
+    phoneVerified,
+  ]);
 
   const completeSignup = useCallback(async () => {
     if (!isProfileValid) {
@@ -116,7 +166,8 @@ const Signup: React.FC = () => {
       if (!member.birth) return alert('생년월일을 입력해주세요');
       if (!phoneVerified) return alert('전화번호 인증을 완료해주세요');
     }
-    if (memberType === 'SOLE_PROPRIETOR' && !isBusinessInfoValid) return alert('사업자 정보를 정확히 입력해주세요');
+    if (memberType === 'SOLE_PROPRIETOR' && !isBusinessInfoValid)
+      return alert('사업자 정보를 정확히 입력해주세요');
 
     setIsSubmitting(true);
     try {
@@ -145,7 +196,16 @@ const Signup: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isProfileValid, isBusinessInfoValid, member, memberType, preference, biz, phoneVerified, navigate]);
+  }, [
+    isProfileValid,
+    isBusinessInfoValid,
+    member,
+    memberType,
+    preference,
+    biz,
+    phoneVerified,
+    navigate,
+  ]);
 
   const proceedToOnboarding = useCallback(() => {
     if (!isProfileValid) return;
@@ -160,15 +220,40 @@ const Signup: React.FC = () => {
     };
     setBase((memberType ?? 'GENERAL') as MemberType, baseCommon);
     navigate('/auth/onboarding');
-  }, [isProfileValid, member.email, member.password, member.name, member.phone, member.gender, member.birth, member.residenceSggCode, memberType, navigate, setBase]);
+  }, [
+    isProfileValid,
+    member.email,
+    member.password,
+    member.name,
+    member.phone,
+    member.gender,
+    member.birth,
+    member.residenceSggCode,
+    memberType,
+    navigate,
+    setBase,
+  ]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-4 px-4">
       <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 400 }}>
         <div className="flex items-center justify-between mb-5">
-          <button onClick={goBack} className="p-2 hover:bg-white/60 rounded-lg transition-colors">
-            <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          <button
+            onClick={goBack}
+            className="p-2 hover:bg-white/60 rounded-lg transition-colors"
+          >
+            <svg
+              className="w-6 h-6 text-slate-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <h1 className="text-2xl font-bold text-slate-800">회원가입</h1>
@@ -176,11 +261,22 @@ const Signup: React.FC = () => {
         </div>
 
         {currentStep === 1 && (
-          <StepType totalSteps={totalSteps} memberType={memberType} onSelect={setMemberType} onNext={goToNextStep} />
+          <StepType
+            totalSteps={totalSteps}
+            memberType={memberType}
+            onSelect={setMemberType}
+            onNext={goToNextStep}
+          />
         )}
 
         {currentStep === 2 && (
-          <StepTerms totalSteps={totalSteps} value={agreements} onChange={setAgreements} onPrev={goToPreviousStep} onNext={goToNextStep} />
+          <StepTerms
+            totalSteps={totalSteps}
+            value={agreements}
+            onChange={setAgreements}
+            onPrev={goToPreviousStep}
+            onNext={goToNextStep}
+          />
         )}
 
         {currentStep === 3 && (
@@ -228,6 +324,8 @@ const Signup: React.FC = () => {
             value={biz}
             onChange={setBiz}
             isValid={isBusinessInfoValid}
+            bizVerified={bizVerified}
+            setBizVerified={setBizVerified}
             onPrev={goToPreviousStep}
             onSubmit={completeSignup}
             submitting={isSubmitting}
