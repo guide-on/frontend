@@ -7,6 +7,8 @@ const pageNames: { [key: string]: string } = {
   '/support': '공공지원금',
   '/community': '커뮤니티',
   '/mypage': '마이페이지',
+  '/hybrid-evaluation': '하이브리드 신용평가',
+  '/hybrid-evaluation/start': '하이브리드 신용평가',
 };
 
 const Header = () => {

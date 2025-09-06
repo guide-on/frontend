@@ -9,6 +9,8 @@ import MyPage from './pages/MyPage';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import HybridEvaluation from './pages/Hybrid Evaluation';
+import StartHybridEvaluation from './pages/Hybrid Evaluation/Start';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/auth/find" element={<FindIdPw />} />
+            <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
+            <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
           </Routes>
         </main>
         <Navbar />
