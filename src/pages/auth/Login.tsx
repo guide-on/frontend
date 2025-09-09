@@ -2,6 +2,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { colors } from '@/styles/colors';
 
 type Member = {
   username: string;
@@ -50,7 +51,7 @@ const Login: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-6 px-4">
+    <div className="min-h-screen from-slate-50 to-slate-100 py-6 px-4">
       <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 343 }}>
         {/* Header */}
         <div className="mb-5">
@@ -60,7 +61,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl transition-all duration-300">
           <form onSubmit={onSubmit}>
             <div className="space-y-4">
               {/* Email Field */}
@@ -102,7 +103,7 @@ const Login: React.FC = () => {
             <div className="text-right my-1.5">
               <Link
                 to="/auth/find"
-                className="text-btn text-sm font-medium transition-colors"
+                className="text-btn text-sm font-medium transition-colors hover:opacity-90"
               >
                 아이디/비밀번호 찾기
               </Link>
@@ -112,7 +113,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={disableSubmit}
-              className="login-button w-full h-11 bg-gradient-to-r text-white rounded-md font-bold text-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+              className="login-button w-full h-11 bg-gradient-to-r text-white rounded-md font-bold text-md transition-all duration-200 hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
               {isLoggingIn && (
                 <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -134,7 +135,7 @@ const Login: React.FC = () => {
               아직 계정이 없으신가요?
               <Link
                 to="/auth/signup"
-                className="text-btn font-semibold transition-colors"
+                className="text-btn font-semibold transition-colors hover:opacity-90"
               >
                 {' '}
                 회원가입
@@ -147,11 +148,8 @@ const Login: React.FC = () => {
       {/* SFC <style scoped> 대응용 보조 스타일 */}
       <style>{`
         .text-color,
-        .text-btn { color: #63b6ae; }
-        .text-btn:hover { color: #4da99b; }
-        .login-button { background:  var(--point-color); border: none; touch-action: manipulation; }
-        .login-button:hover { background:  var(--point-color-2); }
-        .login-button:disabled { background:  var(--logo-color); }
+        .text-btn { color: ${colors.navy}; }
+        .login-button { background:  ${colors.navy}; border: none; touch-action: manipulation; }
       `}</style>
     </div>
   );

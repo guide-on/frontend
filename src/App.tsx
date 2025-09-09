@@ -15,6 +15,7 @@ import Community from './community/index.tsx';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import Onboarding from '@/pages/auth/Onboarding';
 
 // 하이브리드 평가 페이지
 import HybridEvaluation from './pages/Hybrid Evaluation';
@@ -69,6 +70,7 @@ function AppChrome() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup" element={<Signup />} />
           <Route path="/auth/find" element={<FindIdPw />} />
+          <Route path="/auth/onboarding" element={<Onboarding />} />
           <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
           <Route
             path="/hybrid-evaluation/start"
