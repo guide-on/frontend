@@ -9,6 +9,8 @@ const routeTitle = (path: string) => {
   if (path === '/support') return '공공지원금';
   if (path === '/mypage') return '마이페이지';
   if (path === '/community') return '커뮤니티';
+  if (path === '/hybrid-evaluation') return '하이브리드 신용평가';
+  if (path === '/hybrid-evaluation/start') return '하이브리드 신용평가';
 
   // 커뮤니티 하위
   if (path.startsWith('/community/cases')) return '동일업종 승인 사례';
@@ -37,28 +39,28 @@ const Header = () => {
   const isCommunity = path.startsWith('/community');
 
   return (
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
-        <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
-          <Link to="/" className="absolute left-4">
-            <FaRegBuilding size={28} />
-          </Link>
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
+      <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
+        <Link to="/" className="absolute left-4">
+          <FaRegBuilding size={28} />
+        </Link>
 
-          <span className="text-lg font-bold mx-auto">{title}</span>
+        <span className="text-lg font-bold mx-auto">{title}</span>
 
-          {/* 커뮤니티 영역에서는 검색 아이콘 노출 */}
-          <div className="absolute right-4">
-            {isCommunity && (
-                <button
-                    aria-label="search"
-                    onClick={()=>nav('/community/search')}
-                    className="p-2 rounded-full hover:bg-gray-100"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-            )}
-          </div>
+        {/* 커뮤니티 영역에서는 검색 아이콘 노출 */}
+        <div className="absolute right-4">
+          {isCommunity && (
+            <button
+              aria-label="search"
+              onClick={() => nav('/community/search')}
+              className="p-2 rounded-full hover:bg-gray-100"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          )}
         </div>
-      </header>
+      </div>
+    </header>
   );
 };
 
