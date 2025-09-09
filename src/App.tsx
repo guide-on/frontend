@@ -9,6 +9,7 @@ import MyPage from './pages/MyPage';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import Onboarding from '@/pages/auth/Onboarding';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/auth/onboarding" element={<Onboarding />} />
             <Route path="/auth/find" element={<FindIdPw />} />
           </Routes>
         </main>

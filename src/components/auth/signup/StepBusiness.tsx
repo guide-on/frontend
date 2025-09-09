@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import DaumPostcode from 'react-daum-postcode';
 import BusinessCertUploadSheet from '@/components/auth/BusinessCertUploadSheet';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 import bizApi from '@/api/bizApi';
 import { buildBusinessNo } from '@/utils/signup';
 import type { BusinessInfoUI } from '@/utils/signup';
 import KsicModal from '@/components/auth/KsicModal';
+import { colors } from '@/styles/colors';
 
 type Props = {
   totalSteps: number;
@@ -34,6 +36,9 @@ const StepBusiness: React.FC<Props> = ({
   const [openKsic, setOpenKsic] = useState(false);
   const [bizMsg, setBizMsg] = useState('');
   const [bizChecking, setBizChecking] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrMsg, setOcrMsg] = useState('');
+  const [ocrMsgClass, setOcrMsgClass] = useState('');
 
   const bnoFilled = useMemo(() => {
     const b1 = value.bno1.replace(/\D/g, '');
@@ -81,6 +86,63 @@ const StepBusiness: React.FC<Props> = ({
     }
   };
 
+  // 파일 → OCR → UI 반영
+  const handleOcrSelected = useCallback(
+    async (file: File) => {
+      try {
+        setOcrLoading(true); // ← 오버레이 시작
+        setBizMsg('');
+        setOcrMsg('');
+        const res = await bizApi.ocrBizReg(file);
+
+        const digits = (res.bizRegNo || '').replace(/\D/g, '').slice(0, 10);
+        const bno1 = digits.slice(0, 3);
+        const bno2 = digits.slice(3, 5);
+        const bno3 = digits.slice(5, 10);
+
+        // 주소 분리: "도로명주소, 상세주소"
+        let addrRoad = res.address ?? value.addrRoad;
+        let addrDetail = value.addrDetail;
+        if (res.address && res.address.includes(',')) {
+          const [road, detail] = res.address.split(',', 2).map((s) => s.trim());
+          addrRoad = road;
+          addrDetail = detail;
+        }
+
+        onChange({
+          ...value,
+          bno1: bno1 || value.bno1,
+          bno2: bno2 || value.bno2,
+          bno3: bno3 || value.bno3,
+          bizName: res.companyName ?? value.bizName,
+          openDate: res.openedOn ?? value.openDate,
+          addrRoad,
+          addrDetail,
+          // KSIC(업종)는 별도 선택 모달에서 확정: res.bizType/res.bizItems는 힌트로만 사용 가능
+        });
+
+        const hasBno = !!(bno1 || bno2 || bno3);
+        if (hasBno) {
+          setBizMsg('사업자 번호를 인증해주세요');
+        }
+
+        // OCR로 자동 채워졌으니, 번호 인증은 다시 요구
+        setBizVerified(false);
+        setOcrMsg(
+          '자동 입력이 완료되었습니다. 사업자번호 인증을 진행해주세요.',
+        );
+        setOcrMsgClass('text-green-600');
+      } catch (e) {
+        console.error(e);
+        setOcrMsg('파일 분석 중 오류가 발생했습니다.');
+        setOcrMsgClass('text-red-600');
+      } finally {
+        setOcrLoading(false); // ← 오버레이 종료
+      }
+    },
+    [onChange, setBizVerified, value],
+  );
+
   const handleCompletePostcode = useCallback(
     (data: any) => {
       const road = data.roadAddress || data.address || '';
@@ -113,7 +175,7 @@ const StepBusiness: React.FC<Props> = ({
       <button
         type="button"
         onClick={() => setShowBizUpload(true)}
-        className="w-full border rounded-md py-2.5 mb-5 text-gray-500 cursor-pointer hover:bg-slate-100"
+        className="w-full border rounded-md py-2.5 text-gray-500 cursor-pointer hover:bg-slate-100"
       >
         <div className="flex items-center justify-center gap-2">
           <i className="fa-solid fa-file-arrow-up fa-lg leading-none"></i>
@@ -122,8 +184,11 @@ const StepBusiness: React.FC<Props> = ({
           </span>
         </div>
       </button>
+      {ocrMsg && (
+        <p className={`flex text-sm mb-1 mt-1 ms-1 ${ocrMsgClass}`}>{ocrMsg}</p>
+      )}
 
-      <div className="mb-4">
+      <div className="my-4">
         <label className="flex items-center text-sm font-semibold text-slate-700 mb-1.5">
           <span className="ps-1">사업자 등록 번호</span>
           {!bizVerified && (
@@ -321,11 +386,16 @@ const StepBusiness: React.FC<Props> = ({
       <BusinessCertUploadSheet
         open={showBizUpload}
         onClose={() => setShowBizUpload(false)}
-        onSelectFile={() => setShowBizUpload(false)}
+        onSelectFile={(file) => {
+          setShowBizUpload(false);
+          handleOcrSelected(file);
+        }}
       />
 
+      {ocrLoading && <LoadingOverlay message="사업자등록증 분석 중..." />}
+
       <style>{`
-        .send-btn { background: var(--point-color); }
+        .send-btn { background: ${colors.navy}; }
       `}</style>
     </div>
   );

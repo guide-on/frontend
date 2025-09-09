@@ -15,6 +15,7 @@ import {
   type PreferenceInfo,
 } from '@/utils/signup';
 import { useSignupStore } from '@/stores/useSignupStore';
+import { colors } from '@/styles/colors';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -167,7 +168,7 @@ const Signup: React.FC = () => {
       if (!phoneVerified) return alert('전화번호 인증을 완료해주세요');
     }
     if (memberType === 'SOLE_PROPRIETOR' && !isBusinessInfoValid)
-      return alert('사업자 정보를 정확히 입력해주세요');
+      return alert('사업자 정보를 정확히 ��력해주세요');
 
     setIsSubmitting(true);
     try {
@@ -335,13 +336,12 @@ const Signup: React.FC = () => {
 
       <style>{`
         .text-color,
-        .text-btn { color: #63b6ae; }
-        .text-btn:hover { color: #4da99b; }
-        .next-button { background: var(--point-color); border: none; touch-action: manipulation; }
-        .next-button:hover { background: var(--point-color-2); }
-        .next-button:disabled { background: var(--logo-color); }
+        .text-btn { color: ${colors.navy}; }
+        .text-btn:hover { opacity: 0.9; }
+        .next-button { background: ${colors.navy}; border: none; touch-action: manipulation; }
+        .next-button:hover { opacity: 0.9; }
         .logo-img { object-fit: contain; }
-        input[type='checkbox']:checked { background-color: #2563eb; border-color: #2563eb; }
+        input[type='checkbox']:checked { background-color: ${colors.paleBlue}; border-color: #2563eb; }
         .overflow-y-auto::-webkit-scrollbar { width: 6px; }
         .overflow-y-auto::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
         .overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }

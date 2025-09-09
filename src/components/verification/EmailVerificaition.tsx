@@ -1,6 +1,7 @@
 // src/components/verification/EmailVerification.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import verificationApi from '@/api/verificationApi';
+import { colors } from '@/styles/colors';
 
 type Props = {
   value: string; // 부모의 email
@@ -228,7 +229,7 @@ const EmailVerification: React.FC<Props> = ({
 
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
-        .send-btn { background: var(--point-color); }
+        .send-btn { background: ${colors.navy}; }
       `}</style>
     </div>
   );

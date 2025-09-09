@@ -1,5 +1,6 @@
 import React from 'react';
 import type { MemberType } from '@/utils/signup';
+import { colors } from '@/styles/colors';
 
 type Props = {
   totalSteps: number;
