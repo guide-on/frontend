@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 const routeTitle = (path: string): string => {
   // 1) 정확 매칭
   if (path === '/') return '홈';
-  if (path === '/guide' || path.startsWith('/guide')) return '대출가이드';
+  if (path === '/guide') return '대출가이드';
   if (path === '/support') return '공공지원금';
   if (path === '/mypage') return '마이페이지';
   if (path === '/community') return '커뮤니티';

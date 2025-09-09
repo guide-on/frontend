@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+
+// 공통 컴포넌트
 import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 
-// 공통 페이지
+// 페이지 컴포넌트
 import Home from './home/pages/Home';
 import Support from './pages/Support';
-import Community from './community/index.tsx';
 import MyPage from './pages/MyPage';
+import Community from './community/index.tsx';
 
 // 인증
 import Login from '@/pages/auth/Login';
@@ -16,12 +18,6 @@ import FindIdPw from '@/pages/auth/FindIdPw';
 // 시뮬레이션
 import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
-import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
-import PolicyListPage from '@/guide/pages/PolicyListPage';
-import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
-import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
-import MydataConsentPage from '@/guide/pages/MydataConsentPage';
-import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 
 // 가이드(서류 등록)
 import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
@@ -32,24 +28,54 @@ import MydataConsentPage from '@/guide/pages/MydataConsentPage';
 import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 
 // 하이브리드 평가 (브랜치 추가분)
-// ⚠️ 실제 경로가 다르면 아래 import 경로를 프로젝트 구조에 맞춰 수정하세요.
+// ⚠️ 실제 폴더명이 다르면 import 경로를 프로젝트에 맞게 조정하세요.
 import HybridEvaluation from './pages/Hybrid Evaluation';
 import StartHybridEvaluation from './pages/Hybrid Evaluation/Start';
 
+/**
+ * 라우팅에 따라 Header, Navbar 및 메인 콘텐츠의 패딩을 관리하는 컴포넌트
+ */
 function AppChrome() {
   const { pathname } = useLocation();
 
-  // 커뮤니티 검색화면 또는 홈에서는 헤더 숨김
-  const isSearchScreen =
-    pathname === '/community/search' || pathname === '/community/search/';
-  const hideHeader = isSearchScreen || pathname === '/';
+  // === Header 숨김 조건 ===
+  // - 홈(/)
+  // - 커뮤니티 검색(/community/search, /community/search/)
+  // - 인증/하이브리드 시작 화면
+  const hideHeaderExact = new Set([
+    '/', // 홈
+    '/community/search',
+    '/community/search/',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/find',
+    '/hybrid-evaluation/start',
+  ]);
 
-  const paddingTop = hideHeader ? 0 : 56;
-  const paddingBottom = 60;
+  // === Navbar 숨김 조건 ===
+  // - 인증/하이브리드 시작 화면
+  // - 시뮬레이션 상세(/simulation/:id)
+  const hideNavbarExact = new Set([
+    '/auth/login',
+    '/auth/signup',
+    '/auth/find',
+    '/hybrid-evaluation/start',
+  ]);
+  const hideNavbarPrefixes = ['/simulation/'];
+
+  const isHeaderHidden = hideHeaderExact.has(pathname);
+
+  const isNavbarHidden =
+    hideNavbarExact.has(pathname) ||
+    hideNavbarPrefixes.some((p) => pathname.startsWith(p));
+
+  // Header / Navbar 유무에 따른 main 패딩
+  const paddingTop = isHeaderHidden ? 0 : 56; // px
+  const paddingBottom = isNavbarHidden ? 0 : 80; // px
 
   return (
     <>
-      {!hideHeader && <Header />}
+      {!isHeaderHidden && <Header />}
       <main style={{ flex: 1, overflowY: 'auto', paddingTop, paddingBottom }}>
         <Routes>
           {/* 메인 */}
@@ -100,11 +126,14 @@ function AppChrome() {
           />
         </Routes>
       </main>
-      <Navbar />
+      {!isNavbarHidden && <Navbar />}
     </>
   );
 }
 
+/**
+ * 앱의 최상위 컴포넌트
+ */
 export default function App() {
   return (
     <div
