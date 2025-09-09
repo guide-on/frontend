@@ -1,0 +1,192 @@
+/* ---- Tailwind entry (must be first) ---- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 커뮤니티 토큰 ───────────────────────── */
+:root{
+    --brand-primary:#25437B;
+    --brand-secondary:#5A89E2;
+    --brand-accent:#A9C7FF;
+    --brand-surface:#DDE9FF;
+    --brand-white:#FFFFFF;
+    --brand-gray:#F3F4F6;
+
+    --chip-sector-bg:#DDE9FF;   --chip-sector-text:#25437B;
+    --chip-posttype-bg:#E8F5E9; --chip-posttype-text:#2F6E43;
+    --chip-generic-bg:#F3E8FF;  --chip-generic-text:#6B3FA0;
+
+    /* 상단/하단 바 사이즈 */
+    --header-radius: 22px;
+    --header-bar-h: 52px;
+    --header-extra: 18px;
+    --bottombar-h: 60px;
+    --topbar-side-w: 96px;
+
+    --header-solid: #2F58A9;
+    --topbar-nudge-y: 4px;
+
+    --font-kor: "Pretendard Variable","Pretendard",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;
+    --font-latin: "Plus Jakarta Sans","Inter",var(--font-kor);
+    --font-numeric: "Space Grotesk","Plus Jakarta Sans",var(--font-kor);
+}
+
+@layer components {
+    .community .container-mobile { @apply w-full max-w-[375px] mx-auto px-4; }
+
+    .community .app-shell{
+        min-height: 100dvh;
+        background: linear-gradient(180deg, #EFF4FF 0%, #F7FAFF 35%, #FFFFFF 60%);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .community .main-content{
+        padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom,0px));
+        padding-top: calc(36px + var(--header-extra));
+    }
+
+    .community .card { @apply bg-white rounded-2xl border border-gray-100 shadow-[0_6px_18px_rgba(0,0,0,0.06)]; }
+    .community .btn-ghost { @apply text-gray-700 hover:bg-gray-100 rounded-xl px-2 py-1; }
+    .community .chip { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium; }
+    /* 해시태그용 작은 칩 */
+    .community .chip--sm { @apply px-2 py-[2px] text-[11px]; }
+    .community .chip-sector { background:var(--chip-sector-bg); color:var(--chip-sector-text); }
+    .community .chip-posttype{ background:var(--chip-posttype-bg); color:var(--chip-posttype-text); }
+    .community .chip-generic { background:var(--chip-generic-bg); color:var(--chip-generic-text); }
+
+    /* ── 상단 네이비 패널 ── */
+    .community .topbar{
+        position: sticky; top:0; z-index:50;
+        background: transparent;
+        border-bottom: none;
+        padding-top: env(safe-area-inset-top,0px);
+        overflow: visible;
+    }
+    .community .topbar-inner{
+        @apply w-full max-w-[375px] mx-auto px-4 grid;
+        height: var(--header-bar-h);
+        grid-template-columns: var(--topbar-side-w) 1fr var(--topbar-side-w);
+        align-items: center;
+        position: relative; z-index: 1;
+    }
+    .community .topbar-inner::before,
+    .community .topbar-inner::after { content: none !important; }
+
+    .community .topbar::after{
+        content:"";
+        position:absolute; left:0; right:0; top:0;
+        height: calc(var(--header-bar-h) + var(--header-extra));
+        background: var(--header-solid);
+        border-bottom-left-radius: var(--header-radius);
+        border-bottom-right-radius: var(--header-radius);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+
+    .community .topbar-title{
+        font-family: var(--font-latin);
+        font-synthesis-weight: none;
+        font-weight: 600;
+        font-size: 1.25rem;
+        line-height: 1.25;
+        color:#fff;
+        justify-self: center;
+        white-space: nowrap;
+        transform: translateY(var(--topbar-nudge-y));
+        letter-spacing: .2px;
+    }
+    .community .topbar .btn-ghost{ color:#fff; transform: translateY(var(--topbar-nudge-y)); }
+    .community .topbar .btn-ghost:hover{ background: rgba(255,255,255,0.12); }
+
+    /* ── 하단 탭바 ── */
+    .community .bottombar { position: fixed; left:0; right:0; bottom:0; z-index:50; background:var(--brand-gray); border-top:1px solid #e5e7eb; padding-bottom: env(safe-area-inset-bottom,0px); }
+    .community .bottombar-inner { @apply w-full max-w-[375px] mx-auto px-4 grid grid-cols-5; height: var(--bottombar-h); }
+    .community .bottombar-item { @apply flex flex-col items-center justify-center text-[11px] text-gray-600 gap-0.5; }
+    .community .bottombar-item-active { @apply font-semibold; color: var(--brand-primary); }
+    .community .bottombar-item-active svg { color: var(--brand-primary); }
+
+    /* FAB */
+    .community .fab{
+        position: fixed; right: 16px;
+        bottom: calc(var(--bottombar-h) + 12px + env(safe-area-inset-bottom,0px));
+        z-index: 60; width:56px; height:56px; border-radius:9999px;
+        display:flex; align-items:center; justify-content:center;
+        color:#fff; background:var(--brand-primary);
+        box-shadow:0 10px 22px rgba(0,0,0,0.18);
+    }
+
+    /* 캐러셀 */
+    .community .carousel-track{ display:flex; overflow:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; scrollbar-width:none; position:relative; }
+    .community .carousel-track::-webkit-scrollbar{ display:none; }
+    .community .carousel-slide{ position:relative; min-width:100%; height:10rem; scroll-snap-align:start; }
+    .community .carousel-dots{ position:absolute; left:0; right:0; bottom:8px; display:flex; gap:6px; justify-content:center; align-items:center; }
+    .community .dot{ width:8px; height:8px; border-radius:9999px; background:rgba(255,255,255,0.6); }
+    .community .dot-active{ background:#fff; box-shadow:0 0 0 2px rgba(0,0,0,0.08); }
+
+    /* 영어/숫자 폰트 */
+    .community :lang(en){ font-family: var(--font-latin); }
+    .community .latin-only{ font-family: var(--font-latin); }
+    .community .metrics, .community .metrics *{ font-family: var(--font-numeric); font-variant-numeric: tabular-nums; letter-spacing: .1px; }
+
+    /* ── 검색 전용 스타일 & 칩 ── */
+    .community.search-mode .topbar { display: none; }
+    .community.search-mode .main-content { padding-top: 12px; }
+
+    /* ✅ 전역 칩 스타일 (포털 내부에서도 적용) */
+    .chip-toggle{
+        @apply inline-flex items-center rounded-full px-3 py-1.5 text-[13px] font-medium
+        border border-gray-300 bg-white text-gray-700;
+        transition: box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    }
+    .chip-toggle-active{
+        background: var(--brand-primary);
+        color: #fff;
+        border-color: var(--brand-primary);
+        box-shadow: 0 6px 14px rgba(37,67,123,0.18);
+    }
+
+    /* 기존 스코프 칩 스타일(다른 화면용) */
+    .community .chip-toggle{
+        @apply inline-flex items-center rounded-full px-3 py-1.5 text-[13px] font-medium
+        border border-gray-300 bg-white text-gray-700;
+        transition: box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    }
+    .community .chip-toggle-active{
+        background: var(--brand-primary);
+        color: #fff;
+        border-color: var(--brand-primary);
+        box-shadow: 0 6px 14px rgba(37,67,123,0.18);
+    }
+
+    .community .label{ @apply text-sm font-semibold text-gray-800; }
+    .community .btn{ @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium; }
+    .community .btn-primary{ background: var(--brand-primary); color:#fff; }
+
+    /* 선택 칩(상단 요약 표시용) - 연한 군청색 */
+    .community .chip-selected{
+        @apply inline-flex items-center rounded-full px-3 py-1.5 text-[13px] font-medium;
+        background: rgba(37,67,123,.14);
+        color: var(--brand-primary);
+        border: 1px solid rgba(37,67,123,.22);
+        box-shadow: 0 6px 14px rgba(37,67,123,0.10);
+    }
+
+    /* 스크롤바 숨김(가로 칩 영역) */
+    .community .no-scrollbar::-webkit-scrollbar{ display:none; }
+    .community .no-scrollbar{ -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* 정렬 칩 색상 (blue/gray) */
+    .community .chip-blue { background: var(--brand-surface); color: var(--brand-primary); border: 1px solid rgba(37,67,123,.22); }
+    .community .chip-gray { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+
+    /* 인풋/텍스트에어리어 공통 */
+    .community .input { @apply flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm; }
+    .community .textarea { @apply w-full min-h-[96px] rounded-xl border border-gray-300 px-3 py-2 text-sm; }
+    .community .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium; }
+    .community .btn-outline { @apply border border-gray-300; }
+
+    /* 공통 헤더 쓸 때 커뮤니티 main-content 상단 여백 제거 */
+    .community.with-common-header .main-content{
+        padding-top: 0 !important;
+    }
+}
