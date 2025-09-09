@@ -3,12 +3,13 @@ import { persist } from 'zustand/middleware';
 import api from '@/api';
 
 export type User = {
+  memberId: number;
   name: string;
   email: string;
   roles: string[];
 };
 
-const INITIAL_USER: User = { name: '', email: '', roles: [] };
+const INITIAL_USER: User = { memberId: 0, name: '', email: '', roles: [] };
 
 type MemberLogin = { username: string; password: string };
 
@@ -43,6 +44,7 @@ export const useAuthStore = create<AuthState>()(
         const { data } = await api.get<User>('/api/auth/me', {
           withCredentials: true,
         });
+        console.log('Fetched user data from /api/auth/me:', data);
         set({ user: data });
       },
 
