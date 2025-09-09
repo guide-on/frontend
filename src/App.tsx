@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import Home from './home/pages/Home';
-import Guide from './pages/Guide';
 import Support from './pages/Support';
 import Community from './community/index.tsx';
 import MyPage from './pages/MyPage';
@@ -11,6 +10,12 @@ import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
 import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
+import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
+import PolicyListPage from '@/guide/pages/PolicyListPage';
+import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
+import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
+import MydataConsentPage from '@/guide/pages/MydataConsentPage';
+import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 
 function AppChrome() {
     const { pathname } = useLocation();
@@ -25,7 +30,12 @@ function AppChrome() {
             <main style={{ flex: 1, overflowY: 'auto', paddingTop, paddingBottom }}>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/guide" element={<Guide />} />
+                    <Route path="/guide" element={<DocumentSurveyPage />} />
+                    <Route path="/guide/policy/:businessId" element={<PolicyListPage />} />
+                    <Route path="/guide/documents/:sessionId" element={<RequiredDocumentsPage />} />
+                    <Route path="/guide/mydata/:sessionId" element={<MydataConsentPage />} />
+                    <Route path="/guide/mydata-result/:sessionId" element={<MydataSyncComplete />} />
+                    <Route path="/guide/upload/:sessionId/:groupKey" element={<DocumentUploadPage />} />
                     <Route path="/support" element={<Support />} />
                     <Route path="/community/*" element={<Community />} />
                     <Route path="/mypage" element={<MyPage />} />
