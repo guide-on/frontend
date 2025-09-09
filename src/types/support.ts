@@ -51,7 +51,7 @@ export type FundDetail = FundListItem & {
   year: number;
 };
 
-export type MainFilter = 'none' | 'filter' | 'map' | 'receiving' | 'bookmark';
+export type MainFilter = 'none' | 'filter' | 'map' | 'receiving' | 'bookmark' | 'announcements';
 
 export type PlaceDetail = {
   id: string;

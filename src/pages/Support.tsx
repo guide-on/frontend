@@ -8,6 +8,8 @@ import SearchForm from '../components/support/SearchForm';
 import FilterButtons from '../components/support/FilterButtons';
 import MapView from '../components/support/MapView';
 import FundsList from '../components/support/FundsList';
+import AnnouncementsList from '../components/support/AnnouncementsList';
+import AnnouncementDetailModal from '../components/support/AnnouncementDetailModal';
 import {
   getFundsList,
   getFundDetail,
@@ -15,6 +17,11 @@ import {
   getBookmarkedFunds,
   searchFunds,
 } from '../api/fundApi';
+import {
+  getAnnouncementsList,
+  getAnnouncementDetail,
+} from '../api/announcementApi';
+import type { Announcement } from '../api/announcementApi';
 import {
   getAllSupportCenters,
   getNearestSupportCenters,
@@ -62,6 +69,12 @@ const Support: React.FC = () => {
   // 장소 상세 모달 상태
   const [showModal, setShowModal] = useState(false);
   const [modalPlace, setModalPlace] = useState<PlaceDetail | null>(null);
+
+  // 공고 관련 상태
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementLoading, setAnnouncementLoading] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [showAnnouncementDetail, setShowAnnouncementDetail] = useState(false);
 
   // Refs for filter sheet
   const keywordRef = React.useRef<HTMLDivElement>(null);
@@ -264,6 +277,43 @@ const Support: React.FC = () => {
     }
   };
 
+  const handleAnnouncementsClick = async () => {
+    if (activeMainFilter === 'announcements') {
+      setActiveMainFilter('none');
+    } else {
+      setActiveMainFilter('announcements');
+      await loadAnnouncements();
+    }
+  };
+
+  const loadAnnouncements = async () => {
+    setAnnouncementLoading(true);
+    try {
+      const response = await getAnnouncementsList();
+      if (response.status === 200) {
+        setAnnouncements(response.data.announcements);
+      } else {
+        setAnnouncements([]);
+      }
+    } catch (error) {
+      setAnnouncements([]);
+    } finally {
+      setAnnouncementLoading(false);
+    }
+  };
+
+  const handleAnnouncementDetailClick = async (id: number) => {
+    try {
+      const response = await getAnnouncementDetail(id);
+      if (response.status === 200) {
+        setSelectedAnnouncement(response.data);
+        setShowAnnouncementDetail(true);
+      }
+    } catch (error) {
+      console.error('공고 상세 조회 실패:', error);
+    }
+  };
+
   // 검색 폼 핸들러
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -342,7 +392,7 @@ const Support: React.FC = () => {
   }, [activeMainFilter]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-4 no-scrollbar overflow-y-auto">
+    <div className="min-h-screen flex flex-col items-center py-4 no-scrollbar overflow-y-auto" style={{ backgroundColor: colors.bgSoft }}>
       {/* 검색 폼 */}
       <SearchForm
         search={search}
@@ -358,6 +408,7 @@ const Support: React.FC = () => {
         onMapClick={() => setActiveMainFilter(activeMainFilter === 'map' ? 'none' : 'map')}
         onReceivingClick={handleReceivingFilter}
         onBookmarkClick={handleBookmarkFilter}
+        onAnnouncementsClick={handleAnnouncementsClick}
       />
 
       {/* 필터 시트 */}
@@ -401,6 +452,12 @@ const Support: React.FC = () => {
               }
             }}
           />
+        ) : activeMainFilter === 'announcements' ? (
+          <AnnouncementsList
+            announcements={announcements}
+            loading={announcementLoading}
+            onDetailClick={handleAnnouncementDetailClick}
+          />
         ) : (
           <FundsList
             funds={funds}
@@ -426,6 +483,13 @@ const Support: React.FC = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         place={modalPlace}
+      />
+
+      {/* 공고 상세 모달 */}
+      <AnnouncementDetailModal
+        open={showAnnouncementDetail}
+        onClose={() => setShowAnnouncementDetail(false)}
+        announcement={selectedAnnouncement}
       />
     </div>
   );
