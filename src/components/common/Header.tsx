@@ -21,6 +21,11 @@ const routeTitle = (path: string) => {
 
   // 기본값
   if (path.startsWith('/community')) return '커뮤니티';
+
+  // 시뮬레이션 결과
+  if (path === '/simulation') return '시뮬레이션 내역';
+  if (path.match(/^\/simulation\/\d+/)) return '시뮬레이션 내역';
+
   return '';
 };
 

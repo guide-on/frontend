@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
-import Home from './pages/Home';
+import Home from './home/pages/Home';
 import Guide from './pages/Guide';
 import Support from './pages/Support';
 import Community from './community/index.tsx';
@@ -9,29 +9,20 @@ import MyPage from './pages/MyPage';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import SimulationList from './simulation/pages/SimulationList';
+import SimulationDetail from './simulation/pages/SimulationDetail';
 
 function AppChrome() {
     const { pathname } = useLocation();
-
-    // 검색 입력 화면(/community/search)에서만 헤더 감춤
-    const isSearchScreen =
-        pathname === '/community/search' || pathname === '/community/search/';
-
-    const paddingTop = isSearchScreen ? 0 : 56; // 헤더 높이
-    const paddingBottom = 60;                    // 네브바 높이
+    const isSearchScreen = pathname === '/community/search' || pathname === '/community/search/';
+    const hideHeader = isSearchScreen || pathname === '/';           // 홈에서는 헤더 감춤
+    const paddingTop = hideHeader ? 0 : 56;
+    const paddingBottom = 60;
 
     return (
         <>
-            {!isSearchScreen && <Header />}
-
-            <main
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    paddingTop,
-                    paddingBottom,
-                }}
-            >
+            {!hideHeader && <Header />}
+            <main style={{ flex: 1, overflowY: 'auto', paddingTop, paddingBottom }}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/guide" element={<Guide />} />
@@ -41,9 +32,10 @@ function AppChrome() {
                     <Route path="/auth/login" element={<Login />} />
                     <Route path="/auth/signup" element={<Signup />} />
                     <Route path="/auth/find" element={<FindIdPw />} />
+                    <Route path="/simulation" element={<SimulationList />} />
+                    <Route path="/simulation/:id" element={<SimulationDetail />} />
                 </Routes>
             </main>
-
             <Navbar />
         </>
     );
