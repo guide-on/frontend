@@ -35,13 +35,23 @@ const MyPage: React.FC = () => {
           </div>
           <div className="w-px bg-gray-200" />
           <div className="flex-1 flex flex-col items-center justify-center py-4">
-            <Bookmark className="text-pink-500 mb-1" size={26} />
+            <Bookmark
+              className="mb-1"
+              size={26}
+              fill="#ec4899"
+              color="#ec4899"
+            />
             <div className="text-lg font-bold text-gray-900">1</div>
             <div className="text-xs text-gray-500 mt-1">지원금</div>
           </div>
           <div className="w-px bg-gray-200" />
           <div className="flex-1 flex flex-col items-center justify-center py-4">
-            <Lightbulb className="text-yellow-400 mb-1" size={26} />
+            <Lightbulb
+              className="mb-1"
+              size={26}
+              fill="#facc15"
+              color="#facc15"
+            />
             <div className="text-lg font-bold text-gray-900">3</div>
             <div className="text-xs text-gray-500 mt-1">마케팅 팁</div>
           </div>
