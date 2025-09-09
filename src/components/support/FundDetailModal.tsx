@@ -1,5 +1,6 @@
 import React from 'react';
-import { colors } from '../../styles/colors'; // Import colors
+import { createPortal } from 'react-dom';
+import { colors } from '../../styles/colors';
 
 // Define FundDetail type here for clarity and type safety
 type FundDetail = {
@@ -30,9 +31,9 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({
   fund,
 }) => {
   if (!open || !fund) return null;
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-30 p-4">
-      <div className="bg-white rounded-3xl p-6 w-full max-w-sm relative shadow-xl flex flex-col overflow-hidden" style={{ maxHeight: '80vh' }}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black bg-opacity-30 p-4">
+      <div className="w-full max-w-sm rounded-3xl p-6 relative shadow-xl flex flex-col overflow-hidden" style={{ backgroundColor: colors.bgSoft, maxHeight: '80vh' }}>
         
         <h2 className="font-bold text-2xl mb-4 text-gray-800" style={{ color: colors.navy }}>{fund.name}</h2>
 
@@ -83,7 +84,8 @@ const FundDetailModal: React.FC<FundDetailModalProps> = ({
           닫기
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

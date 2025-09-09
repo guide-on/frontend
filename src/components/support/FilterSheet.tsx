@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { colors } from '../../styles/colors';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
@@ -73,15 +74,15 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
   };
 
   return (
-    showFilter && (
-      <div className="absolute inset-0 z-[60] flex items-end justify-center bg-black bg-opacity-30">
+    showFilter && createPortal(
+      <div className="fixed inset-0 z-[9998] flex items-end justify-center bg-black bg-opacity-30">
         <div
-          className="w-full bg-white pt-4 rounded-t-3xl shadow-xl flex flex-col"
-          style={{ maxHeight: '90vh' }}
+          className="w-full max-w-sm pt-4 rounded-t-3xl shadow-xl flex flex-col mx-4"
+          style={{ maxHeight: '80vh', backgroundColor: colors.bgSoft }}
         >
           <div className="px-4 overflow-y-auto no-scrollbar">
             {/* 탭 영역 */}
-            <div className="sticky top-0 bg-white z-10border-gray-200 flex gap-2 px-2">
+            <div className="sticky top-0 z-10 flex gap-2 px-2" style={{ backgroundColor: colors.bgSoft }}>
               {[
                 { key: 'keyword', label: '키워드' },
                 { key: 'type', label: '사업자구분' },
@@ -91,7 +92,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               ].map((tab) => (
                 <button
                   key={tab.key}
-                  className={`flex-1 py-3 text-[11px] font-semibold -mb-px border-b-2 mx-1 justify-center tracking-wide ${activeTab === tab.key ? '' : 'text-gray-700'}`}
+                  className={`flex-1 py-2 text-[10px] font-medium -mb-px border-b-2 mx-1 justify-center tracking-wide ${activeTab === tab.key ? '' : 'text-gray-700'}`}
                   style={{
                     borderColor:
                       activeTab === tab.key ? colors.navy : 'transparent',
@@ -120,9 +121,9 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               ))}
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold">필터</span>
+              <span className="font-bold text-sm">필터</span>
               <button
-                className="text-sm font-bold text-gray-600"
+                className="text-xs font-bold text-gray-600"
                 onClick={() =>
                   setActiveFilters({
                     keywords: [],
@@ -161,8 +162,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               )}
             </div>
 
-            <div ref={keywordRef} className="mb-6">
-              <div className="font-bold mb-2">키워드</div>
+            <div ref={keywordRef} className="mb-5">
+              <div className="font-bold mb-2 text-sm">키워드</div>
               <div className="flex gap-2 flex-wrap">
                 {[
                   '#창업초기',
@@ -174,7 +175,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
                   <button
                     key={item}
                     onClick={() => handleFilterChange('keywords', item)}
-                    className="px-4 py-2 rounded-full text-xs"
+                    className="px-3 py-1.5 rounded-full text-[11px]"
                     style={{
                       backgroundColor: activeFilters.keywords.includes(item)
                         ? colors.navy
@@ -190,8 +191,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               </div>
             </div>
 
-            <div ref={typeRef} className="mb-6">
-              <div className="font-bold mb-2">사업자구분</div>
+            <div ref={typeRef} className="mb-5">
+              <div className="font-bold mb-2 text-sm">사업자구분</div>
               <div className="flex gap-2 flex-wrap">
                 {[
                   '예비창업자',
@@ -202,7 +203,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
                   <button
                     key={item}
                     onClick={() => handleFilterChange('types', item)}
-                    className="px-4 py-2 rounded-full text-xs"
+                    className="px-3 py-1.5 rounded-full text-[11px]"
                     style={{
                       backgroundColor: activeFilters.types.includes(item)
                         ? colors.navy
@@ -218,14 +219,14 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               </div>
             </div>
 
-            <div ref={purposeRef} className="mb-6">
-              <div className="font-bold mb-2">대출용도</div>
+            <div ref={purposeRef} className="mb-5">
+              <div className="font-bold mb-2 text-sm">대출용도</div>
               <div className="flex gap-2 flex-wrap">
                 {['운전자금', '시설자금'].map((item) => (
                   <button
                     key={item}
                     onClick={() => handleFilterChange('purposes', item)}
-                    className="px-4 py-2 rounded-full text-xs"
+                    className="px-3 py-1.5 rounded-full text-[11px]"
                     style={{
                       backgroundColor: activeFilters.purposes.includes(item)
                         ? colors.navy
@@ -241,14 +242,14 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               </div>
             </div>
 
-            <div ref={rateRef} className="mb-6">
-              <div className="font-bold mb-2">금리구분</div>
+            <div ref={rateRef} className="mb-5">
+              <div className="font-bold mb-2 text-sm">금리구분</div>
               <div className="flex gap-2 flex-wrap">
                 {['변동금리', '고정금리'].map((item) => (
                   <button
                     key={item}
                     onClick={() => handleFilterChange('rates', item)}
-                    className="px-4 py-2 rounded-full text-xs"
+                    className="px-3 py-1.5 rounded-full text-[11px]"
                     style={{
                       backgroundColor: activeFilters.rates.includes(item)
                         ? colors.navy
@@ -264,8 +265,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               </div>
             </div>
 
-            <div ref={limitRef} className="mb-6">
-              <div className="font-bold mb-2">대출한도</div>
+            <div ref={limitRef} className="mb-5">
+              <div className="font-bold mb-2 text-sm">대출한도</div>
               <div className="w-full flex items-center justify-between text-sm font-semibold mb-2">
                 <span>{formatCurrencyLocal(activeFilters.limit[0])}</span>
                 <span>{formatCurrencyLocal(activeFilters.limit[1])}</span>
@@ -285,15 +286,15 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               />
             </div>
           </div>
-          <div className="sticky bottom-0 bg-white p-4 flex justify-between gap-2 shadow-[0_-4px_8px_rgba(0,0,0,0.05)]">
+          <div className="sticky bottom-0 p-4 flex justify-between gap-2 shadow-[0_-4px_8px_rgba(0,0,0,0.05)]" style={{ backgroundColor: colors.bgSoft }}>
             <button
-              className="flex-1 py-3 rounded-lg bg-gray-200 text-sm font-semibold"
+              className="flex-1 py-2.5 rounded-lg bg-gray-200 text-xs font-semibold"
               onClick={() => setShowFilter(false)}
             >
               닫기
             </button>
             <button
-              className="flex-1 py-3 rounded-lg text-white text-sm font-semibold"
+              className="flex-1 py-2.5 rounded-lg text-white text-xs font-semibold"
               style={{ backgroundColor: colors.navy }}
               onClick={() => setShowFilter(false)}
             >
@@ -301,7 +302,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )
   );
 };
