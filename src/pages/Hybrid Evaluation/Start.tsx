@@ -166,6 +166,8 @@ const StartHybridEvaluation = () => {
   const [isAttachHelpModalOpen, setAttachHelpModalOpen] = useState(false);
   const [isConsentModalOpen, setConsentModalOpen] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [isBankConsentOpen, setBankConsentOpen] = useState(false);
+  const [bankConsentChecked, setBankConsentChecked] = useState(false);
   const [isListOpen, setListOpen] = useState(true);
   const [fileNames, setFileNames] = useState<
     Record<CategoryKey, string | undefined>
@@ -687,7 +689,7 @@ const StartHybridEvaluation = () => {
                       <ScoreChip v="-" />
                     </td>
                     <td className="border border-gray-200 p-2" rowSpan={3}>
-                      신용거래 기간은 시간이 경��할수록 긍정적인 요인으로
+                      신용거래 기간은 시간이 경��할수록 긍정적인 요���으로
                       분류됩니다.
                     </td>
                   </tr>
@@ -925,7 +927,7 @@ const StartHybridEvaluation = () => {
               <li>보유 기간: 동의일로부터 3년 또는 관련 법령에 따른 기간.</li>
               <li>제공 받는 자: 신용정보회사 및 제휴 신용평가 기관.</li>
               <li>
-                동의 거부 권리 및 불이익: 동의하지 않을 경�� 신용점수 조회가
+                동의 거부 권리 및 불이익: 동의하지 않을 경우 신용점수 조회가
                 제한됩니다.
               </li>
             </ul>
@@ -957,6 +959,60 @@ const StartHybridEvaluation = () => {
               style={{ backgroundColor: colors.blue }}
             >
               동의하고 조회 진행
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isBankConsentOpen}
+        onClose={() => setBankConsentOpen(false)}
+        title="계좌연결 및 조회 동의"
+      >
+        <div className="space-y-3 text-sm text-gray-700">
+          <p>
+            현금흐름 분석을 위해 사업자(또는 대표자) 명의의 은행 계좌를 연결하고
+            최근 거래내역 조회에 동의해 주세요.
+          </p>
+          <div className="rounded-md border border-gray-200 p-3">
+            <div className="text-xs font-bold mb-1">동의 내용 요약</div>
+            <ul className="list-disc pl-4 space-y-1">
+              <li>
+                조회 범위: 최근 거래내역, 잔액, 입·출금 내역 등 분석에 필요한
+                항목.
+              </li>
+              <li>이용 목적: 현금흐름 건전성 평가 및 결과 제공.</li>
+              <li>보유 기간: 동의일로부터 3년 또는 관련 법령에 따른 기간.</li>
+              <li>제공 받는 자: 연결 대행사 및 금융API 제공기관.</li>
+            </ul>
+          </div>
+          <label className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={bankConsentChecked}
+              onChange={(e) => setBankConsentChecked(e.target.checked)}
+            />
+            <span>위 내용을 확인하고 계좌연결 및 조회에 동의합니다.</span>
+          </label>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => setBankConsentOpen(false)}
+              className="flex-1 rounded-md border border-gray-300 py-2 text-gray-700"
+            >
+              취소
+            </button>
+            <button
+              disabled={!bankConsentChecked}
+              onClick={() => {
+                setBankConsentOpen(false);
+                setBankConsentChecked(false);
+                setCompleted((prev) => ({ ...prev, cashflow: true }));
+              }}
+              className="flex-1 rounded-md py-2 text-white disabled:opacity-50"
+              style={{ backgroundColor: colors.blue }}
+            >
+              동의하고 계좌 연결 진행
             </button>
           </div>
         </div>
