@@ -2,9 +2,19 @@ import React, { useState } from 'react';
 import { FaCog } from 'react-icons/fa';
 import { Bookmark, Lightbulb, Gauge } from 'lucide-react';
 import { MdEdit, MdCheckCircle } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const MyPage: React.FC = () => {
   const [tab, setTab] = useState<'scrap' | 'comment'>('scrap');
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth/login');
+  };
+
   return (
     <div className="min-h-screen bg-white-50 flex flex-col pb-8">
       {/* 상단 헤더 */}
@@ -71,6 +81,18 @@ const MyPage: React.FC = () => {
               </li>
               <li className="py-4 px-2 text-gray-800 font-medium text-base cursor-pointer hover:bg-gray-50 transition">
                 내가 한 좋아요
+              </li>
+            </ul>
+          </div>
+
+          <div className="py-2">
+            <div className="text-lg font-bold text-gray-900 mb-4">계정</div>
+            <ul className="bg-white">
+              <li
+                className="py-4 px-2 text-red-600 font-medium text-base cursor-pointer hover:bg-gray-50 transition"
+                onClick={handleLogout}
+              >
+                로그아웃
               </li>
             </ul>
           </div>
