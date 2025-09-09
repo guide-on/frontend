@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import FindId from '@/components/auth/FindId';
 import FindPassword from '@/components/auth/FindPw';
+import { colors } from '@/styles/colors';
 
 type TabKey = 'findId' | 'findPassword';
 
@@ -12,7 +13,7 @@ const FindAccount: React.FC = () => {
   const goBack = () => navigate('/auth/login');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-4 px-4">
+    <div className="min-h-screen py-4 px-4">
       <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 400 }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
@@ -74,7 +75,7 @@ const FindAccount: React.FC = () => {
               계정을 기억하셨나요?
               <Link
                 to="/auth/login"
-                className="text-btn font-semibold transition-colors"
+                className="text-btn font-semibold transition-colors hover:opacity-90"
               >
                 {' '}
                 로그인
@@ -87,9 +88,8 @@ const FindAccount: React.FC = () => {
 
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
-        .text-color, .text-btn { color: #63b6ae; }
-        .text-btn:hover { color: #4da99b; }
-        .tab-active { color: #63b6ae; border-bottom: 2px solid #63b6ae; }
+        .text-btn { color: ${colors.navy}; }
+        .tab-active { color: ${colors.navy}; border-bottom: 2px solid ${colors.navy}; }
       `}</style>
     </div>
   );

@@ -1,5 +1,6 @@
 // src/components/auth/TermsAgreement.tsx
 import React, { useCallback, useMemo, useState } from 'react';
+import { colors } from '@/styles/colors';
 
 export type Agreements = {
   terms: boolean;
@@ -138,7 +139,7 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
       {showTermsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h3 className="text-lg font-bold text-slate-800">
                 서비스 이용약관
               </h3>
@@ -168,7 +169,7 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
                 <div>
                   <h4 className="font-bold mb-2">제1조 (목적)</h4>
                   <p>
-                    본 약관은 뱅크랩 (이하 "회사")이 제공하는 금융 분석·비교
+                    본 약관은 가이드온 (이하 "회사")이 제공하는 소상공인
                     서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의
                     권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로
                     합니다.
@@ -279,7 +280,7 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
       {showPrivacyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h3 className="text-lg font-bold text-slate-800">
                 개인정보 수집·이용 동의서
               </h3>
@@ -364,9 +365,8 @@ const TermsAgreement: React.FC<Props> = ({ value, onChange }) => {
 
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
-        .next-button { background: var(--point-color); border: none; touch-action: manipulation; }
-        .next-button:hover { background: #63b6ae; }
-        .next-button:disabled { background: var(--logo-color); }
+        .next-button { background: ${colors.navy}; border: none; touch-action: manipulation; }
+        .next-button:hover { opacity: 0.9; }
         input[type='checkbox']:checked { background-color: #2563eb; border-color: #2563eb; }
         .overflow-y-auto::-webkit-scrollbar { width: 6px; }
         .overflow-y-auto::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
