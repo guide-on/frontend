@@ -16,6 +16,12 @@ import FindIdPw from '@/pages/auth/FindIdPw';
 // 시뮬레이션
 import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
+import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
+import PolicyListPage from '@/guide/pages/PolicyListPage';
+import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
+import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
+import MydataConsentPage from '@/guide/pages/MydataConsentPage';
+import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 
 // 가이드(서류 등록)
 import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
