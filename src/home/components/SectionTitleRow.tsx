@@ -1,5 +1,3 @@
-import { colors } from '@/styles/colors';
-
 export default function SectionTitleRow({
                                             title,
                                             actionLabel,
@@ -10,16 +8,11 @@ export default function SectionTitleRow({
     onAction?: () => void;
 }) {
     return (
-        <div className="mb-2 flex items-center justify-between">
-            <div className="text-sm font-semibold" style={{ color: colors.navy }}>
-                {title}
-            </div>
+        // 오른쪽 여백 조금 주어 너무 끝에 붙지 않도록
+        <div className="mb-2 flex items-center justify-between pr-2">
+            <div className="text-sm font-semibold text-gray-900">{title}</div>
             {actionLabel && onAction && (
-                <button
-                    className="text-xs px-2 py-1 rounded-full"
-                    onClick={onAction}
-                    style={{ background: colors.paleBlue, color: colors.navy }}
-                >
+                <button className="text-xs text-gray-500 hover:text-gray-700" onClick={onAction}>
                     {actionLabel}
                 </button>
             )}

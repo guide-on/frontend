@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
-import { getPolicies, type PolicyItem, createApplicationSession } from '@/api/documentApi';
+import { getPolicies, type PolicyItem, createApplicationSession, createRequiredDocuments } from '@/api/documentApi';
 
 export function PolicyListPage() {
   const { businessId = '' } = useParams();
@@ -33,7 +33,7 @@ export function PolicyListPage() {
         if (mounted) {
           // 백엔드 응답 구조에 맞게 처리
           if (data && typeof data === 'object' && 'eligiblePolicies' in data) {
-            setItems(data.eligiblePolicies || []);
+            setItems((data as any).eligiblePolicies || []);
           } else {
             setItems(Array.isArray(data) ? data : []);
           }
@@ -85,8 +85,19 @@ export function PolicyListPage() {
 
       if (data.sessionId) {
         console.log(`[1] 세션 생성 직후 ID: ${data.sessionId}`);
-        // 세션 생성 성공 -> 마이데이터 연동 페이지로 이동
-        nav(`/guide/mydata/${data.sessionId}`);
+        
+        // 세션 생성 직후 바로 서류 생성 API 호출
+        try {
+          console.log(`🔄 API 요청: GET /api/document/required/${data.sessionId} (서류 생성)`);
+          await createRequiredDocuments(data.sessionId);
+          console.log(`✅ API 응답: GET /api/document/required/${data.sessionId} SUCCESS (서류 생성)`);
+        } catch (createError: any) {
+          console.error(`❌ 서류 생성 실패:`, createError.message);
+          // 서류 생성에 실패해도 진행 (상태 조회로 복구 가능)
+        }
+        
+        // 서류 목록 페이지로 이동 (마이데이터는 서류 페이지에서 자동 모달로)
+        nav(`/guide/documents/${data.sessionId}`);
       } else {
         alert('세션 생성에 실패했습니다. 다시 시도해주세요.');
       }
@@ -135,7 +146,7 @@ export function PolicyListPage() {
               </div>
               <button
                 type="button"
-                onClick={() => onApply(p.policyId || p.id)}
+                onClick={() => onApply(p.policyId || p.id || '')}
                 disabled={applying === (p.policyId || p.id)}
                 className="mt-3 w-full py-2.5 rounded-lg font-semibold text-white"
                 style={{ backgroundColor: applying === (p.policyId || p.id) ? '#9ca3af' : colors.navy }}
