@@ -54,7 +54,7 @@ export const documentApi = {
     return data;
   },
 
-  async getRequiredDocuments(sessionId: string | number): Promise<{
+  async createRequiredDocuments(sessionId: string | number): Promise<{
     success: boolean;
     sessionId: string | number;
     policyName: string;
@@ -68,21 +68,25 @@ export const documentApi = {
   async getDocumentStatus(sessionId: string | number): Promise<{
     success: boolean;
     sessionId: string | number;
+    policyName: string;
     totalRequirements: number;
     completedRequirements: number;
     progressPercentage: number;
-    groupStatus: Array<{
+    documentGroups: Array<{
       groupKey: string;
+      label: string;
       minSelect: number;
+      description?: string;
       submitted: number;
       isCompleted: boolean;
       documents: Array<{
         id: number;
-        documentName: string;
+        name: string;
+        mydataEligible: boolean;
+        status: string;
         uploadStatus: string;
         isSelected: boolean;
         isMydataRetrieved: boolean;
-        isMydataAvailable: boolean;
       }>;
     }>;
   }> {
@@ -182,7 +186,7 @@ export type DocumentGroup = {
   documents: DocumentItem[];
 };
 
-export async function getRequiredDocuments(
+export async function createRequiredDocuments(
   sessionId: string | number,
 ): Promise<{
   success: boolean;
@@ -191,27 +195,31 @@ export async function getRequiredDocuments(
   documentGroups: DocumentGroup[];
   totalGroups: number;
 }> {
-  return documentApi.getRequiredDocuments(sessionId);
+  return documentApi.createRequiredDocuments(sessionId);
 }
 
 export async function getDocumentStatus(sessionId: string | number): Promise<{
   success: boolean;
   sessionId: string | number;
+  policyName: string;
   totalRequirements: number;
   completedRequirements: number;
   progressPercentage: number;
-  groupStatus: Array<{
+  documentGroups: Array<{
     groupKey: string;
+    label: string;
     minSelect: number;
+    description?: string;
     submitted: number;
     isCompleted: boolean;
     documents: Array<{
       id: number;
-      documentName: string;
+      name: string;
+      mydataEligible: boolean;
+      status: string;
       uploadStatus: string;
       isSelected: boolean;
       isMydataRetrieved: boolean;
-      isMydataAvailable: boolean;
     }>;
   }>;
 }> {

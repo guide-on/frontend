@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
-import { getRequiredDocuments, getDocumentStatus, uploadDocument, type DocumentGroup, type DocumentItem } from '@/api/documentApi';
+import { getDocumentStatus, uploadDocument, type DocumentGroup, type DocumentItem } from '@/api/documentApi';
 
 export function DocumentUploadPage() {
   const { sessionId = '', groupKey = '' } = useParams();
@@ -38,20 +38,20 @@ export function DocumentUploadPage() {
         
         if (!mounted) return;
         
-        const groupStatus = data.groupStatus || [];
-        const foundGroup = groupStatus.find(g => g.groupKey === groupKey);
+        const documentGroups = data.documentGroups || [];
+        const foundGroup = documentGroups.find(g => g.groupKey === groupKey);
         
         if (foundGroup) {
           const convertedGroup: DocumentGroup = {
             groupKey: foundGroup.groupKey,
-            label: `서류 그룹 ${foundGroup.groupKey}`,
+            label: foundGroup.label,
             minSelect: foundGroup.minSelect,
-            description: undefined,
+            description: foundGroup.description,
             documents: foundGroup.documents.map(doc => ({
               documentId: doc.id,
-              name: doc.documentName,
-              mydataEligible: doc.isMydataAvailable,
-              status: (doc.uploadStatus === 'COMPLETED' || doc.uploadStatus === 'UPLOADED') ? 'completed' : 'pending'
+              name: doc.name,
+              mydataEligible: doc.mydataEligible,
+              status: (doc.uploadStatus === 'COMPLETED' || doc.uploadStatus === 'UPLOADED') ? 'completed' as const : 'pending' as const
             }))
           };
           
@@ -106,13 +106,13 @@ export function DocumentUploadPage() {
         // 서버 상태 새로고침으로 정확한 진행도 동기화
         try {
           const status = await getDocumentStatus(sessionId);
-          const foundGroup = status.groupStatus?.find(g => g.groupKey === groupKey);
+          const foundGroup = status.documentGroups?.find(g => g.groupKey === groupKey);
           if (foundGroup) {
-            const refreshedDocs = foundGroup.documents.map((doc: any) => ({
+            const refreshedDocs: DocumentItem[] = foundGroup.documents.map((doc: any) => ({
               documentId: doc.id,
-              name: doc.documentName,
-              mydataEligible: doc.isMydataAvailable,
-              status: (doc.uploadStatus === 'COMPLETED' || doc.uploadStatus === 'UPLOADED') ? 'completed' : 'pending' as const,
+              name: doc.name,
+              mydataEligible: doc.mydataEligible,
+              status: (doc.uploadStatus === 'COMPLETED' || doc.uploadStatus === 'UPLOADED') ? 'completed' : 'pending',
             }));
             setDocuments(refreshedDocs);
           }

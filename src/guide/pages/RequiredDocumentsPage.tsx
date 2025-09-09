@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
-import { getRequiredDocuments, getDocumentStatus, type DocumentGroup } from '@/api/documentApi';
+import { getDocumentStatus, type DocumentGroup } from '@/api/documentApi';
 
 export function RequiredDocumentsPage() {
   const { sessionId = '' } = useParams();
@@ -17,56 +17,65 @@ export function RequiredDocumentsPage() {
   const [totalRequirements, setTotalRequirements] = useState<number | null>(null);
   const [completedRequirements, setCompletedRequirements] = useState<number | null>(null);
 
+  // Mydata redirect state
+  const [hasMydataChecked, setHasMydataChecked] = useState(false);
+
   const loadDocuments = useCallback(async () => {
     if (!sessionId) return;
     setLoading(true);
     setError(null);
     try {
-      // 1. 서류 목록 생성/조회 API를 먼저 호출합니다.
-      console.log(`🔄 API 요청 (1/2): GET /api/document/required/${sessionId}`);
-      const requiredDocsData = await getRequiredDocuments(sessionId);
-      console.log(`✅ API 응답 (1/2): GET /api/document/required/${sessionId}`, requiredDocsData.success !== false ? 'SUCCESS' : 'FAILED');
-
-      // 2. 최신 상태 조회 API를 그 다음에 호출합니다.
-      console.log(`🔄 API 요청 (2/2): GET /api/document/status/${sessionId}`);
+      // 서류 상태 조회 API 호출 (이제 이 API가 서류 목록과 상태를 모두 반환)
+      console.log(`🔄 API 요청: GET /api/document/status/${sessionId}`);
       const statusData = await getDocumentStatus(sessionId);
-      console.log(`✅ API 응답 (2/2): GET /api/document/status/${sessionId}`, statusData.success !== false ? 'SUCCESS' : 'FAILED');
+      console.log(`✅ API 응답: GET /api/document/status/${sessionId}`, statusData.success !== false ? 'SUCCESS' : 'FAILED');
 
-      // 상태 데이터를 groupKey 기준으로 Map으로 변환하여 조회 성능을 높입니다.
-      const statusMap = new Map(statusData.groupStatus.map(g => [g.groupKey, g]));
+      // documentGroups를 DocumentGroup 형태로 변환
+      const documentGroups = statusData.documentGroups.map(group => ({
+        groupKey: group.groupKey,
+        label: group.label,
+        minSelect: group.minSelect,
+        description: group.description,
+        documents: group.documents.map(doc => ({
+          documentId: doc.id,
+          name: doc.name,
+          mydataEligible: doc.mydataEligible,
+          status: (doc.uploadStatus === 'COMPLETED' || doc.uploadStatus === 'UPLOADED') ? 'completed' as const : 'pending' as const,
+        })),
+        isCompleted: group.isCompleted,
+        completedCount: group.submitted,
+      }));
 
-      // 기본 서류 목록 데이터에 최신 상태 데이터를 병합합니다.
-      const mergedGroups = (requiredDocsData.documentGroups || []).map((baseGroup: any) => {
-        const statusInfo = statusMap.get(baseGroup.groupKey);
-
-        if (!statusInfo) {
-          return baseGroup; // 상태 정보가 없으면 기본 정보만 반환
-        }
-
-        // 개별 문서의 상태도 최신 정보로 업데이트합니다.
-        const mergedDocuments = baseGroup.documents.map((doc: any) => {
-          const docStatus = statusInfo.documents.find(d => d.id === doc.documentId);
-          return {
-            ...doc,
-            status: (docStatus?.uploadStatus === 'COMPLETED' || docStatus?.uploadStatus === 'UPLOADED') ? 'completed' : 'pending',
-          };
-        });
-
-        return {
-          ...baseGroup,
-          documents: mergedDocuments,
-          isCompleted: !!statusInfo.isCompleted,
-          completedCount: typeof statusInfo.submitted === 'number' ? statusInfo.submitted : undefined,
-        };
-      });
-
-      setDocumentGroups(mergedGroups);
-      setPolicyName(requiredDocsData.policyName || '');
+      setDocumentGroups(documentGroups);
+      setPolicyName(statusData.policyName || '');
 
       // 세션 레벨 진행도 반영
       if (typeof statusData.progressPercentage === 'number') setProgressPercentage(Math.round(statusData.progressPercentage));
       if (typeof statusData.totalRequirements === 'number') setTotalRequirements(statusData.totalRequirements);
       if (typeof statusData.completedRequirements === 'number') setCompletedRequirements(statusData.completedRequirements);
+
+      // 최초 로드 시 마이데이터 연동 체크 및 리다이렉트
+      if (!hasMydataChecked && documentGroups.length > 0) {
+        setHasMydataChecked(true);
+        
+        const hasMydataDocuments = documentGroups.some(group => 
+          group.documents.some(doc => doc.mydataEligible)
+        );
+        
+        if (hasMydataDocuments) {
+          // 마이데이터 대상 서류가 있는지 체크 (1개라도 연동되어 있으면 연동 완료로 간주)
+          const hasSyncedDocuments = documentGroups.some(group =>
+            group.documents.some(doc => doc.mydataEligible && doc.status === 'completed')
+          );
+          
+          if (!hasSyncedDocuments) {
+            // 연동되지 않은 마이데이터 서류가 있으면 마이데이터 연동 페이지로 이동
+            console.log('🔀 마이데이터 연동 필요 -> MydataConsentPage로 리다이렉트');
+            nav(`/guide/mydata/${sessionId}`);
+            return;
+          }
+        }
+      }
 
     } catch (e: any) {
       console.error(`❌ API 실패:`, e.message);
@@ -74,7 +83,7 @@ export function RequiredDocumentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, hasMydataChecked, nav]);
 
   // 최초 진입 및 라우트 키 변경(뒤로가기/앞으로가기 포함) 시 갱신
   useEffect(() => {
@@ -128,6 +137,7 @@ export function RequiredDocumentsPage() {
 
   const onBack = () => nav(-1);
   const onGroupClick = (group: DocumentGroup) => nav(`/guide/upload/${sessionId}/${group.groupKey}`);
+
 
   return (
     <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4">
