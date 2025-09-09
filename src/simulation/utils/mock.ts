@@ -1,0 +1,110 @@
+import type { SimulationDetail, SimulationListItem } from '../types';
+
+export const MOCK_LIST: SimulationListItem[] = [
+    {
+        id: 101,
+        title: '2024.10.25 시뮬레이션',
+        startedAt: '2024-10-25T10:00:00Z',
+        expectedProbability: 85,
+        startProbability: 50,
+        progressPct: 100,
+        status: 'COMPLETED',
+        tags: ['#신용등급보완', '#매출증대'],
+    },
+    {
+        id: 95,
+        title: '2024.10.20 시뮬레이션',
+        startedAt: '2024-10-20T11:30:00Z',
+        expectedProbability: 70,
+        startProbability: 40,
+        progressPct: 75,
+        status: 'IN_PROGRESS',
+        tags: ['#서류보완', '#사업계획서'],
+    },
+    {
+        id: 77,
+        title: '2024.10.01 시뮬레이션',
+        startedAt: '2024-10-01T09:10:00Z',
+        expectedProbability: 0,
+        startProbability: 0,
+        progressPct: 0,
+        status: 'FAILED',
+        tags: ['#검토중단'],
+    },
+];
+
+export const MOCK_DETAIL: Record<number, SimulationDetail> = {
+    101: {
+        id: 101,
+        title: '2024.10.25 시뮬레이션',
+        status: 'COMPLETED',
+        startedAt: '2024-10-25T10:00:00Z',
+        completedAt: '2024-10-25T10:15:00Z',
+        startProbability: 50,
+        currentProbability: 78,
+        expectedProbability: 85,
+        steps: [
+            { id: 1, stepCode: 'DOCUMENT_CHECK', status: 'COMPLETED', score: 80, grade: 'B', notes: '필수 서류 충족' },
+            { id: 2, stepCode: 'CREDIT_CHECK', status: 'COMPLETED', score: 90, grade: 'A', notes: '연체 이력 없음' },
+            { id: 3, stepCode: 'BUSINESS_PLAN', status: 'COMPLETED', score: 75, grade: 'B', notes: '매출 추정 보수적' },
+            { id: 4, stepCode: 'FINAL_REVIEW', status: 'COMPLETED', score: 0, grade: null, notes: '자동 평가 완료' },
+        ],
+        metrics: [
+            { id: 11, metricCode: 'CREDIT_SCORE',           metricName: '신용등급',       category: 'STRENGTH', value: 820,  score: 90 },
+            { id: 12, metricCode: 'DEBT_RATIO',             metricName: '부채비율',       category: 'NEUTRAL',  value: 42.5, score: 70 },
+            { id: 13, metricCode: 'CASHFLOW_STABILITY',     metricName: '현금흐름 안정성', category: 'NEUTRAL',  value: 67.2, score: 68 },
+            { id: 14, metricCode: 'DOCUMENT_COMPLETENESS',  metricName: '서류완성도',     category: 'WEAKNESS', value: 75.0, score: 60 },
+        ],
+        suggestions: [
+            {
+                id: 21,
+                targetMetricCode: 'DOCUMENT_COMPLETENESS',
+                targetMetricName: '서류완성도',
+                currentValue: 75,
+                suggestedValue: 90,
+                expectedProbabilityDelta: 15,
+                rationale: '필수 서류 누락 항목 보완 시 확률이 크게 상승합니다.',
+            },
+            {
+                id: 22,
+                targetMetricCode: 'DEBT_RATIO',
+                targetMetricName: '부채비율',
+                currentValue: 42.5,
+                suggestedValue: 35,
+                expectedProbabilityDelta: 6,
+                rationale: '단기부채 일부 상환 시 리스크가 낮아집니다.',
+            },
+        ],
+    },
+    95: {
+        id: 95,
+        title: '2024.10.20 시뮬레이션',
+        status: 'IN_PROGRESS',
+        startedAt: '2024-10-20T11:30:00Z',
+        completedAt: null,
+        startProbability: 40,
+        currentProbability: 62,
+        expectedProbability: 70,
+        steps: [
+            { id: 1, stepCode: 'DOCUMENT_CHECK', status: 'COMPLETED', score: 70, grade: 'B', notes: '사업자등록증 보완 필요' },
+            { id: 2, stepCode: 'CREDIT_CHECK', status: 'COMPLETED', score: 78, grade: 'B', notes: '카드연체 1건(과거) 확인' },
+            { id: 3, stepCode: 'BUSINESS_PLAN', status: 'IN_PROGRESS', score: null, grade: null, notes: '추가자료 검토중' },
+            { id: 4, stepCode: 'FINAL_REVIEW', status: 'PENDING', score: null, grade: null, notes: null },
+        ],
+        metrics: [
+            { id: 11, metricCode: 'CREDIT_SCORE',           metricName: '신용등급',       category: 'NEUTRAL',  value: 765, score: 78 },
+            { id: 14, metricCode: 'DOCUMENT_COMPLETENESS',  metricName: '서류완성도',     category: 'WEAKNESS', value: 68,  score: 58 },
+        ],
+        suggestions: [
+            {
+                id: 33,
+                targetMetricCode: 'DOCUMENT_COMPLETENESS',
+                targetMetricName: '서류완성도',
+                currentValue: 68,
+                suggestedValue: 85,
+                expectedProbabilityDelta: 10,
+                rationale: '매출증빙 자료 추가 제출 권장.',
+            },
+        ],
+    },
+};
