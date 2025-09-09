@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import {
   FaBars,
@@ -10,6 +10,7 @@ import {
 import { colors } from '../../styles/colors';
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
+import { useNavigate } from 'react-router-dom';
 import {
   creditEvaluationApi,
   type CreditEvaluationCreateRequest,
@@ -193,6 +194,7 @@ const UploadCard = ({
 
 const StartHybridEvaluation = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<CategoryKey>('sales');
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [isAttachHelpModalOpen, setAttachHelpModalOpen] = useState(false);
@@ -201,22 +203,46 @@ const StartHybridEvaluation = () => {
   const [isBankConsentOpen, setBankConsentOpen] = useState(false);
   const [bankConsentChecked, setBankConsentChecked] = useState(false);
   const [isListOpen, setListOpen] = useState(true);
-  const [fileNames, setFileNames] = useState<
-    Record<CategoryKey, string | undefined>
-  >({
+  const defaultFileNames: Record<CategoryKey, string | undefined> = {
     sales: undefined,
     cashflow: undefined,
     esg: undefined,
     ceo: undefined,
+  };
+  const [fileNames, setFileNames] = useState<Record<CategoryKey, string | undefined>>(() => {
+    try {
+      const raw = localStorage.getItem('hybridStart.files');
+      if (raw) return { ...defaultFileNames, ...JSON.parse(raw) };
+    } catch {}
+    return defaultFileNames;
   });
-  const [completed, setCompleted] = useState<Record<CategoryKey, boolean>>({
+  const defaultCompleted: Record<CategoryKey, boolean> = {
     sales: false,
     cashflow: false,
     esg: false,
     ceo: false,
+  };
+  const [completed, setCompleted] = useState<Record<CategoryKey, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem('hybridStart.completed');
+      if (raw) return { ...defaultCompleted, ...JSON.parse(raw) };
+    } catch {}
+    return defaultCompleted;
   });
 
   const content = useMemo(() => CATEGORY_CONTENT[selected], [selected]);
+
+  // persist selection states
+  useEffect(() => {
+    try {
+      localStorage.setItem('hybridStart.completed', JSON.stringify(completed));
+    } catch {}
+  }, [completed]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('hybridStart.files', JSON.stringify(fileNames));
+    } catch {}
+  }, [fileNames]);
 
   const [isSubmitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -499,7 +525,7 @@ const StartHybridEvaluation = () => {
             <p className="text-sm text-gray-600">{content.desc}</p>
 
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900">평가 항��</span>
+              <span className="font-semibold text-gray-900">평가 항목</span>
               <button
                 aria-label="도움말"
                 onClick={() => setHelpModalOpen(true)}
@@ -567,8 +593,14 @@ const StartHybridEvaluation = () => {
                 <UploadCard
                   fileName={fileNames[selected]}
                   onPdfPicked={(f) => {
-                    setFileNames((prev) => ({ ...prev, [selected]: f.name }));
-                    setCompleted((prev) => ({ ...prev, [selected]: true }));
+                    const nextFiles = { ...fileNames, [selected]: f.name };
+                    const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
+                    setFileNames(nextFiles);
+                    setCompleted(nextCompleted);
+                    try {
+                      localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
+                      localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+                    } catch {}
                   }}
                 />
               </>
@@ -840,9 +872,9 @@ const StartHybridEvaluation = () => {
                       <ScoreChip v="--" />
                     </td>
                     <td className="border border-gray-200 p-2" rowSpan={8}>
-                      보증 및 대출의 발생은 상환부담에 따른 신용위험이 있는
+                      보증 및 대출의 발��은 상환부담에 따른 신용위험이 있는
                       것으로 판단되어 평가상 영향력을 행사하며, 반대로 상환
-                      시에는 신용위���이 ���소된 것으로 판단되어 신용평점에
+                      시에는 신용위���이 감소된 것으로 판단되어 신용평점에
                       긍정적인 영향을 주게 됩니다.
                     </td>
                   </tr>
@@ -984,7 +1016,7 @@ const StartHybridEvaluation = () => {
                     </td>
                     <td className="border border-gray-200 p-2" rowSpan={5}>
                       연체없이 사용하는 신용카드 사용은 긍정적인 요인이며,
-                      지속/습��적인 할부 및 현금서비스의 과다 사용은 부정적인
+                      지속/습관적인 할부 및 현금서비스의 과다 사용은 부정적인
                       영향을 미칩니다.
                     </td>
                   </tr>
@@ -1058,7 +1090,7 @@ const StartHybridEvaluation = () => {
                   </tr>
                   <tr className="odd:bg-white even:bg-gray-50/60">
                     <td className="border border-gray-200 p-2">
-                      비금융 성실납���실적
+                      비금융 성실납부실적
                     </td>
                     <td className="border border-gray-200 p-2 text-center">
                       <ScoreChip v="+" />
@@ -1148,7 +1180,7 @@ const StartHybridEvaluation = () => {
               <li>
                 본 서비스는 신용점수 조회 및 신용평가 보조 기능을 제공합니다.
               </li>
-              <li>부정 사용 방지를 위해 본인인증이 필요��� 수 있습니다.</li>
+              <li>부정 사용 방지를 위해 본인인증이 필요����� 수 있습니다.</li>
               <li>
                 약관은 관련 법령 개정 또는 서비스 정책에 따라 변경될 수
                 있습니다.
@@ -1214,7 +1246,7 @@ const StartHybridEvaluation = () => {
         <div className="space-y-3 text-sm text-gray-700">
           <p>
             현금흐름 분석을 위해 사업자(또는 대표자) 명의의 은행 계좌를 연결하고
-            최근 거래내역 조회��� 동의해 주세요.
+            최근 거래내역 조회����� 동의해 주세요.
           </p>
           <div className="rounded-md border border-gray-200 p-3">
             <div className="text-xs font-bold mb-1">동의 내용 요약</div>
@@ -1249,7 +1281,12 @@ const StartHybridEvaluation = () => {
               onClick={() => {
                 setBankConsentOpen(false);
                 setBankConsentChecked(false);
-                setCompleted((prev) => ({ ...prev, cashflow: true }));
+                const nextCompleted = { ...completed, cashflow: true } as Record<CategoryKey, boolean>;
+                setCompleted(nextCompleted);
+                try {
+                  localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+                } catch {}
+                navigate('/bank-connect');
               }}
               className="flex-1 rounded-md py-2 text-white disabled:opacity-50 bg-blue hover:bg-navy transition"
             >
