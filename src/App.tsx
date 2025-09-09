@@ -1,3 +1,4 @@
+// src/App.tsx
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -8,36 +9,66 @@ import SplashScreen from './components/common/SplashScreen';
 
 // 페이지 컴포넌트
 import Home from './home/pages/Home';
-import Guide from './pages/Guide';
 import Support from './pages/Support';
 import MyPage from './pages/MyPage';
 import Community from './community/index.tsx';
 
-// 인증 관련 페이지
+// 인증
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import Onboarding from '@/pages/auth/Onboarding';
 
-// 하이브리드 평가 페이지
-import HybridEvaluation from './pages/Hybrid Evaluation';
-import StartHybridEvaluation from './pages/Hybrid Evaluation/Start';
-
-// 시뮬레이션 페이지
+// 시뮬레이션
 import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
 
+// 가이드(서류 등록)
+import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
+import PolicyListPage from '@/guide/pages/PolicyListPage';
+import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
+import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
+import MydataConsentPage from '@/guide/pages/MydataConsentPage';
+import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
+
+// 하이브리드 평가
+import HybridEvaluation from './pages/Hybrid Evaluation';
+import StartHybridEvaluation from './pages/Hybrid Evaluation/Start.tsx'
+
+/**
+ * 라우팅에 따라 Header, Navbar 및 메인 콘텐츠의 패딩/애니메이션을 관리하는 컴포넌트
+ */
 function AppChrome() {
-    const location = useLocation();
+    const { pathname, key } = useLocation();
 
-    // 헤더/네브바 표시 정책
-    const hideHeaderPaths = ['/', '/auth/login', '/auth/signup', '/auth/find', '/hybrid-evaluation/start'];
-    const hideNavbarPaths = ['/auth/login', '/auth/signup', '/auth/find', '/hybrid-evaluation/start', `/simulation/${location.pathname.split('/')[2]}`];
+    // === Header 숨김 조건 ===
+    const hideHeaderExact = new Set<string>([
+        '/', // 홈
+        '/community/search',
+        '/community/search/',
+        '/auth/login',
+        '/auth/signup',
+        '/auth/find',
+        '/hybrid-evaluation/start',
+    ]);
 
-    const isHeaderHidden = hideHeaderPaths.includes(location.pathname);
-    const isNavbarHidden = hideNavbarPaths.includes(location.pathname);
+    // === Navbar 숨김 조건 ===
+    const hideNavbarExact = new Set<string>([
+        '/auth/login',
+        '/auth/signup',
+        '/auth/find',
+        '/hybrid-evaluation/start',
+    ]);
+    const hideNavbarPrefixes = ['/simulation/'];
 
-    const paddingTop = isHeaderHidden ? '0' : '56px';
-    const paddingBottom = isNavbarHidden ? '0' : '80px';
+    const isHeaderHidden = hideHeaderExact.has(pathname);
+    const isNavbarHidden =
+        hideNavbarExact.has(pathname) ||
+        hideNavbarPrefixes.some((p) => pathname.startsWith(p));
+
+    // Header / Navbar 유무에 따른 main 패딩
+    const paddingTop = isHeaderHidden ? 0 : 56; // px
+    const paddingBottom = isNavbarHidden ? 0 : 80; // px
 
     return (
         <>
@@ -61,24 +92,45 @@ function AppChrome() {
                     overflowY: 'auto',
                     paddingTop,
                     paddingBottom,
-                    minHeight: 0, // flex 자식 스크롤 활성화
+                    minHeight: 0,
                 }}
             >
-                {/* location.key를 key로 사용해서 화면 전환 시 리마운트 → 진입 애니메이션 */}
-                <div key={location.key} className="route-animate" style={{ animation: 'routeFadeSlideIn 240ms ease-out both' }}>
-                    <Routes location={location}>
+                {/* location.key를 key로 사용해서 화면 전환 시 진입 애니메이션 */}
+                <div
+                    key={key}
+                    className="route-animate"
+                    style={{ animation: 'routeFadeSlideIn 240ms ease-out both' }}
+                >
+                    <Routes>
+                        {/* 메인 */}
                         <Route path="/" element={<Home />} />
-                        <Route path="/guide" element={<Guide />} />
+
+                        {/* 가이드(서류 등록) */}
+                        <Route path="/guide" element={<DocumentSurveyPage />} />
+                        <Route path="/guide/policy/:businessId" element={<PolicyListPage />} />
+                        <Route path="/guide/documents/:sessionId" element={<RequiredDocumentsPage />} />
+                        <Route path="/guide/mydata/:sessionId" element={<MydataConsentPage />} />
+                        <Route path="/guide/mydata-result/:sessionId" element={<MydataSyncComplete />} />
+                        <Route path="/guide/upload/:sessionId/:groupKey" element={<DocumentUploadPage />} />
+
+                        {/* 공통 */}
                         <Route path="/support" element={<Support />} />
                         <Route path="/community/*" element={<Community />} />
                         <Route path="/mypage" element={<MyPage />} />
+
+                        {/* 인증 */}
                         <Route path="/auth/login" element={<Login />} />
                         <Route path="/auth/signup" element={<Signup />} />
                         <Route path="/auth/find" element={<FindIdPw />} />
-                        <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
-                        <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
+                        <Route path="/auth/onboarding" element={<Onboarding />} />
+
+                        {/* 시뮬레이션 */}
                         <Route path="/simulation" element={<SimulationList />} />
                         <Route path="/simulation/:id" element={<SimulationDetail />} />
+
+                        {/* 하이브리드 평가 */}
+                        <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
+                        <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
                     </Routes>
                 </div>
             </main>

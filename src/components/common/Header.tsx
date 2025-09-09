@@ -1,32 +1,34 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaRegBuilding } from 'react-icons/fa';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft } from 'lucide-react';
 
-const routeTitle = (path: string) => {
-  // 정확 매칭
+// 경로 → 헤더 타이틀 매핑(정확/프리픽스/정규식 혼합)
+const routeTitle = (path: string): string => {
+  // 1) 정확 매칭
   if (path === '/') return '홈';
   if (path === '/guide') return '대출가이드';
   if (path === '/support') return '공공지원금';
   if (path === '/mypage') return '마이페이지';
   if (path === '/community') return '커뮤니티';
-  if (path === '/hybrid-evaluation') return '하이브리드 신용평가';
-  if (path === '/hybrid-evaluation/start') return '하이브리드 신용평가';
+  if (path === '/simulation') return '시뮬레이션 내역';
+  if (path === '/hybrid-evaluation' || path === '/hybrid-evaluation/start')
+    return '하이브리드 신용평가';
 
-  // 커뮤니티 하위
+  // 2) 가이드 하위
+  if (path.startsWith('/guide')) return '대출가이드';
+
+  // 3) 커뮤니티 하위
   if (path.startsWith('/community/cases')) return '동일업종 승인 사례';
   if (path.startsWith('/community/freeboard')) return '자유게시판';
   if (path.startsWith('/community/search/results')) return '검색 결과';
   if (path.startsWith('/community/search')) return '검색';
   if (path.startsWith('/community/posts/new')) return '글 작성';
-  if (path.match(/^\/community\/posts\/\d+\/edit/)) return '글 수정';
-  if (path.match(/^\/community\/posts\/\d+/)) return '게시글';
-
-  // 기본값
+  if (/^\/community\/posts\/\d+\/edit/.test(path)) return '글 수정';
+  if (/^\/community\/posts\/\d+/.test(path)) return '게시글';
   if (path.startsWith('/community')) return '커뮤니티';
 
-  // 시뮬레이션 결과
-  if (path === '/simulation') return '시뮬레이션 내역';
-  if (path.match(/^\/simulation\/\d+/)) return '시뮬레이션 내역';
+  // 4) 시뮬레이션 상세
+  if (/^\/simulation\/\d+/.test(path)) return '시뮬레이션 내역';
 
   return '';
 };
@@ -41,10 +43,19 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
       <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
-        <Link to="/" className="absolute left-4">
-          <FaRegBuilding size={28} />
-        </Link>
-
+        {path === '/' ? (
+          <Link to="/" className="absolute left-4">
+            <FaRegBuilding size={28} />
+          </Link>
+        ) : (
+          <button
+            className="absolute left-4 text-gray-400 hover:text-gray-600 p-1"
+            aria-label="뒤로가기"
+            onClick={() => nav(-1)}
+          >
+            <ChevronLeft className="w-7 h-7" />
+          </button>
+        )}
         <span className="text-lg font-bold mx-auto">{title}</span>
 
         {/* 커뮤니티 영역에서는 검색 아이콘 노출 */}
