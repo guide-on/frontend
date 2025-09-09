@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import memberApi from '@/api/memberApi';
 import PhoneVerification from '@/components/verification/PhoneVerification';
+import { colors } from '@/styles/colors';
 
 type FindUserPayload = {
   name: string;
@@ -53,8 +54,8 @@ const FindId: React.FC = () => {
       <div className="text-center">
         <h2 className="text-xl font-bold text-slate-800 mb-2">아이디 찾기</h2>
         <p className="text-slate-600 text-sm">
-          회원가입 시 등록한 정보를 기반으로 아이디를 <br />
-          찾을 수 있습니다
+          회원가입 시 등록한 정보를 기반으로 <br />
+          아이디를 찾을 수 있습니다
         </p>
       </div>
 
@@ -104,7 +105,7 @@ const FindId: React.FC = () => {
           <button
             onClick={findId}
             disabled={disabled}
-            className="login-button w-full text-white text-md h-11 rounded-md font-semibold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="login-button w-full text-white text-md h-11 rounded-md font-semibold transition-all duration-200  hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {searching ? '조회 중...' : '아이디 찾기'}
           </button>
@@ -149,7 +150,7 @@ const FindId: React.FC = () => {
           <div className="space-y-4">
             <button
               onClick={goToLogin}
-              className="login-button block w-full text-white h-12 rounded-md font-bold text-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+              className="login-button block w-full text-white h-12 rounded-md font-bold text-md transition-all duration-200 hover:opacity-90 hover:scale-[1.02] hover:shadow-lg"
             >
               로그인
             </button>
@@ -159,9 +160,7 @@ const FindId: React.FC = () => {
 
       {/* 보조 스타일: Vue scoped 대체 */}
       <style>{`
-        .login-button { background: var(--point-color); border: none; touch-action: manipulation; }
-        .login-button:hover { background: var(--point-color-2); }
-        .login-button:disabled { background: var(--logo-color); }
+        .login-button { background: ${colors.navy}; border: none; touch-action: manipulation; }
       `}</style>
     </div>
   );
