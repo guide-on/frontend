@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaRegBuilding } from 'react-icons/fa';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft } from 'lucide-react';
 
 const routeTitle = (path: string) => {
   // 정확 매칭
@@ -41,9 +41,19 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
       <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
-        <Link to="/" className="absolute left-4">
-          <FaRegBuilding size={28} />
-        </Link>
+        {path === '/' ? (
+          <Link to="/" className="absolute left-4">
+            <FaRegBuilding size={28} />
+          </Link>
+        ) : (
+          <button
+            className="absolute left-4 text-gray-400 hover:text-gray-600 p-1"
+            aria-label="뒤로가기"
+            onClick={() => nav(-1)}
+          >
+            <ChevronLeft className="w-7 h-7" />
+          </button>
+        )}
 
         <span className="text-lg font-bold mx-auto">{title}</span>
 
