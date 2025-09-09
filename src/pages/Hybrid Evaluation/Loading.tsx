@@ -19,23 +19,20 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
       </div>
 
       {/* Title & subtitle */}
-      <h1 className="mt-6 text-2xl font-extrabold">신용도 분석 중</h1>
-      <p className="mt-2 text-center text-sm" style={{ color: '#6B7280' }}>
+      <h1 className="mt-6 text-2xl font-extrabold text-navy">신용도 분석 중</h1>
+      <p className="mt-2 text-center text-sm text-gray-600">
         고객님의 신용정보를 안전하게
         <br />분석하고 있습니다
       </p>
 
       {/* Progress bar with labels */}
       <div className="mt-5 w-[312px] max-w-full">
-        <div className="flex items-center justify-between text-[11px]" style={{ color: '#6B7280' }}>
+        <div className="flex items-center justify-between text-[11px] text-gray-600">
           <span>분석 완료!</span>
           <span>{progress}%</span>
         </div>
-        <div className="mt-2 h-2 w-full rounded" style={{ backgroundColor: colors.lightBlue, opacity: 0.5 }}>
-          <div
-            className="h-full rounded"
-            style={{ width: `${progress}%`, backgroundColor: colors.blue }}
-          />
+        <div className="mt-2 h-2 w-full rounded bg-lightBlue/30">
+          <div className="h-full rounded bg-blue" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -44,26 +41,18 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
         {[
           { t: '개인정보 확인', s: '본인인증 정보를 확인하고 있습니다' },
           { t: '신용정보 수집', s: '금융기관 신용정보를 수집하고 있습니다' },
-          { t: '신용점수 계산', s: '종합 신용점수를 계산하고 있습니다' },
+          { t: '신용점수 계산', s: '종합 신용점을 계산하고 있습니다' },
         ].map((row) => (
           <div
             key={row.t}
-            className="flex items-center gap-3 rounded-xl border p-4"
-            style={{ borderColor: '#E5E7EB', backgroundColor: colors.white }}
+            className="flex items-center gap-3 rounded-xl border p-4 bg-white border-lightBlue/50"
           >
-            <div
-              className="grid h-8 w-8 place-items-center rounded-full"
-              style={{ backgroundColor: colors.paleBlue, color: colors.blue }}
-            >
+            <div className="grid h-8 w-8 place-items-center rounded-full bg-paleBlue text-blue">
               <FaClock />
             </div>
             <div>
-              <div className="text-sm font-semibold" style={{ color: '#111827' }}>
-                {row.t}
-              </div>
-              <div className="text-xs" style={{ color: '#6B7280' }}>
-                {row.s}
-              </div>
+              <div className="text-sm font-semibold text-gray-900">{row.t}</div>
+              <div className="text-xs text-gray-600">{row.s}</div>
             </div>
           </div>
         ))}
@@ -72,13 +61,11 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
       {/* Bottom indicator & tip */}
       <div className="mt-8 text-center">
         <div className="mx-auto mb-3 flex items-center justify-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: colors.lightBlue }} />
-          <span className="h-1.5 w-3 rounded-full" style={{ backgroundColor: colors.blue }} />
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: colors.lightBlue }} />
+          <span className="h-1.5 w-1.5 rounded-full bg-lightBlue" />
+          <span className="h-1.5 w-3 rounded-full bg-blue" />
+          <span className="h-1.5 w-1.5 rounded-full bg-lightBlue" />
         </div>
-        <div className="text-xs" style={{ color: '#9CA3AF' }}>
-          잠시만 기다려주세요
-        </div>
+        <div className="text-xs text-gray-400">잠시만 기다려주세요</div>
       </div>
     </div>
   );

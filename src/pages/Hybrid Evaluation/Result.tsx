@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { colors } from '../../styles/colors';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 const TabButton = ({
   label,
@@ -13,14 +11,13 @@ const TabButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="relative px-3 py-2 text-sm font-medium"
-    style={{ color: active ? '#111827' : '#6B7280' }}
+    className={[
+      'relative px-3 py-2 text-sm font-medium',
+      active ? 'text-navy' : 'text-gray-500',
+    ].join(' ')}
   >
     {label}
-    <span
-      className="absolute left-0 right-0 -bottom-0.5 h-0.5"
-      style={{ backgroundColor: active ? colors.blue : 'transparent' }}
-    />
+    <span className={['absolute left-0 right-0 -bottom-0.5 h-0.5', active ? 'bg-blue' : 'bg-transparent'].join(' ')} />
   </button>
 );
 
@@ -37,40 +34,32 @@ const ExpandableRow = ({
 }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-xl border p-4">
+    <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="font-bold">{title}</div>
-        <div
-          className="rounded-full text-white text-sm font-bold w-8 h-8 flex items-center justify-center"
-          style={{ backgroundColor: colors.blue }}
-        >
+        <div className="font-bold text-gray-900">{title}</div>
+        <div className="rounded-full text-white text-sm font-bold w-8 h-8 flex items-center justify-center bg-blue">
           {grade}
         </div>
       </div>
-      <div className="mt-1 text-sm" style={{ color: '#6B7280' }}>
-        {desc}
-      </div>
-      <div className="mt-3 h-2 w-full rounded" style={{ backgroundColor: colors.paleBlue }}>
-        <div className="h-full w-11/12 rounded" style={{ backgroundColor: colors.blue }} />
+      <div className="mt-1 text-sm text-gray-600">{desc}</div>
+      <div className="mt-3 h-2 w-full rounded bg-paleBlue">
+        <div className="h-full w-11/12 rounded bg-blue" />
       </div>
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="mt-3 w-full flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-sm"
-        style={{ border: '1px solid #E5E7EB' }}
+        className="mt-3 w-full flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-sm border border-gray-200"
       >
         <span>상세 내역 보기</span>
-        {open ? <FaChevronUp /> : <FaChevronDown />}
+        <span className="text-gray-500">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div className="mt-3 space-y-4">
           {details.map((d) => (
             <div key={d.section}>
-              <div className="text-sm font-semibold" style={{ color: '#111827' }}>
-                {d.section}
-              </div>
-              <ul className="mt-1 list-disc pl-5 text-sm" style={{ color: '#4B5563' }}>
+              <div className="text-sm font-semibold text-gray-900">{d.section}</div>
+              <ul className="mt-1 list-disc pl-5 text-sm text-gray-600">
                 {d.items.map((it) => (
                   <li key={it}>{it}</li>
                 ))}
@@ -163,7 +152,7 @@ const ResultOverlay = ({ onClose }: { onClose: () => void }) => {
     },
     {
       t: '대표자 금융 신용도(기존 신용점수)',
-      d: '대표자의 신용정보를 통해 상환능력 리스크를 보완 평가합니��.',
+      d: '대표자의 신용정보를 통해 상환능력 리스크를 보완 평가합니다.',
       g: 'A',
       details: [
         { section: '평가 요소', items: ['상환이력/부채수준/신용기간/형태/비금융'] },
@@ -176,48 +165,33 @@ const ResultOverlay = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-white p-6">
       <div className="mx-auto w-full max-w-sm space-y-5">
-        <h3 className="text-center text-2xl font-extrabold">하이브리드 신용평가 결과</h3>
+        <h3 className="text-center text-2xl font-extrabold text-navy">하이브리드 신용평가 결과</h3>
 
-        <div className="rounded-2xl border p-5 shadow-sm">
-          <div className="text-center text-sm" style={{ color: '#6B7280' }}>
-            종합 점수
-          </div>
+        <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
+          <div className="text-center text-sm text-gray-600">종합 점수</div>
           <div className="mt-1 flex items-end justify-center gap-2">
-            <div className="text-5xl font-extrabold">742</div>
-            <div className="pb-1" style={{ color: '#6B7280' }}>
-              / 850
-            </div>
+            <div className="text-5xl font-extrabold text-gray-900">742</div>
+            <div className="pb-1 text-gray-600">/ 850</div>
           </div>
-          <div
-            className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold"
-            style={{ backgroundColor: colors.blue }}
-          >
+          <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
             A 등급
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 text-xs" style={{ color: '#6B7280' }}>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-gray-600">
             <div className="text-center">
-              <div className="font-semibold" style={{ color: '#111827' }}>
-                상환이력
-              </div>
+              <div className="font-semibold text-gray-900">상환이력</div>
               <div>우수</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold" style={{ color: '#111827' }}>
-                부채수준
-              </div>
+              <div className="font-semibold text-gray-900">부채수준</div>
               <div>양호</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold" style={{ color: '#111827' }}>
-                신용거래기간
-              </div>
+              <div className="font-semibold text-gray-900">신용거래기간</div>
               <div>5년 2개월</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold" style={{ color: '#111827' }}>
-                신용형태
-              </div>
+              <div className="font-semibold text-gray-900">신용형태</div>
               <div>다양</div>
             </div>
           </div>
@@ -227,7 +201,7 @@ const ResultOverlay = ({ onClose }: { onClose: () => void }) => {
           <TabButton label="기존 신용 분석" active={tab === 'legacy'} onClick={() => setTab('legacy')} />
           <TabButton label="guideON 분석" active={tab === 'guideon'} onClick={() => setTab('guideon')} />
         </div>
-        <div className="h-0.5 w-full rounded" style={{ backgroundColor: '#E5E7EB' }} />
+        <div className="h-0.5 w-full rounded bg-gray-200" />
 
         <div className="space-y-3">
           {rows.map((r) => (
@@ -235,7 +209,7 @@ const ResultOverlay = ({ onClose }: { onClose: () => void }) => {
           ))}
         </div>
 
-        <button onClick={onClose} className="w-full rounded-md border py-3 font-semibold">
+        <button onClick={onClose} className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50">
           닫기
         </button>
       </div>
