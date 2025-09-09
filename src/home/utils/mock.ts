@@ -3,7 +3,7 @@ import type { SimulationListItem } from '@/simulation/types';
 export const MOCK_ACTIVE_LIST: SimulationListItem[] = [
     {
         id: 101,
-        title: '2024.10.25 시뮬레이션',
+        title: '2024.10.25 내역',
         startedAt: '2024-10-25T10:00:00Z',
         expectedProbability: 85,
         startProbability: 50,
@@ -13,7 +13,7 @@ export const MOCK_ACTIVE_LIST: SimulationListItem[] = [
     },
     {
         id: 95,
-        title: '2024.10.20 시뮬레이션',
+        title: '2024.10.20 내역',
         startedAt: '2024-10-20T11:30:00Z',
         expectedProbability: 70,
         startProbability: 40,
@@ -23,7 +23,7 @@ export const MOCK_ACTIVE_LIST: SimulationListItem[] = [
     },
     {
         id: 90,
-        title: '2024.10.12 시뮬레이션',
+        title: '2024.10.12 내역',
         startedAt: '2024-10-12T08:45:00Z',
         expectedProbability: 62,
         startProbability: 35,
@@ -33,7 +33,7 @@ export const MOCK_ACTIVE_LIST: SimulationListItem[] = [
     },
     {
         id: 77,
-        title: '2024.10.01 시뮬레이션',
+        title: '2024.10.01 내역',
         startedAt: '2024-10-01T09:10:00Z',
         expectedProbability: 0,
         startProbability: 0,
