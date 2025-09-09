@@ -93,14 +93,13 @@ const ResultOverlay = ({
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     const loadData = async () => {
-      if (!user?.memberId) return;
       
       try {
         setLoading(true);
         
         // 신용평가 결과 조회 (에러가 나도 계속 진행)
         try {
-          const resultResponse = await creditEvaluationResultApi.get(user.memberId);
+          const resultResponse = await creditEvaluationResultApi.get();
           if (resultResponse.success) {
             setCreditResult(resultResponse.data);
           }
@@ -110,7 +109,7 @@ const ResultOverlay = ({
         
         // 최신 신용평가 데이터 조회 (에러가 나도 계속 진행)
         try {
-          const listResponse = await creditEvaluationApi.getList({ memberId: String(user.memberId) });
+          const listResponse = await creditEvaluationApi.getList({});
           if (listResponse.success && listResponse.data.length > 0) {
             setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
           }
@@ -126,7 +125,7 @@ const ResultOverlay = ({
     };
 
     loadData();
-  }, [user?.memberId]);
+  }, []); // 컴포넌트 마운트 시에만 실행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {

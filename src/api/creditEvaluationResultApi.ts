@@ -17,9 +17,9 @@ const BASE_URL = '/api/credit-evaluation-result';
 
 // 신용평가 결과 API 함수들
 export const creditEvaluationResultApi = {
-  // 특정 사용자의 신용평가 결과 조회
-  async get(memberId: number): Promise<CommonResponseDTO<CreditEvaluationResultResponse>> {
-    const { data } = await api.get<CommonResponseDTO<CreditEvaluationResultResponse>>(`${BASE_URL}/${memberId}`);
+  // 현재 로그인한 사용자의 신용평가 결과 조회
+  async get(): Promise<CommonResponseDTO<CreditEvaluationResultResponse>> {
+    const { data } = await api.get<CommonResponseDTO<CreditEvaluationResultResponse>>(`${BASE_URL}/me`);
     return data;
   },
 
