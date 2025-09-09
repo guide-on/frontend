@@ -5,6 +5,8 @@ type Props = {
   value: string; // 부모 state의 비밀번호
   onChange: (next: string) => void; // 비밀번호 변경 알림
   onValidated?: (ok: boolean) => void; // 유효성 + 일치 여부 통과시 true
+  confirmValue?: string; // 부모 제어용 비밀번호 확인 값(선택)
+  onConfirmChange?: (next: string) => void; // 부모 제어용 비밀번호 확인 변경(선택)
 };
 
 type Validation = {
@@ -32,15 +34,17 @@ function validatePassword(value: string): Validation {
   const number = /[0-9]/.test(value);
   const special = /[!@#$%^&*(),.?":{}|<>]/.test(value);
 
-  // 영문(대/소문자 중 하나 이상) + 숫자 + 특수문자 중 3가지 이상
+  // 영문(대/���문자 중 하나 이상) + 숫자 + 특수문자 중 3가지 이상
   const types = [lowercase || upper, number, special].filter(Boolean).length;
   const combination = types >= 3;
 
   return { length, lowercase, upper, number, special, combination };
 }
 
-const PasswordField: React.FC<Props> = ({ value, onChange, onValidated }) => {
-  const [password2, setPassword2] = useState('');
+const PasswordField: React.FC<Props> = ({ value, onChange, onValidated, confirmValue, onConfirmChange }) => {
+  const [password2Inner, setPassword2Inner] = useState('');
+  const isControlledConfirm = typeof confirmValue !== 'undefined';
+  const password2 = isControlledConfirm ? (confirmValue as string) : password2Inner;
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const [validation, setValidation] = useState<Validation>(initialValidation);
@@ -64,7 +68,7 @@ const PasswordField: React.FC<Props> = ({ value, onChange, onValidated }) => {
 
   return (
     <div className="space-y-4">
-      {/* 비밀번호 */}
+      {/* 비���번호 */}
       <div>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5 ps-1">
           비밀번호
@@ -155,7 +159,7 @@ const PasswordField: React.FC<Props> = ({ value, onChange, onValidated }) => {
           <input
             type={showPassword2 ? 'text' : 'password'}
             value={password2}
-            onChange={(e) => setPassword2(e.target.value)}
+            onChange={(e) => (isControlledConfirm ? onConfirmChange?.(e.target.value) : setPassword2Inner(e.target.value))}
             placeholder="비밀번호 확인"
             required
             className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-slate-700 text-md"

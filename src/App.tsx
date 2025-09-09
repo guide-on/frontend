@@ -14,6 +14,7 @@ import Community from './community/index.tsx';
 import Login from '@/pages/auth/Login';
 import Signup from '@/pages/auth/Signup';
 import FindIdPw from '@/pages/auth/FindIdPw';
+import Onboarding from '@/pages/auth/Onboarding';
 
 // 시뮬레이션
 import SimulationList from './simulation/pages/SimulationList';
@@ -113,6 +114,8 @@ function AppChrome() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup" element={<Signup />} />
           <Route path="/auth/find" element={<FindIdPw />} />
+          <Route path="/auth/onboarding" element={<Onboarding />} />
+
 
           {/* 시뮬레이션 */}
           <Route path="/simulation" element={<SimulationList />} />

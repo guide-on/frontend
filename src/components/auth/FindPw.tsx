@@ -10,6 +10,7 @@ import verificationApi from '@/api/verificationApi';
 import PasswordField from '@/components/auth/PasswordField';
 // import SuccessModal from '@/components/common/SuccessModal';
 import { useNavigate } from 'react-router-dom';
+import { colors } from '@/styles/colors';
 
 type Step = 'email' | 'method' | 'verification' | 'reset';
 type Method = 'email' | 'phone';
@@ -66,7 +67,7 @@ const FindPassword: React.FC = () => {
     setMessage('');
     try {
       const exists = await memberApi.checkUsername(formData.email);
-      // 서버 반환이 boolean 또는 { exists: boolean }일 수 있음
+      // 서버 반환이 boolean 또는 { exists: boolean }일 수 ��음
       const ok =
         typeof exists === 'boolean'
           ? exists
@@ -217,7 +218,7 @@ const FindPassword: React.FC = () => {
           <button
             onClick={checkEmail}
             disabled={loading.emailCheck || !formData.email}
-            className="login-button w-full text-white text-md h-11 rounded-md font-semibold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="login-button w-full text-white text-md h-11 rounded-md font-semibold transition-all duration-200  hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {loading.emailCheck ? '확인 중...' : '이메일 확인'}
           </button>
@@ -271,7 +272,7 @@ const FindPassword: React.FC = () => {
           <button
             onClick={sendCode}
             disabled={loading.send}
-            className="login-button w-full text-white text-md py-2.5 rounded-md font-semibold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="login-button w-full text-white text-md py-2.5 rounded-md font-semibold transition-all duration-200  hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {loading.send
               ? '전송 중...'
@@ -293,7 +294,7 @@ const FindPassword: React.FC = () => {
               type="button"
               onClick={sendCode}
               disabled={loading.send || resendTimer > 0}
-              className="login-button text-white ml-auto px-2 py-1 rounded-md text-xs font-bold transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="login-button text-white ml-auto px-2 py-1 rounded-md text-xs font-bold transition-all duration-200  hover:opacity-90 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading.send
                 ? '전송 중...'
@@ -317,7 +318,7 @@ const FindPassword: React.FC = () => {
           <button
             onClick={verifyCode}
             disabled={loading.verify || code.length !== 6}
-            className="login-button w-full text-white text-md py-2.5 rounded-md font-semibold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="login-button w-full text-white text-md py-2.5 rounded-md font-semibold transition-all duration-200 hover:scale-[1.02]  hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {loading.verify ? '확인 중...' : '확인'}
           </button>
@@ -339,7 +340,7 @@ const FindPassword: React.FC = () => {
             disabled={
               loading.reset || !formData.newPassword || !passwordValidated
             }
-            className="login-button block w-full text-white h-11 rounded-md font-bold text-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="login-button block w-full text-white h-11 rounded-md font-bold text-md transition-all duration-200  hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {loading.reset ? '변경 중...' : '비밀번호 변경'}
           </button>
@@ -350,9 +351,7 @@ const FindPassword: React.FC = () => {
       <style>{`
         .method-box { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border:2px solid #e2e8f0; border-radius:0.5rem; cursor:pointer; transition: all .2s; }
         .method-box:hover { border:2px solid #b3ebe4; }
-        .login-button { background: var(--point-color); border:none; touch-action: manipulation; }
-        .login-button:hover { background: var(--point-color-2); }
-        .login-button:disabled { background: var(--logo-color); }
+        .login-button { background: ${colors.navy}; border:none; touch-action: manipulation; }
       `}</style>
 
       {/* 성공 모달 */}
