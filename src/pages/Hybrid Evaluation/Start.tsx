@@ -199,13 +199,6 @@ const StartHybridEvaluation = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    console.log('Current user object:', user);
-    console.log('user.memberId:', user?.memberId);
-    
-    if (!user?.memberId) {
-      setError('로그인이 필요합니다.');
-      return;
-    }
 
     setShowResult(false);
     setSubmitting(true);
@@ -220,7 +213,6 @@ const StartHybridEvaluation = () => {
 
       // 신용평가 데이터 생성 요청
       const evaluationData: CreditEvaluationCreateRequest = {
-        memberId: String(user.memberId),  // Long 타입을 String으로 변환
         // 예시 데이터 - 실제로는 사용자 입력이나 파일에서 추출한 데이터를 사용
         totalOverdueCount: 0,
         recent12mOverdueCount: 0,

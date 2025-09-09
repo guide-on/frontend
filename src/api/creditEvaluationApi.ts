@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 
 // 타입 정의
 export interface CreditEvaluationCreateRequest {
-  memberId: string;  // 백엔드 member_id 컬럼에 맞춤
+  memberId?: string;  // 백엔드에서 loginUserProvider로 자동 설정
   
   // 상환이력 (28.4%)
   totalOverdueCount?: number;
@@ -113,14 +113,15 @@ export const creditEvaluationApi = {
     return data;
   },
 
-  // 신용평가 데이터 목록 조회
-  async getList(request: CreditEvaluationListRequest): Promise<CommonResponseDTO<CreditEvaluationResponse[]>> {
+  // 신용평가 데이터 목록 조회 (현재 로그인한 사용자)
+  async getList(request?: CreditEvaluationListRequest): Promise<CommonResponseDTO<CreditEvaluationResponse[]>> {
     const params = new URLSearchParams();
-    if (request.memberId) params.append('memberId', request.memberId);
-    if (request.startDate) params.append('startDate', request.startDate);
-    if (request.endDate) params.append('endDate', request.endDate);
+    if (request?.startDate) params.append('startDate', request.startDate);
+    if (request?.endDate) params.append('endDate', request.endDate);
     
-    const { data } = await api.get<CommonResponseDTO<CreditEvaluationResponse[]>>(`${BASE_URL}?${params.toString()}`);
+    const queryString = params.toString();
+    const url = queryString ? `${BASE_URL}?${queryString}` : BASE_URL;
+    const { data } = await api.get<CommonResponseDTO<CreditEvaluationResponse[]>>(url);
     return data;
   },
 
