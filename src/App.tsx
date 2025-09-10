@@ -168,8 +168,9 @@ export default function App() {
     return (
         <div
             style={{
-                width: 375,
-                height: 812,
+                width: '100vw',
+                height: '100vh',
+                maxWidth: 480,
                 margin: '0 auto',
                 boxShadow: '0 0 24px 0 rgba(0,0,0,0.08)',
                 position: 'relative',

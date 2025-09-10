@@ -27,7 +27,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex"
+      className="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-[480px] flex"
       style={{
         borderTop: `1px solid ${colors.gray}`,
         backgroundColor: colors.gray,

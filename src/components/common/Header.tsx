@@ -41,8 +41,8 @@ const Header = () => {
   const isCommunity = path.startsWith('/community');
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
-      <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
+    <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/95 backdrop-blur border-b border-gray-200 w-full max-w-[480px]">
+      <div className="h-14 px-4 flex items-center relative">
         {path === '/' ? (
           <Link to="/" className="absolute left-4">
             <FaRegBuilding size={28} />
