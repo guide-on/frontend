@@ -10,7 +10,7 @@ import {
 import { colors } from '../../styles/colors';
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   creditEvaluationApi,
   type CreditEvaluationCreateRequest,
@@ -137,8 +137,12 @@ const ScoreChip = ({ v }: { v: string }) => {
 
 
 const StartHybridEvaluation = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  console.log('🔍 [StartHybridEvaluation] URL sessionId:', sessionId);
+  console.log('🔍 [StartHybridEvaluation] user.sessionId:', user?.sessionId);
   const [selected, setSelected] = useState<CategoryKey>('sales');
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [isAttachHelpModalOpen, setAttachHelpModalOpen] = useState(false);
@@ -204,7 +208,8 @@ const StartHybridEvaluation = () => {
 
     try {
       // sessionId 검증
-      if (!user?.sessionId) {
+      console.log('🚀 [StartHybridEvaluation] handleSubmit - using sessionId:', sessionId);
+      if (!sessionId) {
         throw new Error('세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.');
       }
 
@@ -213,7 +218,7 @@ const StartHybridEvaluation = () => {
       }, 100);
 
       const evaluationData: CreditEvaluationCreateRequest = {
-        sessionId: user.sessionId,
+        sessionId: sessionId,
         totalOverdueCount: 0,
         recent12mOverdueCount: 0,
         maxOverdueDays: 0,
@@ -245,7 +250,7 @@ const StartHybridEvaluation = () => {
         setEvaluationResult(response.data);
         setTimeout(() => {
           setSubmitting(false);
-          navigate('/hybrid-evaluation/complete');
+          navigate(`/hybrid-evaluation/complete/${sessionId}`);
         }, 500);
       } else {
         throw new Error(response.message || '평��� 생성에 실패했습니다.');

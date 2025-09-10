@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 const HybridEvaluationComplete = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  
+  console.log('🔍 [HybridEvaluationComplete] URL sessionId:', sessionId);
+  
   const confetti = useMemo(() => {
     const colors = ['#1F6FFF', '#62A1FF', '#B3D4FF', '#16a34a', '#f59e0b', '#ef4444'];
     return Array.from({ length: 42 }).map((_, i) => {

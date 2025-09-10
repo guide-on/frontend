@@ -1,7 +1,26 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { colors } from '@/styles/colors';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const HybridEvaluation = () => {
+  const { sessionId } = useParams<{ sessionId?: string }>();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  console.log('🔍 [HybridEvaluation] URL sessionId:', sessionId);
+  console.log('🔍 [HybridEvaluation] user.sessionId:', user?.sessionId);
+
+  const handleStartEvaluation = () => {
+    const currentSessionId = sessionId || user?.sessionId;
+    console.log('🚀 [HybridEvaluation] handleStartEvaluation - using sessionId:', currentSessionId);
+    
+    if (!currentSessionId) {
+      alert('세션 정보가 없습니다. 다시 로그인해주세요.');
+      return;
+    }
+    navigate(`/hybrid-evaluation/start/${currentSessionId}`);
+  };
+
   return (
     <div
       className="px-4 py-6 h-screen space-y-5"
@@ -66,12 +85,12 @@ const HybridEvaluation = () => {
         </div>
       </section>
 
-      <Link
-        to="/hybrid-evaluation/start"
-        className="w-full inline-block text-center py-4 rounded-md font-semibold mt-5 bg-navy text-white hover:bg-blue shadow-md transition"
+      <button
+        onClick={handleStartEvaluation}
+        className="w-full py-4 rounded-md font-semibold mt-5 bg-navy text-white hover:bg-blue shadow-md transition"
       >
         신용도 확인 시작하기
-      </Link>
+      </button>
     </div>
   );
 };
