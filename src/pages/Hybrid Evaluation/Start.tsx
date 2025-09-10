@@ -17,6 +17,8 @@ import {
   type CreditEvaluationResponse,
 } from '../../api/creditEvaluationApi';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { EsgSection } from './components/EsgSection';
+import { UploadCard } from './components/UploadCard';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -52,32 +54,6 @@ const CATEGORY_CONTENT: Record<
   },
 };
 
-const ESG_STEPS: {
-  title: string;
-  desc: string;
-  items: string[];
-}[] = [
-  {
-    title: 'ESG (1/4)',
-    desc: 'ESG 중 Environmental(환경 친화적 운영)을 평가합니다.',
-    items: ['자원 관리 및 폐기물 감축', '에너지 효율성'],
-  },
-  {
-    title: 'ESG (2/4)',
-    desc: 'ESG 중 Social(사회적 책임 및 지역사회 상생)을 평가합니다.',
-    items: ['노란우산 공제 성실 납부', '고객 리뷰', '식품/위생 안전 관리'],
-  },
-  {
-    title: 'ESG (3/4)',
-    desc: 'ESG 중 Governance(투명경영 및 준법경영)을 평가합니다.',
-    items: ['성실납세 이력', '4대 보험료 납부 이력', '투명한 정보 공개'],
-  },
-  {
-    title: 'ESG (4/4)',
-    desc: 'ESG 추가 지표를 수기 입력합니다.',
-    items: ['에너지 사용량 입력', '재활용률 입력', '안전사고 건수 입력', '기타 메모'],
-  },
-];
 
 const Modal = ({
   open,
@@ -159,38 +135,6 @@ const ScoreChip = ({ v }: { v: string }) => {
   );
 };
 
-const UploadCard = ({
-  onPdfPicked,
-  fileName,
-}: {
-  onPdfPicked: (f: File) => void;
-  fileName?: string;
-}) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  return (
-    <div className="rounded-md p-4 space-y-3 border bg-white border-lightBlue/50">
-      <button
-        onClick={() => inputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-md bg-paleBlue text-navy hover:bg-lightBlue/20 transition"
-      >
-        <FaFileUpload />
-        <span>
-          {fileName ? `업로드됨: ${fileName}` : '파일을 클릭하여 업로드'}
-        </span>
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onPdfPicked(f);
-        }}
-      />
-    </div>
-  );
-};
 
 const StartHybridEvaluation = () => {
   const { user } = useAuthStore();
@@ -251,20 +195,6 @@ const StartHybridEvaluation = () => {
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ESG 전용 스텝 상태 및 파일명
-  const [esgStep, setEsgStep] = useState(1); // 1~4
-  const [esgFiles, setEsgFiles] = useState<Record<number, string | undefined>>({
-    1: undefined,
-    2: undefined,
-    3: undefined,
-    4: undefined,
-  });
-  const [esgManual, setEsgManual] = useState({
-    energyConsumption: '',
-    recyclingRate: '',
-    safetyIncidents: '',
-    notes: '',
-  });
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -369,156 +299,14 @@ const StartHybridEvaluation = () => {
 
       <section className="pt-3 space-y-3 border-t border-gray-200">
         {selected === 'esg' ? (
-          <>
-            <h3 className="text-xl font-extrabold text-navy">{ESG_STEPS[esgStep - 1].title}</h3>
-            <p className="text-sm text-gray-600">{ESG_STEPS[esgStep - 1].desc}</p>
-
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900">평가 항목</span>
-              <button
-                aria-label="도움말"
-                onClick={() => setHelpModalOpen(true)}
-                className="text-blue hover:text-navy"
-              >
-                <FaQuestionCircle />
-              </button>
-            </div>
-
-            <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
-              {ESG_STEPS[esgStep - 1].items.map((it) => (
-                <div key={it} className="flex items-start gap-2">
-                  <span>•</span>
-                  <span>{it}</span>
-                </div>
-              ))}
-            </div>
-
-            {esgStep !== 4 ? (
-              <>
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="font-semibold text-gray-900">관련 서류 첨부</span>
-                  <button
-                    aria-label="도움말"
-                    onClick={() => setAttachHelpModalOpen(true)}
-                    className="text-blue hover:text-navy"
-                  >
-                    <FaQuestionCircle />
-                  </button>
-                </div>
-                <UploadCard
-                  fileName={esgFiles[esgStep]}
-                  onPdfPicked={(f) => {
-                    setEsgFiles((prev) => ({ ...prev, [esgStep]: f.name }));
-                  }}
-                />
-              </>
-            ) : (
-              <div className="flex items-center gap-2 pt-2">
-                <span className="font-semibold text-gray-900">수기 입력</span>
-              </div>
-            )}
-
-            {esgStep === 4 && (
-              <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-                <div className="grid grid-cols-1 gap-3">
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">에너지 사용량(월간 kWh)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.energyConsumption}
-                      onChange={(e) => setEsgManual({ ...esgManual, energyConsumption: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">폐기물 재활용률(%)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.recyclingRate}
-                      onChange={(e) => setEsgManual({ ...esgManual, recyclingRate: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">안전사고 건수(월간)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.safetyIncidents}
-                      onChange={(e) => setEsgManual({ ...esgManual, safetyIncidents: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">기타 메모</span>
-                    <textarea
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 min-h-[80px]"
-                      value={esgManual.notes}
-                      onChange={(e) => setEsgManual({ ...esgManual, notes: e.target.value })}
-                    />
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {esgStep === 1 && (
-              <button
-                onClick={() => setEsgStep(2)}
-                className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                다음
-              </button>
-            )}
-            {esgStep === 2 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(1)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => setEsgStep(3)}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  다음
-                </button>
-              </div>
-            )}
-            {esgStep === 3 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(2)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => setEsgStep(4)}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  다음
-                </button>
-              </div>
-            )}
-            {esgStep === 4 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(3)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => {
-                    setCompleted((prev) => ({ ...prev, esg: true }));
-                  }}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  완료
-                </button>
-              </div>
-            )}
-          </>
+          <EsgSection
+            completed={completed}
+            onHelpClick={() => setHelpModalOpen(true)}
+            onAttachHelpClick={() => setAttachHelpModalOpen(true)}
+            onComplete={() => {
+              setCompleted((prev) => ({ ...prev, esg: true }));
+            }}
+          />
         ) : (
           <>
             <h3 className="text-xl font-extrabold text-navy">{content.title}</h3>
