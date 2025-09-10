@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { getPolicies, type PolicyItem, createApplicationSession, createRequiredDocuments } from '@/api/documentApi';
@@ -33,15 +33,16 @@ export function PolicyListPage() {
         if (mounted) {
           // 백엔드 응답 구조에 맞게 처리
           if (data && typeof data === 'object' && 'eligiblePolicies' in data) {
-            setItems((data as any).eligiblePolicies || []);
+            setItems((data as { eligiblePolicies?: PolicyItem[] }).eligiblePolicies || []);
           } else {
             setItems(Array.isArray(data) ? data : []);
           }
         }
-      } catch (e: any) {
-        console.error(`❌ API 실패: GET /api/policy/${businessId}`, e.message);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '정책자금 목록을 불러오는 중 오류가 발생했습니다.';
+        console.error(`❌ API 실패: GET /api/policy/${businessId}`, errorMessage);
         if (mounted) {
-          setError(e?.message || '정책자금 목록을 불러오는 중 오류가 발생했습니다.');
+          setError(errorMessage);
         }
       } finally {
         if (mounted) {
@@ -91,8 +92,8 @@ export function PolicyListPage() {
           console.log(`🔄 API 요청: GET /api/document/required/${data.sessionId} (서류 생성)`);
           await createRequiredDocuments(data.sessionId);
           console.log(`✅ API 응답: GET /api/document/required/${data.sessionId} SUCCESS (서류 생성)`);
-        } catch (createError: any) {
-          console.error(`❌ 서류 생성 실패:`, createError.message);
+        } catch (createError) {
+          console.error(`❌ 서류 생성 실패:`, createError instanceof Error ? createError.message : createError);
           // 서류 생성에 실패해도 진행 (상태 조회로 복구 가능)
         }
         
@@ -101,19 +102,31 @@ export function PolicyListPage() {
       } else {
         alert('세션 생성에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (e: any) {
-      console.error(`❌ API 실패: POST /api/document/sessions`, e.message);
-      alert(`신청 중 오류가 발생했습니다: ${e?.message || '알 수 없는 오류'}`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '알 수 없는 오류';
+      console.error(`❌ API 실패: POST /api/document/sessions`, errorMessage);
+      alert(`신청 중 오류가 발생했습니다: ${errorMessage}`);
     } finally {
       setApplying(null);
     }
   };
 
+  const onCheckSimulations = () => {
+    nav('/simulation');
+  };
 
   return (
     <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4">
       <section className="rounded-xl p-4" style={{ backgroundColor: colors.gray }}>
-        <p className="font-bold text-lg mb-1">대출 가이드</p>
+        <div className="flex justify-between items-start mb-1">
+          <p className="font-bold text-lg">대출 가이드</p>
+          <button
+            onClick={onCheckSimulations}
+            className="text-xs text-gray-600 hover:text-gray-800 underline transition-colors"
+          >
+            내 시뮬레이션 확인하기
+          </button>
+        </div>
         <p className="text-sm leading-5">가이드온이 서류 준비를 도와드려요! 정보를 입력하시면 필요한 서류를 안내해드립니다.</p>
       </section>
 

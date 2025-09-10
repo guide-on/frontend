@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { getDocumentStatus, type DocumentGroup } from '@/api/documentApi';
@@ -63,13 +63,16 @@ export function RequiredDocumentsPage() {
         );
         
         if (hasMydataDocuments) {
+          // 사용자가 이미 마이데이터 연동을 시도했거나 건너뛰었는지 확인
+          const mydataAttempted = localStorage.getItem(`mydata_attempted_${sessionId}`);
+          
           // 마이데이터 대상 서류가 있는지 체크 (1개라도 연동되어 있으면 연동 완료로 간주)
           const hasSyncedDocuments = documentGroups.some(group =>
             group.documents.some(doc => doc.mydataEligible && doc.status === 'completed')
           );
           
-          if (!hasSyncedDocuments) {
-            // 연동되지 않은 마이데이터 서류가 있으면 마이데이터 연동 페이지로 이동
+          if (!hasSyncedDocuments && !mydataAttempted) {
+            // 연동되지 않았고 아직 시도하지 않았으면 마이데이터 연동 페이지로 이동
             console.log('🔀 마이데이터 연동 필요 -> MydataConsentPage로 리다이렉트');
             nav(`/guide/mydata/${sessionId}`);
             return;
@@ -77,9 +80,10 @@ export function RequiredDocumentsPage() {
         }
       }
 
-    } catch (e: any) {
-      console.error(`❌ API 실패:`, e.message);
-      setError(e?.message || '필요 서류를 불러오는 중 오류가 발생했습니다.');
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '필요 서류를 불러오는 중 오류가 발생했습니다.';
+      console.error(`❌ API 실패:`, errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

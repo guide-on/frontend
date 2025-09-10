@@ -25,6 +25,7 @@ import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
 
 // 가이드(서류 등록)
+import { GuideRouter } from '@/guide/components/GuideRouter';
 import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
 import PolicyListPage from '@/guide/pages/PolicyListPage';
 import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
@@ -37,6 +38,7 @@ import HybridEvaluation from './pages/Hybrid Evaluation';
 import StartHybridEvaluation from './pages/Hybrid Evaluation/Start.tsx'
 import BankConnect from './pages/Hybrid Evaluation/BankConnect'
 import BankConnectComplete from './pages/Hybrid Evaluation/BankConnectComplete'
+import HybridEvaluationComplete from './pages/Hybrid Evaluation/Complete.tsx'
 
 /**
  * 라우팅에 따라 Header, Navbar 및 메인 콘텐츠의 패딩/애니메이션을 관리하는 컴포넌트
@@ -55,6 +57,7 @@ function AppChrome() {
         '/hybrid-evaluation/start',
         '/bank-connect',
         '/bank-connect/complete',
+        '/hybrid-evaluation/complete',
     ]);
 
     // === Navbar 숨김 조건 ===
@@ -65,6 +68,7 @@ function AppChrome() {
         '/hybrid-evaluation/start',
         '/bank-connect',
         '/bank-connect/complete',
+        '/hybrid-evaluation/complete',
     ]);
     const hideNavbarPrefixes = ['/simulation/'];
 
@@ -113,7 +117,8 @@ function AppChrome() {
                         <Route path="/" element={<Home />} />
 
                         {/* 가이드(서류 등록) */}
-                        <Route path="/guide" element={<DocumentSurveyPage />} />
+                        <Route path="/guide" element={<GuideRouter />} />
+                        <Route path="/guide/survey" element={<DocumentSurveyPage />} />
                         <Route path="/guide/policy/:businessId" element={<PolicyListPage />} />
                         <Route path="/guide/documents/:sessionId" element={<RequiredDocumentsPage />} />
                         <Route path="/guide/mydata/:sessionId" element={<MydataConsentPage />} />
@@ -138,6 +143,7 @@ function AppChrome() {
                         {/* 하이브리드 평가 */}
                         <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
                         <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
+                        <Route path="/hybrid-evaluation/complete" element={<HybridEvaluationComplete />} />
 
                         {/* 계좌 연결 */}
                         <Route path="/bank-connect" element={<BankConnect />} />
@@ -186,7 +192,7 @@ export default function App() {
                 <AppChrome />
             </BrowserRouter>
 
-            {/* 스플래시를 최상단 오버레이로 → 뒤에 홈이 준비된 상태에서 자연스러운 전환 */}
+            {/* 스플래시를 최상단 오버레이로 ��� 뒤에 홈이 준비된 상태에서 자연스러운 전환 */}
             {showSplash && <SplashScreen fading={fadeSplash} />}
         </div>
     );
