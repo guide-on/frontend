@@ -69,7 +69,7 @@ const ESG_STEPS: {
   },
   {
     title: 'ESG (3/4)',
-    desc: 'ESG 중 Governance(투명경영 및 준법경영)을 평가합니다.',
+    desc: 'ESG 중 Governance(투���경영 및 준법경영)을 평가합니다.',
     items: ['성실납세 이력', '4대 보험료 납부 이력', '투명한 정보 공개'],
   },
   {
@@ -309,7 +309,7 @@ const StartHybridEvaluation = () => {
         setEvaluationResult(response.data);
         setTimeout(() => {
           setSubmitting(false);
-          setShowResult(true);
+          navigate('/hybrid-evaluation/complete');
         }, 500);
       } else {
         throw new Error(response.message || '평��� 생성에 실패했습니다.');
@@ -651,7 +651,7 @@ const StartHybridEvaluation = () => {
                       상세내용
                     </th>
                     <th className="border border-gray-200 p-2 text-right font-semibold">
-                      활용비중
+                      활��비중
                     </th>
                   </tr>
                 </thead>
@@ -1158,7 +1158,7 @@ const StartHybridEvaluation = () => {
         title="관련 서류 첨부 도움말"
       >
         <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-          <li>매출·현금흐름 관련 증빙(PDF, 스캔본 등)을 업로드하세요.</li>
+          <li>매출·현금흐름 관련 증빙(PDF, 스캔본 등)��� 업로드하세요.</li>
           <li>파일 형식: PDF 권장, 최대 20MB.</li>
           <li>민감정보는 가급적 마스킹 후 제출해 주세요.</li>
         </ul>
