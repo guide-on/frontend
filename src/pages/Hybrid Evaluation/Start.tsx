@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import React from 'react';
 import {
   FaBars,
   FaQuestionCircle,
@@ -17,6 +18,7 @@ import {
   type CreditEvaluationResponse,
 } from '../../api/creditEvaluationApi';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { storeSummaryApi, type CsvUploadRequest, type SalesDataRow } from '../../api/storeSummaryApi';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -162,11 +164,30 @@ const ScoreChip = ({ v }: { v: string }) => {
 const UploadCard = ({
   onPdfPicked,
   fileName,
+  acceptTypes = "application/pdf",
+  category,
 }: {
   onPdfPicked: (f: File) => void;
   fileName?: string;
+  acceptTypes?: string;
+  category?: CategoryKey;
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      if (category === 'sales' && f.type === 'text/csv') {
+        onPdfPicked(f);
+      } else if (f.type === 'application/pdf') {
+        onPdfPicked(f);
+      } else {
+        alert(category === 'sales' ? 'PDF 또는 CSV 파일만 업로드 가능합니다.' : 'PDF 파일만 업로드 가능합니다.');
+        e.target.value = '';
+      }
+    }
+  };
+
   return (
     <div className="rounded-md p-4 space-y-3 border bg-white border-lightBlue/50">
       <button
@@ -181,12 +202,9 @@ const UploadCard = ({
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf"
+        accept={acceptTypes}
         className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onPdfPicked(f);
-        }}
+        onChange={handleFileChange}
       />
     </div>
   );
@@ -250,6 +268,32 @@ const StartHybridEvaluation = () => {
   const [evaluationResult, setEvaluationResult] =
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // CSV 관련 상태
+  const [csvData, setCsvData] = useState<any>(null);
+  const [csvUploadStatus, setCsvUploadStatus] = useState<string | null>(null);
+
+  // CSV 컬럼 순서 정의
+  const csvColumns = [
+    'total_sales_amount',
+    'weekday_sales_amount',
+    'weekend_sales_amount',
+    'lunch_sales_ratio',
+    'dinner_sales_ratio',
+    'transaction_count',
+    'weekday_transaction_count',
+    'weekend_transaction_count',
+    'mom_growth_rate',
+    'yoy_growth_rate',
+    'sales_cv',
+    'avg_transaction_value',
+    'weekday_avg_transaction_value',
+    'weekend_avg_transaction_value',
+    'cash_payment_ratio',
+    'card_payment_ratio',
+    'revisit_customer_sales_ratio',
+    'new_customer_ratio'
+  ];
 
   // ESG 전용 스텝 상태 및 파일명
   const [esgStep, setEsgStep] = useState(1); // 1~4
@@ -265,6 +309,175 @@ const StartHybridEvaluation = () => {
     safetyIncidents: '',
     notes: '',
   });
+
+  // CSV 파일 파싱 함수
+  const parseCsv = (text: string): string[][] => {
+    const lines = text.trim().split('\n');
+    return lines.map(line => {
+      const row: string[] = [];
+      let currentField = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"' && (i === 0 || line[i-1] === ',')) {
+          inQuotes = true;
+        } else if (char === '"' && inQuotes && (i === line.length - 1 || line[i+1] === ',')) {
+          inQuotes = false;
+        } else if (char === ',' && !inQuotes) {
+          row.push(currentField.trim());
+          currentField = '';
+        } else {
+          currentField += char;
+        }
+      }
+      
+      row.push(currentField.trim());
+      return row;
+    });
+  };
+
+  // CSV 데이터 검증 함수
+  const validateCsvData = (data: string[][]): { isValid: boolean; error?: string; parsedData?: any } => {
+    if (data.length === 0) {
+      return { isValid: false, error: 'CSV 파일이 비어있습니다.' };
+    }
+
+    // 헤더가 있는 경우와 없는 경우 모두 처리
+    let dataRows = data;
+    let startIndex = 0;
+
+    // 첫 번째 행이 헤더인지 확인 (숫자가 아닌 값이 포함되어 있다면 헤더로 판단)
+    const firstRow = data[0];
+    const hasHeader = firstRow.some(cell => isNaN(Number(cell)) && cell.trim() !== '');
+    
+    if (hasHeader) {
+      startIndex = 1;
+      dataRows = data.slice(1);
+    }
+
+    if (dataRows.length === 0) {
+      return { isValid: false, error: '데이터 행이 없습니다.' };
+    }
+
+    // 각 행이 정확히 18개의 컬럼을 가지는지 확인
+    for (let i = 0; i < dataRows.length; i++) {
+      if (dataRows[i].length !== csvColumns.length) {
+        return { 
+          isValid: false, 
+          error: `행 ${i + 1 + startIndex}: ${csvColumns.length}개의 컬럼이 필요하지만 ${dataRows[i].length}개가 있습니다.`
+        };
+      }
+
+      // 각 값이 숫자인지 확인
+      for (let j = 0; j < dataRows[i].length; j++) {
+        const value = dataRows[i][j].trim();
+        if (value === '' || isNaN(Number(value))) {
+          return {
+            isValid: false,
+            error: `행 ${i + 1 + startIndex}, 컬럼 ${j + 1} (${csvColumns[j]}): 숫자 값이 필요합니다. 현재 값: "${value}"`
+          };
+        }
+      }
+    }
+
+    // 데이터를 객체 배열로 변환
+    const parsedData = dataRows.map(row => {
+      const obj: any = {};
+      csvColumns.forEach((column, index) => {
+        obj[column] = Number(row[index]);
+      });
+      return obj;
+    });
+
+    return { isValid: true, parsedData };
+  };
+
+  // CSV 파일 업로드 처리 함수
+  const handleCsvUpload = async (file: File) => {
+    setCsvUploadStatus('파일을 읽는 중...');
+    setError(null);
+
+    try {
+      const text = await file.text();
+      const parsedCsv = parseCsv(text);
+      const validation = validateCsvData(parsedCsv);
+
+      if (!validation.isValid) {
+        setError(validation.error || 'CSV 파일 검증에 실패했습니다.');
+        setCsvUploadStatus(null);
+        return;
+      }
+
+      setCsvData(validation.parsedData);
+      
+      // 백엔드로 데이터 전송
+      setCsvUploadStatus('서버에 데이터를 전송하는 중...');
+      
+      // memberId 확인 - user 객체에서 먼저 확인하고, 없으면 임시 값 사용
+      let memberId = user?.memberId;
+      if (!memberId) {
+        // 로그인되어 있지만 memberId가 없는 경우, 임시로 1을 사용하거나 다른 로직 적용
+        console.warn('memberId not found in user object, using fallback');
+        memberId = 1; // 또는 적절한 기본값
+      }
+
+      // 현재 년월 (YYYY-MM 형식)
+      const now = new Date();
+      const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const uploadRequest: CsvUploadRequest = {
+        memberId: memberId,
+        summaryYearMonth: currentYearMonth,
+        salesData: validation.parsedData.map((row: any) => ({
+          totalSalesAmount: row.total_sales_amount,
+          weekdaySalesAmount: row.weekday_sales_amount,
+          weekendSalesAmount: row.weekend_sales_amount,
+          lunchSalesRatio: row.lunch_sales_ratio,
+          dinnerSalesRatio: row.dinner_sales_ratio,
+          transactionCount: row.transaction_count,
+          weekdayTransactionCount: row.weekday_transaction_count,
+          weekendTransactionCount: row.weekend_transaction_count,
+          momGrowthRate: row.mom_growth_rate,
+          yoyGrowthRate: row.yoy_growth_rate,
+          salesCv: row.sales_cv,
+          avgTransactionValue: row.avg_transaction_value,
+          weekdayAvgTransactionValue: row.weekday_avg_transaction_value,
+          weekendAvgTransactionValue: row.weekend_avg_transaction_value,
+          cashPaymentRatio: row.cash_payment_ratio,
+          cardPaymentRatio: row.card_payment_ratio,
+          revisitCustomerSalesRatio: row.revisit_customer_sales_ratio,
+          newCustomerRatio: row.new_customer_ratio
+        }))
+      };
+
+      const result = await storeSummaryApi.uploadCsvData(uploadRequest);
+
+      if (result.success) {
+        setCsvUploadStatus(`${validation.parsedData.length}개의 데이터가 성공적으로 업로드되어 매장 요약 데이터가 업데이트되었습니다.`);
+        
+        // 파일명 업데이트 및 완료 상태로 변경
+        const nextFiles = { ...fileNames, sales: file.name };
+        const nextCompleted = { ...completed, sales: true } as Record<CategoryKey, boolean>;
+        setFileNames(nextFiles);
+        setCompleted(nextCompleted);
+        
+        try {
+          localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
+          localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+        } catch {}
+      } else {
+        setError(result.message || '데이터 업로드에 실패했습니다.');
+        setCsvUploadStatus(null);
+      }
+
+    } catch (error: any) {
+      console.error('CSV 파일 처리 중 오류:', error);
+      setError(error.response?.data?.message || error.message || 'CSV 파일 처리 중 오류가 발생했습니다.');
+      setCsvUploadStatus(null);
+    }
+  };
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -407,6 +620,7 @@ const StartHybridEvaluation = () => {
                 </div>
                 <UploadCard
                   fileName={esgFiles[esgStep]}
+                  category="esg"
                   onPdfPicked={(f) => {
                     setEsgFiles((prev) => ({ ...prev, [esgStep]: f.name }));
                   }}
@@ -592,17 +806,58 @@ const StartHybridEvaluation = () => {
                 </div>
                 <UploadCard
                   fileName={fileNames[selected]}
+                  category={selected}
+                  acceptTypes={selected === 'sales' ? "application/pdf,.csv,text/csv" : "application/pdf"}
                   onPdfPicked={(f) => {
-                    const nextFiles = { ...fileNames, [selected]: f.name };
-                    const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
-                    setFileNames(nextFiles);
-                    setCompleted(nextCompleted);
-                    try {
-                      localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
-                      localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
-                    } catch {}
+                    if (selected === 'sales' && f.type === 'text/csv') {
+                      handleCsvUpload(f);
+                    } else {
+                      const nextFiles = { ...fileNames, [selected]: f.name };
+                      const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
+                      setFileNames(nextFiles);
+                      setCompleted(nextCompleted);
+                      try {
+                        localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
+                        localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+                      } catch {}
+                    }
                   }}
                 />
+                {/* CSV 업로드 상태 표시 */}
+                {selected === 'sales' && csvUploadStatus && (
+                  <div className="mt-2 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                    {csvUploadStatus}
+                  </div>
+                )}
+                {/* CSV 데이터 미리보기 */}
+                {selected === 'sales' && csvData && csvData.length > 0 && (
+                  <div className="mt-2 p-3 rounded-md bg-blue-50 border border-blue-200">
+                    <div className="text-sm font-medium text-blue-800 mb-2">업로드된 데이터 미리보기 (최대 3행)</div>
+                    <div className="text-xs text-blue-700 overflow-x-auto">
+                      <div className="grid grid-cols-6 gap-1 text-[10px]">
+                        <div className="font-semibold">총매출액</div>
+                        <div className="font-semibold">평일매출</div>
+                        <div className="font-semibold">주말매출</div>
+                        <div className="font-semibold">점심비율</div>
+                        <div className="font-semibold">저녁비율</div>
+                        <div className="font-semibold">거래수</div>
+                        {csvData.slice(0, 3).map((row: any, idx: number) => (
+                          <React.Fragment key={idx}>
+                            <div>{row.total_sales_amount?.toLocaleString()}</div>
+                            <div>{row.weekday_sales_amount?.toLocaleString()}</div>
+                            <div>{row.weekend_sales_amount?.toLocaleString()}</div>
+                            <div>{row.lunch_sales_ratio}%</div>
+                            <div>{row.dinner_sales_ratio}%</div>
+                            <div>{row.transaction_count?.toLocaleString()}</div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      {csvData.length > 3 && (
+                        <div className="mt-1 text-blue-600">... 및 {csvData.length - 3}개 행 더</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </>
             )}
             {error && (

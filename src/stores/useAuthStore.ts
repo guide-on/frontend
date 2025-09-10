@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import api from '@/api';
 
 export type User = {
+  memberId?: number;
   name: string;
   email: string;
   roles: string[];
