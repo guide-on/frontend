@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
 import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
@@ -137,10 +138,10 @@ const ResultOverlay = ({
           );
         }
 
-        // 매장 요약 데이터 조회 (guideON 분석용) - 현재 로그인한 사용자의 member_id로 조회
+        // 매장 요약 데이터 조회 (guideON 분석용) - 현재 로그인�� 사용자의 member_id로 조회
         try {
           console.log('매장 요약 데이터 조회 시작');
-          const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(undefined, 1, 1);
+          const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(1, 1);
           console.log('매장 요약 데이터 응답:', storeSummaryResponse);
           if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
             setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
@@ -262,7 +263,7 @@ const ResultOverlay = ({
       },
       {
         t: '비금융/마이데이터',
-        d: '공과금·통신요금 납부 및 마이데이터 자산 정보를 반영합니다.',
+        d: '공과금·통신요금 납부 및 마이데이터 자산 정보를 반영합니��.',
         g: getGradeFromScore(creditResult.nonFinancialScore, 100),
         details: [
           {
@@ -309,7 +310,7 @@ const ResultOverlay = ({
         },
         {
           section: '보증 정보',
-          items: ['보증 발생 없음', '보증 해소 이력 있음'],
+          items: ['보증 ���생 없음', '보증 해소 이력 있음'],
         },
       ],
     },
@@ -417,7 +418,7 @@ const ResultOverlay = ({
 
     return [
       {
-        t: '매출 안정성 및 성장성',
+        t: '매출 ���정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
         g: getSalesGrade(
           data.momGrowthRate || 0, 

@@ -3,10 +3,7 @@ import type { AxiosResponse } from 'axios';
 
 export interface StoreSummaryResponse {
   sessionId: number;
-  ownerId: number;
   businessRegistrationNo: string;
-  currentMonth?: number;
-  summaryYearMonth: string;
   totalSalesAmount?: number;
   weekdaySalesAmount?: number;
   weekendSalesAmount?: number;
@@ -19,8 +16,6 @@ export interface StoreSummaryResponse {
   yoyGrowthRate?: number;
   salesCv?: number;
   avgTransactionValue?: number;
-  weekdayAvgTransactionValue?: number;
-  weekendAvgTransactionValue?: number;
   cashPaymentRatio?: number;
   cardPaymentRatio?: number;
   revisitCustomerSalesRatio?: number;
@@ -45,14 +40,12 @@ export interface StoreSummaryResponse {
   operatingProfit?: number;
   costOfGoodsSold?: number;
   totalSalary?: number;
-  operatingExpenses?: number;
   rentExpense?: number;
   otherExpenses?: number;
   operatingProfitRatio?: number;
   cogsRatio?: number;
   salaryRatio?: number;
   rentRatio?: number;
-  operatingExpenseRatio?: number;
   cashPaymentRatioDetail?: number;
   cardPaymentRatioDetail?: number;
   otherPaymentRatio?: number;
@@ -83,8 +76,6 @@ export interface SalesDataRow {
   yoyGrowthRate: number;
   salesCv: number;
   avgTransactionValue: number;
-  weekdayAvgTransactionValue: number;
-  weekendAvgTransactionValue: number;
   cashPaymentRatio: number;
   cardPaymentRatio: number;
   revisitCustomerSalesRatio: number;
@@ -93,7 +84,7 @@ export interface SalesDataRow {
 
 export interface CsvUploadRequest {
   sessionId: number;
-  summaryYearMonth: string;
+  businessRegistrationNo: string;
   salesData: SalesDataRow[];
 }
 
@@ -111,28 +102,10 @@ export interface StoreSummaryDetailResponse {
 
 class StoreSummaryApi {
   async getMyStoreSummary(
-    summaryYearMonth?: string,
     page: number = 1,
     limit: number = 20
   ): Promise<StoreSummaryListResponse> {
     let url = `/api/store-summary/my-data?page=${page}&limit=${limit}`;
-    if (summaryYearMonth) {
-      url += `&summaryYearMonth=${summaryYearMonth}`;
-    }
-    const response: AxiosResponse<StoreSummaryListResponse> = await api.get(url);
-    return response.data;
-  }
-
-  async getStoreSummaryByOwnerId(
-    ownerId: number,
-    summaryYearMonth?: string,
-    page: number = 1,
-    limit: number = 20
-  ): Promise<StoreSummaryListResponse> {
-    let url = `/api/store-summary/owner/${ownerId}?page=${page}&limit=${limit}`;
-    if (summaryYearMonth) {
-      url += `&summaryYearMonth=${summaryYearMonth}`;
-    }
     const response: AxiosResponse<StoreSummaryListResponse> = await api.get(url);
     return response.data;
   }
