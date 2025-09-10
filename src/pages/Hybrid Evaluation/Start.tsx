@@ -273,11 +273,17 @@ const StartHybridEvaluation = () => {
     setError(null);
 
     try {
+      // sessionId 검증
+      if (!user?.sessionId) {
+        throw new Error('세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.');
+      }
+
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 2, 90));
       }, 100);
 
       const evaluationData: CreditEvaluationCreateRequest = {
+        sessionId: user.sessionId,
         totalOverdueCount: 0,
         recent12mOverdueCount: 0,
         maxOverdueDays: 0,
