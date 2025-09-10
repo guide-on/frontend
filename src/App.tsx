@@ -7,11 +7,12 @@ import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import SplashScreen from './components/common/SplashScreen';
 
-// 페이지 ��포넌트
+// 페이지 컴포넌트
 import Home from './home/pages/Home';
 import Support from './pages/Support';
 import MyPage from './pages/MyPage';
 import Community from './community/index.tsx';
+import NotFound from './pages/NotFound';
 
 // 인증
 import Login from '@/pages/auth/Login';
@@ -141,6 +142,9 @@ function AppChrome() {
                         {/* 계좌 연결 */}
                         <Route path="/bank-connect" element={<BankConnect />} />
                         <Route path="/bank-connect/complete" element={<BankConnectComplete />} />
+
+                        {/* 404 - 다른 모든 라우트에 매칭되지 않을 때 */}
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
             </main>
