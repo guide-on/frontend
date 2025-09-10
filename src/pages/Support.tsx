@@ -83,6 +83,72 @@ const Support: React.FC = () => {
   const rateRef = React.useRef<HTMLDivElement>(null);
   const limitRef = React.useRef<HTMLDivElement>(null);
 
+  // 필터링 함수
+  const filterFunds = (fundsList: FundListItem[], filters: Filters): FundListItem[] => {
+    return fundsList.filter((fund) => {
+      // 키워드 필터링
+      if (filters.keywords.length > 0) {
+        const hasKeyword = filters.keywords.some(keyword => {
+          const cleanKeyword = keyword.replace('#', '');
+          return fund.name.includes(cleanKeyword) || 
+                 fund.target.includes(cleanKeyword) ||
+                 fund.limitAmount.includes(cleanKeyword);
+        });
+        if (!hasKeyword) return false;
+      }
+
+      // 사업자구분 필터링
+      if (filters.types.length > 0) {
+        const hasType = filters.types.some(type => 
+          fund.target.includes(type) || fund.name.includes(type)
+        );
+        if (!hasType) return false;
+      }
+
+      // 대출용도 필터링
+      if (filters.purposes.length > 0) {
+        const hasPurpose = filters.purposes.some(purpose => 
+          fund.name.includes(purpose)
+        );
+        if (!hasPurpose) return false;
+      }
+
+      // 금리구분 필터링
+      if (filters.rates.length > 0) {
+        const hasRate = filters.rates.some(rate => 
+          fund.rate.includes(rate)
+        );
+        if (!hasRate) return false;
+      }
+
+      // 대출한도 필터링
+      if (filters.limit[0] > 0 || filters.limit[1] < 100000000) {
+        // 한도 문자열에서 숫자 추출 (예: "5천만원 이하" -> 50000000)
+        const limitStr = fund.limitAmount;
+        let fundLimit = 0;
+        
+        if (limitStr.includes('억')) {
+          const match = limitStr.match(/(\d+(?:\.\d+)?)\s*억/);
+          if (match) {
+            fundLimit = parseFloat(match[1]) * 100000000;
+          }
+        } else if (limitStr.includes('만')) {
+          const match = limitStr.match(/(\d+(?:,\d+)*)\s*만/);
+          if (match) {
+            fundLimit = parseInt(match[1].replace(/,/g, '')) * 10000;
+          }
+        }
+        
+        // 범위 체크
+        if (fundLimit < filters.limit[0] || fundLimit > filters.limit[1]) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
   // Event Handlers
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -366,30 +432,54 @@ const Support: React.FC = () => {
     loadCenterData();
   }, [activeMainFilter]);
 
+  // 필터를 적용하는 함수
+  const applyFilters = async () => {
+    setLoading(true);
+    try {
+      const res = await getFundsList();
+      if (res.status === 200 && Array.isArray(res.data)) {
+        let fundsToSet = res.data;
+        
+        // 접수중 필터 적용
+        if (activeMainFilter === 'receiving') {
+          fundsToSet = fundsToSet.filter((fund: FundListItem) => fund.status === '접수중');
+        }
+        
+        // 필터가 설정되어 있으면 필터링 적용
+        const hasActiveFilters = 
+          activeFilters.keywords.length > 0 ||
+          activeFilters.types.length > 0 ||
+          activeFilters.purposes.length > 0 ||
+          activeFilters.rates.length > 0 ||
+          activeFilters.limit[0] > 0 ||
+          activeFilters.limit[1] < 100000000;
+        
+        if (hasActiveFilters) {
+          fundsToSet = filterFunds(fundsToSet, activeFilters);
+        }
+        
+        setFunds(fundsToSet);
+      } else {
+        setFunds([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Effects
   useEffect(() => {
-    const fetchFunds = async () => {
-      setLoading(true);
-      try {
-        const res = await getFundsList();
-        if (res.status === 200 && Array.isArray(res.data)) {
-          let fundsToSet = res.data;
-          if (activeMainFilter === 'receiving') {
-            fundsToSet = res.data.filter((fund: FundListItem) => fund.status === '접수중');
-          }
-          setFunds(fundsToSet);
-        } else {
-          setFunds([]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (activeMainFilter === 'none' || activeMainFilter === 'receiving') {
-      fetchFunds();
+    if (activeMainFilter === 'none' || activeMainFilter === 'receiving' || activeMainFilter === 'filter') {
+      applyFilters();
     }
   }, [activeMainFilter]);
+
+  // 필터가 변경될 때마다 결과를 업데이트
+  useEffect(() => {
+    if (activeMainFilter === 'filter' || activeMainFilter === 'none') {
+      applyFilters();
+    }
+  }, [activeFilters]);
 
   return (
     <div className="min-h-screen flex flex-col items-center py-4 no-scrollbar overflow-y-auto" style={{ backgroundColor: colors.bgSoft }}>
@@ -428,6 +518,10 @@ const Support: React.FC = () => {
           handleFilterChange={handleFilterChange}
           handleRangeChange={handleRangeChange}
           removeFilter={removeFilter}
+          onApplyFilter={() => {
+            setActiveMainFilter('none');
+            applyFilters();
+          }}
         />
       )}
 

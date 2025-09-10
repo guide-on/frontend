@@ -27,6 +27,7 @@ type FilterSheetProps = {
   handleFilterChange: (category: keyof Filters, value: string) => void;
   handleRangeChange: (value: number | number[]) => void;
   removeFilter: (category: keyof Filters, value: string) => void;
+  onApplyFilter?: () => void;
 };
 
 const FilterSheet: React.FC<FilterSheetProps> = ({
@@ -44,6 +45,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
   handleFilterChange,
   handleRangeChange,
   removeFilter,
+  onApplyFilter,
 }) => {
   // Updated formatCurrency function
   const formatCurrencyLocal = (value: number) => {
@@ -296,7 +298,13 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
             <button
               className="flex-1 py-2.5 rounded-lg text-white text-xs font-semibold"
               style={{ backgroundColor: colors.navy }}
-              onClick={() => setShowFilter(false)}
+              onClick={() => {
+                if (onApplyFilter) {
+                  onApplyFilter();
+                } else {
+                  setShowFilter(false);
+                }
+              }}
             >
               결과보기
             </button>
