@@ -3,6 +3,7 @@ import type { SimulationListItem } from '../types';
 import ResultCard from '../components/ResultCard';
 import ListFilterBar from '../components/ListFilterBar';
 import { MOCK_LIST } from '../utils/mock';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 type Status = 'ALL' | 'COMPLETED' | 'IN_PROGRESS' | 'FAILED' | 'PENDING';
 type Sort = 'LATEST' | 'OLDEST';
@@ -35,7 +36,11 @@ export default function SimulationListPage() {
     return (
         <div className="max-w-[420px] mx-auto p-4">
             <ListFilterBar status={status} setStatus={setStatus} sort={sort} setSort={setSort} />
-            {loading && <div>로딩 중...</div>}
+            {loading && (
+                <div className="text-center py-8">
+                    <LoadingSpinner type="dots" color="#25437B" />
+                </div>
+            )}
             {!loading && list.length === 0 && <div className="text-sm text-gray-500">해당 조건의 내역이 없습니다.</div>}
             <div className="space-y-3">
                 {list.map((it) => <ResultCard key={it.id} item={it} />)}

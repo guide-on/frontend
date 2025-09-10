@@ -7,6 +7,7 @@ import ImprovementCard from '../components/ImprovementCard';
 import StatusChip from '../components/StatusChip';
 import { colors } from '@/styles/colors';
 import { MOCK_DETAIL } from '../utils/mock';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 export default function SimulationDetailPage() {
     const { id } = useParams();
@@ -31,7 +32,11 @@ export default function SimulationDetailPage() {
         return { sum, max, target };
     }, [data]);
 
-    if (loading) return <div className="p-4">로딩 중...</div>;
+    if (loading) return (
+        <div className="p-4 text-center">
+            <LoadingSpinner type="dots" color="#25437B" />
+        </div>
+    );
     if (!data) return <div className="p-4">데이터가 없습니다.</div>;
 
     return (

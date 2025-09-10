@@ -1,6 +1,7 @@
 import React from 'react';
 import FundCard from './FundCard';
 import type { FundListItem } from '../../types/support';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 type FundsListProps = {
   funds: FundListItem[];
@@ -25,7 +26,9 @@ const FundsList: React.FC<FundsListProps> = ({
     return (
       <div className="flex flex-col gap-3">
         {bookmarkLoading && (
-          <div className="text-center text-gray-400 py-8">. . .</div>
+          <div className="text-center py-8">
+            <LoadingSpinner type="dots" color="#25437B" />
+          </div>
         )}
         {!bookmarkLoading && bookmarkFunds.length === 0 && (
           <div className="text-center text-gray-400 py-8">
@@ -47,7 +50,9 @@ const FundsList: React.FC<FundsListProps> = ({
   return (
     <div className="flex flex-col gap-3">
       {loading && (
-        <div className="text-center text-gray-400 py-8">. . .</div>
+        <div className="text-center py-8">
+          <LoadingSpinner type="dots" color="#25437B" />
+        </div>
       )}
       {!loading && funds.length === 0 && (
         <div className="text-center text-gray-400 py-8">
