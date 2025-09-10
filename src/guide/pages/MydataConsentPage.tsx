@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { mydataSync } from '@/api/documentApi';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 type Agreement = {
   key: 'serviceTerms' | 'privacyPolicy' | 'thirdPartyConsent';
@@ -80,16 +81,16 @@ export default function MydataConsentPage() {
   };
 
   return (
-    <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4">
+    <div className="w-full min-h-screen py-5 flex flex-col gap-4" style={{ backgroundColor: colors.bgSoft }}>
       {/* Header */}
-      <div>
+      <section className="rounded-xl p-4 bg-white mx-4">
         <p className="font-bold text-lg mb-1">마이데이터 연동 동의</p>
-        <p className="text-sm text-gray-600">서류 자동 수집을 위해 아래 약관에 동의해 주세요. 원하지 않으면 건너뛰실 수 있습니다.</p>
-      </div>
+        <p className="text-sm text-gray-600">서류 자동 수집을 위해 아래 약관에 동의해 주세요.<br />원하지 않으면 건너뛰실 수 있습니다.</p>
+      </section>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mx-4">
         {AGREEMENTS.map((a) => (
-          <div key={a.key} className="bg-white rounded-xl p-4 border cursor-pointer hover:border-gray-300 transition-colors" style={{ borderColor: '#e5e7eb' }} onClick={() => toggle(a.key)}>
+          <div key={a.key} className="bg-white rounded-xl p-4 cursor-pointer hover:shadow-md transition-all" onClick={() => toggle(a.key)}>
             <div className="flex items-center justify-between">
               <div className="flex items-start gap-3">
                 <input type="checkbox" checked={!!checked[a.key]} onChange={() => toggle(a.key)} className="mt-1 pointer-events-none" />
@@ -109,16 +110,17 @@ export default function MydataConsentPage() {
         ))}
       </div>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {error && <div className="text-sm text-red-600 mx-4">{error}</div>}
 
-      <div className="mt-4">
+      <div className="mt-4 mx-4">
         <button
           onClick={onConfirm}
-          className="w-full py-3 rounded-lg font-semibold text-white mb-2"
+          className="w-full py-3 rounded-lg font-semibold text-white mb-2 flex items-center justify-center gap-2"
           style={{ backgroundColor: allChecked ? colors.navy : '#9ca3af' }}
           disabled={!allChecked || loading}
         >
-          {loading ? '연동 중…' : '동의하고 연동하기'}
+          {loading && <LoadingSpinner type="dots" size="sm" color="white" />}
+          {loading ? '마이데이터 연동 중' : '동의하고 연동하기'}
         </button>
 
         <div className="text-center">
