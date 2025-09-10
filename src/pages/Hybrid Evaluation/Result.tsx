@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import React, { useEffect, useState } from 'react';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
@@ -139,20 +138,20 @@ const ResultOverlay = ({
           );
         }
 
-        // 매장 요약 데이터 조회 (guideON 분석용) - 현재 로그인�� 사용자의 member_id로 조회
+        // 매장 요약 데이터 조회 (guideON 분석용) - 현재 로그인��� 사용자의 member_id로 조회
         try {
           console.log('매장 요약 데이터 조회 시작');
           const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(1, 1);
           console.log('매장 요약 데이터 응답:', storeSummaryResponse);
           if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
-            setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
+            setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번�� (최신) 데이터 사용
             console.log('매장 요약 데이터 설정 완료:', storeSummaryResponse.data[0]);
           } else {
             console.log('매장 요약 데이터가 없음 - success:', storeSummaryResponse.success, 'data length:', storeSummaryResponse.data?.length || 0);
           }
         } catch (storeSummaryError) {
           console.error(
-            '매장 요약 데이터 조회 실패:',
+            '매장 요약 데이터 조회 ���패:',
             storeSummaryError,
           );
         }
@@ -202,7 +201,7 @@ const ResultOverlay = ({
           {
             section: '상환 성실도',
             items: [
-              `부도이력: ${creditData.loanDefaultHistory === 1 ? '있음' : '없음'}`,
+              `부도이력: ${creditData.loanDefaultHistory === 1 ? '있음' : '없��'}`,
               `카드연체율: ${creditData.creditCardDelayRate || 0}%`,
               `납부일관성점수: ${creditData.paymentConsistencyScore || 0}점`,
             ],
@@ -241,7 +240,7 @@ const ResultOverlay = ({
             items: [
               `신용거래기간: ${Math.floor((creditData.creditHistoryMonths || 0) / 12)}년 ${(creditData.creditHistoryMonths || 0) % 12}개월`,
               `최오래된 계좌: ${Math.floor((creditData.oldestCreditAccountMonths || 0) / 12)}년 ${(creditData.oldestCreditAccountMonths || 0) % 12}개월`,
-              `최근 6개월 신용조회: ${creditData.newCreditInquiries6m || 0}회`,
+              `최근 6개월 신용조회: ${creditData.newCreditInquiries6m || 0}��`,
             ],
           },
         ],
@@ -264,7 +263,7 @@ const ResultOverlay = ({
       },
       {
         t: '비금융/마이데이터',
-        d: '공과금·통신요금 납부 및 마이데이터 자산 정보를 반영합니��.',
+        d: '공과금·통신요금 납부 및 마이데이터 자산 정보를 반영합����.',
         g: getGradeFromScore(creditResult.nonFinancialScore, 100),
         details: [
           {
@@ -311,7 +310,7 @@ const ResultOverlay = ({
         },
         {
           section: '보증 정보',
-          items: ['보증 ���생 없음', '보증 해소 이력 있음'],
+          items: ['��증 ���생 없음', '보증 해소 이력 있음'],
         },
       ],
     },
@@ -490,7 +489,7 @@ const ResultOverlay = ({
         ),
         details: [
           {
-            section: '환경',
+            section: '환��',
             items: [
               `에너지 효율 지원사업 참여: ${data.participateEnergyEffSupport ? '참여' : '미참여'}`,
               `일일 음식물쓰레기: ${data.foodWasteKgPerDay || 0}kg`,
@@ -500,7 +499,7 @@ const ResultOverlay = ({
           {
             section: '사회',
             items: [
-              `고용보험 가입자 수: ${data.employmentInsuranceEmployees || 0}명`,
+              `고용보험 ���입자 수: ${data.employmentInsuranceEmployees || 0}명`,
               `위생등급 인증: ${data.hygieneCertified ? '인증됨' : '미인증'}`,
               `고객 리뷰 평균 평점: ${data.customerReviewAvgRating || 0}점`,
             ],
