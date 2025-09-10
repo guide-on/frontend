@@ -9,7 +9,7 @@ import { colors } from '@/styles/colors';
 const MyPage: React.FC = () => {
   const [tab, setTab] = useState<'scrap' | 'comment'>('scrap');
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
@@ -38,7 +38,7 @@ const MyPage: React.FC = () => {
           </div>
           <div className="flex flex-col justify-center">
             <span className="text-xl font-bold text-gray-900 mb-1">
-              홍길동님
+              {user.name || '사용자'}님
             </span>
             <span className="text-sm text-gray-600 flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
               <span>123-45-67890</span>
