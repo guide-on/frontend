@@ -1,7 +1,49 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { colors } from '@/styles/colors';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { creditEvaluationApi } from '@/api/creditEvaluationApi';
+import { useState } from 'react';
 
 const HybridEvaluation = () => {
+  const { sessionId } = useParams<{ sessionId?: string }>();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  console.log('🔍 [HybridEvaluation] URL sessionId:', sessionId);
+  console.log('🔍 [HybridEvaluation] user.sessionId:', user?.sessionId);
+
+  const handleStartEvaluation = async () => {
+    const currentSessionId = sessionId || user?.sessionId;
+    console.log('🚀 [HybridEvaluation] handleStartEvaluation - using sessionId:', currentSessionId);
+    
+    if (!currentSessionId) {
+      alert('세션 정보가 없습니다. 다시 로그인해주세요.');
+      return;
+    }
+
+    try {
+      setIsInitializing(true);
+      console.log('📡 [HybridEvaluation] 하이브리드 평가 데이터 초기화 API 호출:', currentSessionId);
+      
+      // 하이브리드 평가 데이터 초기화 API 호출
+      const response = await creditEvaluationApi.initialize(currentSessionId.toString());
+      
+      if (response.success) {
+        console.log('✅ [HybridEvaluation] 초기화 성공:', response.message);
+        navigate(`/hybrid-evaluation/start/${currentSessionId}`);
+      } else {
+        throw new Error(response.message || '초기화에 실패했습니다.');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ [HybridEvaluation] 초기화 실패:', error);
+      alert(`초기화 중 오류가 발생했습니다: ${error.message || error}`);
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+
   return (
     <div
       className="px-4 py-6 h-screen space-y-5"
@@ -66,12 +108,13 @@ const HybridEvaluation = () => {
         </div>
       </section>
 
-      <Link
-        to="/hybrid-evaluation/start"
-        className="w-full inline-block text-center py-4 rounded-md font-semibold mt-5 bg-navy text-white hover:bg-blue shadow-md transition"
+      <button
+        onClick={handleStartEvaluation}
+        disabled={isInitializing}
+        className="w-full py-4 rounded-md font-semibold mt-5 bg-navy text-white hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        신용도 확인 시작하기
-      </Link>
+        {isInitializing ? '데이터 초기화 중...' : '신용도 확인 시작하기'}
+      </button>
     </div>
   );
 };

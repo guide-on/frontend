@@ -56,10 +56,8 @@ function AppChrome() {
         '/auth/login',
         '/auth/signup',
         '/auth/find',
-        '/hybrid-evaluation/start',
         '/bank-connect',
         '/bank-connect/complete',
-        '/hybrid-evaluation/complete',
     ]);
 
     // === Navbar 숨김 조건 ===
@@ -67,12 +65,10 @@ function AppChrome() {
         '/auth/login',
         '/auth/signup',
         '/auth/find',
-        '/hybrid-evaluation/start',
         '/bank-connect',
         '/bank-connect/complete',
-        '/hybrid-evaluation/complete',
     ]);
-    const hideNavbarPrefixes = ['/simulation/'];
+    const hideNavbarPrefixes = ['/simulation/', '/hybrid-evaluation/start/', '/hybrid-evaluation/complete/'];
 
     const isHeaderHidden = hideHeaderExact.has(pathname);
     const isNavbarHidden =
@@ -144,8 +140,9 @@ function AppChrome() {
 
                         {/* 하이브리드 평가 */}
                         <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
-                        <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
-                        <Route path="/hybrid-evaluation/complete" element={<HybridEvaluationComplete />} />
+                        <Route path="/hybrid-evaluation/:sessionId" element={<HybridEvaluation />} />
+                        <Route path="/hybrid-evaluation/start/:sessionId" element={<StartHybridEvaluation />} />
+                        <Route path="/hybrid-evaluation/complete/:sessionId" element={<HybridEvaluationComplete />} />
 
                         {/* 계좌 연결 */}
                         <Route path="/bank-connect" element={<BankConnect />} />
