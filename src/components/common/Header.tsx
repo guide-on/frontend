@@ -1,5 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaRegBuilding } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, ChevronLeft } from 'lucide-react';
 
 // 경로 → 헤더 타이틀 매핑(정확/프리픽스/정규식 혼합)
@@ -39,32 +38,34 @@ const Header = () => {
   const path = location.pathname;
   const title = routeTitle(path);
   const isCommunity = path.startsWith('/community');
+  
+  // 메인 네비게이션 페이지들 (뒤로가기 버튼을 숨길 페이지들)
+  const mainNavPages = ['/', '/guide', '/support', '/community', '/mypage'];
+  const isMainNavPage = mainNavPages.includes(path);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
-      <div className="h-14 max-w-[375px] mx-auto px-4 flex items-center relative">
-        {path === '/' ? (
-          <Link to="/" className="absolute left-4">
-            <FaRegBuilding size={28} />
-          </Link>
-        ) : (
+    <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md shadow-sm w-full max-w-[480px]">
+      <div className="h-16 px-6 flex items-center relative border-b border-gray-100/50">
+        {!isMainNavPage && (
           <button
-            className="absolute left-4 text-gray-400 hover:text-gray-600 p-1"
+            className="absolute left-6 text-gray-500 hover:text-blue-600 p-2 transition-all duration-300 hover:scale-110 hover:bg-blue-50 rounded-full"
             aria-label="뒤로가기"
             onClick={() => nav(-1)}
           >
-            <ChevronLeft className="w-7 h-7" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
         )}
-        <span className="text-lg font-bold mx-auto">{title}</span>
+        <div className={`flex-1 ${!isMainNavPage ? 'ml-12' : ''}`}>
+          <h1 className="text-lg font-bold text-gray-700">{title}</h1>
+        </div>
 
         {/* 커뮤니티 영역에서는 검색 아이콘 노출 */}
-        <div className="absolute right-4">
+        <div className="absolute right-6">
           {isCommunity && (
             <button
               aria-label="search"
               onClick={() => nav('/community/search')}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 hover:scale-110"
             >
               <Search className="w-5 h-5" />
             </button>

@@ -7,6 +7,7 @@ import DetailStatCard from '../components/DetailStatCard';
 import ImprovementSummaryCard from '../components/ImprovementSummaryCard';
 import { colors } from '@/styles/colors';
 import { MOCK_DETAIL } from '../utils/mock';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 /** 연한 회색 느낌표 (타이틀 옆) */
 function InfoHint() {
@@ -96,7 +97,11 @@ export default function SimulationDetailPage() {
         };
     }, [data]);
 
-    if (loading) return <div className="p-4">로딩 중...</div>;
+    if (loading) return (
+        <div className="p-4 text-center">
+            <LoadingSpinner type="dots" color="#25437B" />
+        </div>
+    );
     if (!data) return <div className="p-4">데이터가 없습니다.</div>;
 
     const goDetail = (slug: string) => nav(`/simulation/insight/${slug}?id=${data.id}`);

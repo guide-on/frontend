@@ -210,6 +210,7 @@ const Signup: React.FC = () => {
 
   const proceedToOnboarding = useCallback(() => {
     if (!isProfileValid) return;
+    
     const baseCommon = {
       email: member.email,
       password: member.password,
@@ -219,6 +220,7 @@ const Signup: React.FC = () => {
       birth: member.birth,
       residenceSggCode: member.residenceSggCode,
     };
+    
     setBase((memberType ?? 'GENERAL') as MemberType, baseCommon);
     navigate('/auth/onboarding');
   }, [
@@ -236,116 +238,191 @@ const Signup: React.FC = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-4 px-4">
-      <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 400 }}>
-        <div className="flex items-center justify-between mb-5">
-          <button
-            onClick={goBack}
-            className="p-2 hover:bg-white/60 rounded-lg transition-colors"
-          >
-            <svg
-              className="w-6 h-6 text-slate-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 px-4">
+      {/* Background decoration */}
+      <div className="absolute -top-10 -left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl"></div>
+      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-200/30 rounded-full blur-xl"></div>
+      <div className="absolute top-1/2 -left-5 w-16 h-16 bg-indigo-200/20 rounded-full blur-lg"></div>
+      
+      <div className="max-w-sm mx-auto w-full relative" style={{ maxWidth: 400 }}>
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-6 shadow-lg shadow-blue-500/10 mb-4 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={goBack}
+              className="p-2 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <h1 className="text-2xl font-bold text-slate-800">회원가입</h1>
-          <div className="w-10" />
+              <svg
+                className="w-6 h-6"
+                style={{ color: colors.navy }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-800">회원가입</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                {currentStep}/{totalSteps}단계
+              </p>
+            </div>
+            
+            <div className="w-10" />
+          </div>
         </div>
 
-        {currentStep === 1 && (
-          <StepType
-            totalSteps={totalSteps}
-            memberType={memberType}
-            onSelect={setMemberType}
-            onNext={goToNextStep}
-          />
-        )}
+        {/* Content Card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-6 shadow-lg shadow-blue-500/10 transition-all duration-300">
+          {currentStep === 1 && (
+            <StepType
+              totalSteps={totalSteps}
+              memberType={memberType}
+              onSelect={setMemberType}
+              onNext={goToNextStep}
+            />
+          )}
 
-        {currentStep === 2 && (
-          <StepTerms
-            totalSteps={totalSteps}
-            value={agreements}
-            onChange={setAgreements}
-            onPrev={goToPreviousStep}
-            onNext={goToNextStep}
-          />
-        )}
+          {currentStep === 2 && (
+            <StepTerms
+              totalSteps={totalSteps}
+              value={agreements}
+              onChange={setAgreements}
+              onPrev={goToPreviousStep}
+              onNext={goToNextStep}
+            />
+          )}
 
-        {currentStep === 3 && (
-          <StepAccount
-            totalSteps={totalSteps}
-            email={member.email}
-            password={member.password}
-            password2={password2}
-            setEmail={(email) => setMember((s) => ({ ...s, email }))}
-            setPassword={(password) => setMember((s) => ({ ...s, password }))}
-            setPassword2={setPassword2}
-            emailVerified={emailVerified}
-            setEmailVerified={setEmailVerified}
-            passwordValidated={passwordValidated}
-            setPasswordValidated={setPasswordValidated}
-            onPrev={goToPreviousStep}
-            onNext={goToNextStep}
-          />
-        )}
+          {currentStep === 3 && (
+            <StepAccount
+              totalSteps={totalSteps}
+              email={member.email}
+              password={member.password}
+              password2={password2}
+              setEmail={(email) => setMember((s) => ({ ...s, email }))}
+              setPassword={(password) => setMember((s) => ({ ...s, password }))}
+              setPassword2={setPassword2}
+              emailVerified={emailVerified}
+              setEmailVerified={setEmailVerified}
+              passwordValidated={passwordValidated}
+              setPasswordValidated={setPasswordValidated}
+              onPrev={goToPreviousStep}
+              onNext={goToNextStep}
+            />
+          )}
 
-        {currentStep === 4 && (
-          <StepProfile
-            totalSteps={totalSteps}
-            memberType={memberType}
-            name={member.name}
-            gender={member.gender}
-            birth={member.birth}
-            phone={member.phone}
-            setName={(v) => setMember((s) => ({ ...s, name: v }))}
-            setGender={(v) => setMember((s) => ({ ...s, gender: v }))}
-            setBirth={(v) => setMember((s) => ({ ...s, birth: v }))}
-            setPhone={(v) => setMember((s) => ({ ...s, phone: v }))}
-            phoneVerified={phoneVerified}
-            setPhoneVerified={setPhoneVerified}
-            isValid={isProfileValid}
-            onPrev={goToPreviousStep}
-            onNextGeneral={proceedToOnboarding}
-            onNextSole={goToNextStep}
-          />
-        )}
+          {currentStep === 4 && (
+            <StepProfile
+              totalSteps={totalSteps}
+              memberType={memberType}
+              name={member.name}
+              gender={member.gender}
+              birth={member.birth}
+              phone={member.phone}
+              setName={(v) => setMember((s) => ({ ...s, name: v }))}
+              setGender={(v) => setMember((s) => ({ ...s, gender: v }))}
+              setBirth={(v) => setMember((s) => ({ ...s, birth: v }))}
+              setPhone={(v) => setMember((s) => ({ ...s, phone: v }))}
+              phoneVerified={phoneVerified}
+              setPhoneVerified={setPhoneVerified}
+              isValid={isProfileValid}
+              onPrev={goToPreviousStep}
+              onNextGeneral={proceedToOnboarding}
+              onNextSole={goToNextStep}
+            />
+          )}
 
-        {currentStep === 5 && memberType === 'SOLE_PROPRIETOR' && (
-          <StepBusiness
-            totalSteps={totalSteps}
-            value={biz}
-            onChange={setBiz}
-            isValid={isBusinessInfoValid}
-            bizVerified={bizVerified}
-            setBizVerified={setBizVerified}
-            onPrev={goToPreviousStep}
-            onSubmit={completeSignup}
-            submitting={isSubmitting}
-          />
-        )}
+          {currentStep === 5 && memberType === 'SOLE_PROPRIETOR' && (
+            <StepBusiness
+              totalSteps={totalSteps}
+              value={biz}
+              onChange={setBiz}
+              isValid={isBusinessInfoValid}
+              bizVerified={bizVerified}
+              setBizVerified={setBizVerified}
+              onPrev={goToPreviousStep}
+              onSubmit={completeSignup}
+              submitting={isSubmitting}
+            />
+          )}
+        </div>
       </div>
 
       <style>{`
         .text-color,
         .text-btn { color: ${colors.navy}; }
         .text-btn:hover { opacity: 0.9; }
-        .next-button { background: ${colors.navy}; border: none; touch-action: manipulation; }
-        .next-button:hover { opacity: 0.9; }
+        .next-button { 
+          background: ${colors.navy}; 
+          border: none; 
+          touch-action: manipulation;
+          border-radius: 0.75rem;
+          padding: 0.75rem 1.5rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          box-shadow: 0 10px 25px ${colors.navy}25;
+        }
+        .next-button:hover { 
+          opacity: 0.9;
+          transform: translateY(-2px);
+          box-shadow: 0 15px 35px ${colors.navy}30;
+        }
+        .next-button:disabled {
+          opacity: 0.5;
+          transform: none;
+          box-shadow: none;
+          background-color: #9ca3af !important;
+        }
         .logo-img { object-fit: contain; }
         input[type='checkbox']:checked { background-color: ${colors.paleBlue}; border-color: #2563eb; }
         .overflow-y-auto::-webkit-scrollbar { width: 6px; }
         .overflow-y-auto::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
         .overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .overflow-y-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Input 필드 스타일 개선 */
+        .form-input {
+          background: rgba(243, 244, 246, 0.5);
+          border: 1px solid #e5e7eb;
+          border-radius: 0.75rem;
+          padding: 0.75rem 1rem;
+          transition: all 0.2s ease;
+          color: #374151;
+        }
+        .form-input::placeholder {
+          color: #9ca3af;
+        }
+        .form-input:focus {
+          background: white;
+          border-color: ${colors.navy};
+          box-shadow: 0 0 0 4px ${colors.navy}26;
+          outline: none;
+        }
+        
+        /* 선택 버튼 스타일 */
+        .selection-button {
+          border: 2px solid #e5e7eb;
+          border-radius: 1rem;
+          padding: 1rem;
+          transition: all 0.2s ease;
+          background: rgba(255, 255, 255, 0.8);
+        }
+        .selection-button:hover {
+          border-color: ${colors.lightBlue};
+          background: rgba(169, 199, 255, 0.1);
+          transform: translateY(-1px);
+        }
+        .selection-button.selected {
+          border-color: ${colors.navy};
+          background: rgba(37, 67, 123, 0.1);
+        }
       `}</style>
     </div>
   );

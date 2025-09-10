@@ -7,11 +7,12 @@ import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import SplashScreen from './components/common/SplashScreen';
 
-// 페이지 ��포넌트
+// 페이지 컴포넌트
 import Home from './home/pages/Home';
 import Support from './pages/Support';
 import MyPage from './pages/MyPage';
 import Community from './community/index.tsx';
+import NotFound from './pages/NotFound';
 
 // 인증
 import Login from '@/pages/auth/Login';
@@ -77,8 +78,8 @@ function AppChrome() {
         hideNavbarPrefixes.some((p) => pathname.startsWith(p));
 
     // Header / Navbar 유무에 따른 main 패딩
-    const paddingTop = isHeaderHidden ? 0 : 56; // px
-    const paddingBottom = isNavbarHidden ? 0 : 80; // px
+    const paddingTop = isHeaderHidden ? 0 : 64; // px (헤더 높이 16 -> 64px)
+    const paddingBottom = isNavbarHidden ? 0 : 70; // px (네비바 높이 60 -> 70px)
 
     return (
         <>
@@ -147,6 +148,9 @@ function AppChrome() {
                         {/* 계좌 연결 */}
                         <Route path="/bank-connect" element={<BankConnect />} />
                         <Route path="/bank-connect/complete" element={<BankConnectComplete />} />
+
+                        {/* 404 - 다른 모든 라우트에 매칭되지 않을 때 */}
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
             </main>
@@ -174,10 +178,10 @@ export default function App() {
     return (
         <div
             style={{
-                width: 375,
-                height: 812,
+                width: '100vw',
+                height: '100vh',
+                maxWidth: 480,
                 margin: '0 auto',
-                boxShadow: '0 0 24px 0 rgba(0,0,0,0.08)',
                 position: 'relative',
                 overflow: 'hidden',
                 display: 'flex',

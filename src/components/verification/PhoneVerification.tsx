@@ -163,7 +163,8 @@ const PhoneVerification: React.FC<Props> = ({
       message.includes('만료') ||
       message.includes('진행') ||
       message.includes('재전송');
-    return isBad ? 'text-red-600' : 'text-blue-600';
+    // return isBad ? 'text-red-600' : 'text-blue-600';
+    return isBad ? 'message-error' : 'message-info';
   }, [message, verified]);
 
   return (
@@ -232,8 +233,11 @@ const PhoneVerification: React.FC<Props> = ({
 
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
-        .send-btn { background: ${colors.navy}; }
-      `}</style>
+              .send-btn { background: ${colors.navy}; }
+              .message-success { color: #059669; }
+              .message-error { color: #dc2626; }
+              .message-info { color: #2563eb; }
+            `}</style>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import KakaoMap from './KakaoMap';
 import SupportCenterCard from './SupportCenterCard';
 import type { SupportCenter, NearestCentersData } from '../../types/support';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 type MapViewProps = {
   mapLoading: boolean;
@@ -25,7 +26,9 @@ const MapView: React.FC<MapViewProps> = ({
   if (mapLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="text-center text-gray-400 py-8">. . .</div>
+        <div className="text-center py-8">
+          <LoadingSpinner type="dots" color="#25437B" />
+        </div>
       </div>
     );
   }

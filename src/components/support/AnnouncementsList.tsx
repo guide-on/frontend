@@ -1,6 +1,7 @@
 import React from 'react';
 import AnnouncementCard from './AnnouncementCard';
 import type { Announcement } from '../../api/announcementApi';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 type AnnouncementsListProps = {
   announcements: Announcement[];
@@ -16,7 +17,9 @@ const AnnouncementsList: React.FC<AnnouncementsListProps> = ({
   if (loading) {
     return (
       <div className="flex flex-col gap-3 animate-fade-in">
-        <div className="text-center text-gray-400 py-8 animate-pulse-soft">. . .</div>
+        <div className="text-center py-8">
+          <LoadingSpinner type="dots" color="#25437B" />
+        </div>
       </div>
     );
   }
