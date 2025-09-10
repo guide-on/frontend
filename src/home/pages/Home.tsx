@@ -15,7 +15,7 @@ export default function Home() {
     const nav = useNavigate();
 
     return (
-        <div className="max-w-[420px] mx-auto pb-24" style={{ background: colors.bgSoft }}>
+        <div className="pb-24" style={{ background: colors.bgSoft }}>
             {/* 상단 히어로(텍스트 헤더) */}
             <HomeHero />
 

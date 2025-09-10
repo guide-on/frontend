@@ -74,7 +74,7 @@ function AppChrome() {
 
     // Header / Navbar 유무에 따른 main 패딩
     const paddingTop = isHeaderHidden ? 0 : 56; // px
-    const paddingBottom = isNavbarHidden ? 0 : 80; // px
+    const paddingBottom = isNavbarHidden ? 0 : 50; // px
 
     return (
         <>
@@ -172,7 +172,6 @@ export default function App() {
                 height: '100vh',
                 maxWidth: 480,
                 margin: '0 auto',
-                boxShadow: '0 0 24px 0 rgba(0,0,0,0.08)',
                 position: 'relative',
                 overflow: 'hidden',
                 display: 'flex',
