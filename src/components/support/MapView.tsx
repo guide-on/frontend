@@ -31,60 +31,72 @@ const MapView: React.FC<MapViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 animate-fade-in">
       {/* 다른 센터 보기 드롭다운 */}
       {allCenters.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-4 animate-slide-down">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             다른 센터 보기
           </label>
           <select
-            className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+            className="w-full p-2 border border-gray-300 rounded-lg text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
             value={selectedCenter?.id || ''}
             onChange={(e) => {
               const centerId = parseInt(e.target.value);
-              const center = allCenters.find(c => c.id === centerId);
+              const center = allCenters.find((c) => c.id === centerId);
               if (center) onCenterSelect(center);
             }}
           >
             {nearestData && nearestData.nearestCenters.length > 0 && (
               <option value={nearestData.nearestCenters[0].center.id}>
-                🎯 {nearestData.nearestCenters[0].center.name} (가장 가까운 센터)
+                {nearestData.nearestCenters[0].center.name} (가장 가까운 센터)
               </option>
             )}
             {allCenters
-              .filter(center => 
-                !nearestData || 
-                !nearestData.nearestCenters.find(nc => nc.center.id === center.id)
+              .filter(
+                (center) =>
+                  !nearestData ||
+                  !nearestData.nearestCenters.find(
+                    (nc) => nc.center.id === center.id,
+                  ),
               )
-              .map(center => (
+              .map((center) => (
                 <option key={center.id} value={center.id}>
                   {center.name}
                 </option>
-              ))
-            }
+              ))}
           </select>
         </div>
       )}
 
       {/* 카카오맵 */}
-      <KakaoMap
-        businessLocation={nearestData ? {
-          lat: nearestData.businessLat,
-          lng: nearestData.businessLng
-        } : undefined}
-        centerLocation={selectedCenter ? {
-          lat: selectedCenter.lat,
-          lng: selectedCenter.lng
-        } : undefined}
-        center={selectedCenter}
-        onCenterMarkerClick={onCenterMarkerClick}
-        className="w-full h-48 rounded-xl"
-      />
+      <div className="animate-slide-up transition-all duration-300 hover:shadow-lg">
+        <KakaoMap
+          businessLocation={
+            nearestData
+              ? {
+                  lat: nearestData.businessLat,
+                  lng: nearestData.businessLng,
+                }
+              : undefined
+          }
+          centerLocation={
+            selectedCenter
+              ? {
+                  lat: selectedCenter.lat,
+                  lng: selectedCenter.lng,
+                }
+              : undefined
+          }
+          center={selectedCenter}
+          onCenterMarkerClick={onCenterMarkerClick}
+          className="w-full h-48 rounded-xl"
+        />
+      </div>
 
       {/* 주소 미등록 안내 */}
       {!businessAddress && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm animate-bounce-in transition-all duration-200 hover:bg-yellow-100">
           <div className="font-medium text-yellow-800 mb-1">
             ⚠️ 사업장 주소 미등록
           </div>
@@ -99,8 +111,10 @@ const MapView: React.FC<MapViewProps> = ({
         <SupportCenterCard
           center={selectedCenter}
           distance={
-            nearestData 
-              ? nearestData.nearestCenters.find(nc => nc.center.id === selectedCenter.id)?.distanceKm
+            nearestData
+              ? nearestData.nearestCenters.find(
+                  (nc) => nc.center.id === selectedCenter.id,
+                )?.distanceKm
               : undefined
           }
           businessAddress={businessAddress || undefined}
