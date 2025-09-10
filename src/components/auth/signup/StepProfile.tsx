@@ -41,14 +41,10 @@ const StepProfile: React.FC<Props> = ({
 }) => {
   const isSole = memberType === 'SOLE_PROPRIETOR';
   return (
-    <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
-      <div className="absolute top-6 right-6">
-        <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`4/${totalSteps}`}</span>
-      </div>
-
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">개인 정보</h2>
-        <p className="text-slate-600 text-sm">
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">개인 정보</h2>
+        <p className="text-gray-600 text-sm">
           서비스 이용을 위한 기본 정보를 입력해주세요.
         </p>
       </div>
@@ -121,7 +117,7 @@ const StepProfile: React.FC<Props> = ({
       <div className="flex gap-3">
         <button
           onClick={onPrev}
-          className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-md font-bold text-sm transition-all duration-200 hover:bg-slate-300"
+          className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-semibold text-base transition-all duration-200 hover:bg-gray-200 hover:-translate-y-0.5"
         >
           이전
         </button>
@@ -129,17 +125,17 @@ const StepProfile: React.FC<Props> = ({
           <button
             onClick={onNextSole}
             disabled={!isValid}
-            className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 next-button text-white py-4 rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            다음
+            다음 단계로
           </button>
         ) : (
           <button
             onClick={onNextGeneral}
             disabled={!isValid}
-            className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 next-button text-white py-4 rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            다음
+            완료
           </button>
         )}
       </div>
