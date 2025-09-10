@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { getDocumentStatus } from '@/api/documentApi';
@@ -14,6 +14,9 @@ export default function MydataSyncComplete() {
 
   useEffect(() => {
     console.log(`[3] 연동 완료 페이지 로드 ID: ${sessionId}`);
+    // 마이데이터 연동 시도 기록 (완료 페이지까지 왔으면 시도한 것으로 간주, 영구 저장)
+    localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
+    
     let mounted = true;
     const load = async () => {
       setLoading(true);
@@ -26,10 +29,10 @@ export default function MydataSyncComplete() {
           setCompleted(data.completedRequirements);
         if (typeof data.totalRequirements === 'number')
           setTotal(data.totalRequirements);
-      } catch (e: any) {
+      } catch (e) {
         if (!mounted) return;
         setError(
-          e?.message || '진행도 정보를 불러오는 중 오류가 발생했습니다.',
+          e instanceof Error ? e.message : '진행도 정보를 불러오는 중 오류가 발생했습니다.',
         );
       } finally {
         if (mounted) setLoading(false);

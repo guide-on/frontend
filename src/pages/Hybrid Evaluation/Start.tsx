@@ -69,7 +69,7 @@ const ESG_STEPS: {
   },
   {
     title: 'ESG (3/4)',
-    desc: 'ESG 중 Governance(투���경영 및 준법경영)을 평가합니다.',
+    desc: 'ESG 중 Governance(투명경영 및 준법경영)을 평가합니다.',
     items: ['성실납세 이력', '4대 보험료 납부 이력', '투명한 정보 공개'],
   },
   {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { mydataSync } from '@/api/documentApi';
@@ -57,44 +57,48 @@ export default function MydataConsentPage() {
     setLoading(true);
     setError(null);
     try {
+      // 마이데이터 연동 시도 기록 (영구 저장)
+      localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
+      
       await mydataSync(sessionId, {
         serviceTerms: !!checked.serviceTerms,
         privacyPolicy: !!checked.privacyPolicy,
         thirdPartyConsent: !!checked.thirdPartyConsent,
       });
       nav(`/guide/mydata-result/${sessionId}`);
-    } catch (e: any) {
-      setError(e?.message || '연동 중 오류가 발생했습니다.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '연동 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const onSkip = () => nav(`/guide/documents/${sessionId}`);
+  const onSkip = () => {
+    // 마이데이터 연동 시도 기록 (건너뛰기도 시도한 것으로 간주, 영구 저장)
+    localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
+    nav(`/guide/documents/${sessionId}`);
+  };
 
   return (
     <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4">
-      {/* Header with back */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => nav(-1)} className="text-gray-600 px-2 py-1">←</button>
-        <div className="flex-1">
-          <p className="font-bold text-lg mb-1">마이데이터 연동 동의</p>
-          <p className="text-sm text-gray-600">서류 자동 수집을 위해 아래 약관에 동의해 주세요. 원하지 않으면 건너뛰실 수 있습니다.</p>
-        </div>
+      {/* Header */}
+      <div>
+        <p className="font-bold text-lg mb-1">마이데이터 연동 동의</p>
+        <p className="text-sm text-gray-600">서류 자동 수집을 위해 아래 약관에 동의해 주세요. 원하지 않으면 건너뛰실 수 있습니다.</p>
       </div>
 
       <div className="flex flex-col gap-3">
         {AGREEMENTS.map((a) => (
-          <div key={a.key} className="bg-white rounded-xl p-4 border" style={{ borderColor: '#e5e7eb' }}>
+          <div key={a.key} className="bg-white rounded-xl p-4 border cursor-pointer hover:border-gray-300 transition-colors" style={{ borderColor: '#e5e7eb' }} onClick={() => toggle(a.key)}>
             <div className="flex items-center justify-between">
               <div className="flex items-start gap-3">
-                <input type="checkbox" checked={!!checked[a.key]} onChange={() => toggle(a.key)} className="mt-1" />
+                <input type="checkbox" checked={!!checked[a.key]} onChange={() => toggle(a.key)} className="mt-1 pointer-events-none" />
                 <div>
                   <div className="font-semibold">{a.title}</div>
                   <div className="text-xs text-gray-500">{a.summary}</div>
                 </div>
               </div>
-              <button className="text-sm text-gray-500" onClick={() => toggleExpand(a.key)}>
+              <button className="text-sm text-gray-500" onClick={(e) => { e.stopPropagation(); toggleExpand(a.key); }}>
                 {expanded[a.key] ? '접기' : '자세히 보기'}
               </button>
             </div>
