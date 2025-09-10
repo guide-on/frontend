@@ -45,7 +45,7 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md shadow-sm w-full max-w-[480px]">
-      <div className="h-14 px-6 flex items-center relative border-b border-gray-100/50">
+      <div className="h-16 px-6 flex items-center relative border-b border-gray-100/50">
         {!isMainNavPage && (
           <button
             className="absolute left-6 text-gray-500 hover:text-blue-600 p-2 transition-all duration-300 hover:scale-110 hover:bg-blue-50 rounded-full"
