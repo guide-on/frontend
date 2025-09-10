@@ -19,13 +19,13 @@ const FundCard: React.FC<{
 }> = ({ item, onDetailClick, onBookmarkClick }) => {
   return (
     <div
-      className="bg-white rounded-xl shadow-md p-4 flex flex-col gap-3 border border-gray-100 cursor-pointer hover:shadow-lg transition relative"
+      className="bg-white rounded-xl shadow-md p-4 flex flex-col gap-3 border border-gray-100 cursor-pointer hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 relative transform animate-fade-in"
       onClick={() => onDetailClick(item.id)}
       style={{ borderColor: '#f0f2f5' }}
     >
       {/* 북마크 버튼 */}
       <button
-        className="absolute top-4 right-4 text-2xl focus:outline-none z-10"
+        className="absolute top-4 right-4 text-2xl focus:outline-none z-10 transition-all duration-200 hover:scale-125 active:scale-95"
         onClick={(e) => {
           e.stopPropagation();
           onBookmarkClick(item.id, item.saved);
@@ -33,18 +33,18 @@ const FundCard: React.FC<{
         aria-label="북마크"
       >
         {item.saved ? (
-          <span className="text-yellow-400">★</span>
+          <span className="text-yellow-400 animate-pulse">★</span>
         ) : (
-          <span className="text-gray-300 hover:text-yellow-400">☆</span>
+          <span className="text-gray-300 hover:text-yellow-400 transition-colors duration-200">☆</span>
         )}
       </button>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 animate-slide-down">
         <span
-          className={`px-3 py-1 text-xs font-bold rounded-full ${
+          className={`px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 ${
             item.status === '마감'
               ? 'bg-gray-200 text-gray-500'
-              : 'bg-navy text-white'
+              : 'bg-navy text-white hover:shadow-md'
           }`}
           style={{
             backgroundColor:
@@ -53,10 +53,10 @@ const FundCard: React.FC<{
         >
           {item.status}
         </span>
-        <span className="text-xs font-semibold text-gray-500">대리대출</span>
+        <span className="text-xs font-semibold text-gray-500 animate-fade-in">대리대출</span>
       </div>
 
-      <div className="font-bold text-lg text-gray-800 pr-8">{item.name}</div>
+      <div className="font-bold text-lg text-gray-800 pr-8 animate-slide-up">{item.name}</div>
     </div>
   );
 };
