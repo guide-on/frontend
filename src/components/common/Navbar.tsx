@@ -16,6 +16,10 @@ const Navbar = () => {
 
   const isActive = (to: string) => {
     if (to === '/') return path === '/';
+    if (to === '/guide/survey') {
+      // 대출가이드: /guide로 시작하는 모든 경로 (설문, 정책목록, 서류 등)
+      return path.startsWith('/guide');
+    }
     return path.startsWith(to); // 하위 경로 포함
   };
 

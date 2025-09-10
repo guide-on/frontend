@@ -12,11 +12,9 @@ export function PolicyListPage() {
 
   useEffect(() => {
     let mounted = true;
-    let hasLoaded = false;
     
     const loadPolicies = async () => {
-      if (!mounted || hasLoaded) return;
-      hasLoaded = true;
+      if (!mounted) return;
       
       try {
         setLoading(true);
@@ -116,21 +114,34 @@ export function PolicyListPage() {
   };
 
   return (
-    <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4">
-      <section className="rounded-xl p-4" style={{ backgroundColor: colors.gray }}>
-        <div className="flex justify-between items-start mb-1">
+    <div className="max-w-[375px] mx-auto px-4 py-5 flex flex-col gap-4" style={{ backgroundColor: colors.bgSoft }}>
+      <section className="rounded-xl p-4 bg-white border" style={{ borderColor: '#e5e7eb' }}>
+        <div className="flex justify-between items-start mb-3">
           <p className="font-bold text-lg">대출 가이드</p>
           <button
             onClick={onCheckSimulations}
-            className="text-xs text-gray-600 hover:text-gray-800 underline transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-full border transition-colors"
+            style={{ 
+              borderColor: colors.navy,
+              color: colors.navy,
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.navy;
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = colors.navy;
+            }}
           >
             내 시뮬레이션 확인하기
           </button>
         </div>
-        <p className="text-sm leading-5">가이드온이 서류 준비를 도와드려요! 정보를 입력하시면 필요한 서류를 안내해드립니다.</p>
+        <p className="text-sm leading-5">가이드온이 서류 준비를 도와드려요!<br />정보를 입력하시면 필요한 서류를 안내해드립니다.</p>
       </section>
 
-      <section className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: colors.gray }}>
+      <section className="rounded-xl p-4 flex flex-col gap-3 bg-white border" style={{ borderColor: '#e5e7eb' }}>
         <p className="font-bold text-lg">맞춤 자금 목록</p>
         {loading && <p className="text-sm">불러오는 중…</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -139,7 +150,7 @@ export function PolicyListPage() {
         )}
         <div className="flex flex-col gap-3">
           {items.map((p) => (
-            <div key={p.policyId || p.id} className="bg-white rounded-xl p-4 border" style={{ borderColor: '#e5e7eb' }}>
+            <div key={p.policyId || p.id} className="bg-white rounded-xl shadow-md p-4 border border-gray-100 cursor-pointer hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 transform animate-fade-in" style={{ borderColor: '#f0f2f5' }}>
               {p.policyType && (
                 <div className="mb-2">
                   <span 
@@ -164,7 +175,7 @@ export function PolicyListPage() {
                 className="mt-3 w-full py-2.5 rounded-lg font-semibold text-white"
                 style={{ backgroundColor: applying === (p.policyId || p.id) ? '#9ca3af' : colors.navy }}
               >
-                {applying === (p.policyId || p.id) ? '신청 중...' : '이 자금으로 신청하기'}
+                {applying === (p.policyId || p.id) ? '신청 중...' : '신청하기'}
               </button>
             </div>
           ))}

@@ -5,7 +5,7 @@ import { Search, ChevronLeft } from 'lucide-react';
 const routeTitle = (path: string): string => {
   // 1) 정확 매칭
   if (path === '/') return '홈';
-  if (path === '/guide') return '대출가이드';
+  if (path === '/guide/survey') return '대출가이드';
   if (path === '/support') return '공공지원금';
   if (path === '/mypage') return '마이페이지';
   if (path === '/community') return '커뮤니티';
@@ -38,10 +38,17 @@ const Header = () => {
   const path = location.pathname;
   const title = routeTitle(path);
   const isCommunity = path.startsWith('/community');
-  
-  // 메인 네비게이션 페이지들 (뒤로가기 버튼을 숨길 페이지들)
-  const mainNavPages = ['/', '/guide', '/support', '/community', '/mypage'];
-  const isMainNavPage = mainNavPages.includes(path);
+
+  // 메인 네비게이션 페이지들과 정책자금 목록 페이지 (뒤로가기 버튼을 숨길 페이지들)
+  const mainNavPages = [
+    '/',
+    '/guide/survey',
+    '/support',
+    '/community',
+    '/mypage',
+  ];
+  const isMainNavPage =
+    mainNavPages.includes(path) || /^\/guide\/policy\/\d+$/.test(path);
 
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md shadow-sm w-full max-w-[480px]">
