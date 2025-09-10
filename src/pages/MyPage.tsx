@@ -5,15 +5,32 @@ import { MdEdit, MdCheckCircle } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { colors } from '@/styles/colors';
+import SurveyResetModal from '@/components/mypage/SurveyResetModal';
+import api from '@/api';
 
 const MyPage: React.FC = () => {
   const [tab, setTab] = useState<'scrap' | 'comment'>('scrap');
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
     navigate('/auth/login');
+  };
+
+  const handleSurveyReset = async () => {
+    setIsResetting(true);
+    try {
+      await api.delete('/api/survey/reset');
+      setShowResetModal(false);
+    } catch (error) {
+      console.error('설문 초기화 실패:', error);
+      alert('설문 초기화에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (
@@ -112,6 +129,12 @@ const MyPage: React.FC = () => {
             <div className="text-base font-bold text-gray-900 mb-3">계정</div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 overflow-hidden">
               <div
+                className="py-3 px-4 text-gray-800 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3"
+                onClick={() => setShowResetModal(true)}
+              >
+                <span>대출가이드 설문 초기화</span>
+              </div>
+              <div
                 className="py-3 px-4 text-red-600 font-medium text-sm cursor-pointer hover:bg-red-50 transition-all duration-200 flex items-center gap-3"
                 onClick={handleLogout}
               >
@@ -121,6 +144,14 @@ const MyPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 설문 초기화 모달 */}
+      <SurveyResetModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onConfirm={handleSurveyReset}
+        isLoading={isResetting}
+      />
     </div>
   );
 };
