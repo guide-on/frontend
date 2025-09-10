@@ -7,6 +7,8 @@ import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import SplashScreen from './components/common/SplashScreen';
 
+import AuthModal from '@/community/components/auth/AuthModal';
+
 // 페이지 컴포넌트
 import Home from './home/pages/Home';
 import Support from './pages/Support';
@@ -185,7 +187,11 @@ export default function App() {
                 flexDirection: 'column',
             }}
         >
+            {/* ✅ AuthModal을 BrowserRouter 안쪽으로 이동 */}
             <BrowserRouter>
+                {/* 전역 모달이므로 어디서든 뜨게 AppChrome 위/아래 어느쪽이든 OK */}
+                <AuthModal />
+
                 <AppChrome />
             </BrowserRouter>
 
