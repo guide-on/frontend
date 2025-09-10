@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from '../styles/colors';
+import '../styles/support.css';
 
 import FilterSheet from '../components/support/FilterSheet';
 import FundDetailModal from '../components/support/FundDetailModal';
@@ -528,41 +529,43 @@ const Support: React.FC = () => {
       {/* 메인 컨텐츠 */}
       <div
         key={activeMainFilter}
-        className="w-full max-w-md px-2"
+        className="w-full max-w-md px-2 transition-all duration-500 ease-in-out transform"
       >
-        {activeMainFilter === 'map' ? (
-          <MapView
-            mapLoading={mapLoading}
-            allCenters={allCenters}
-            selectedCenter={selectedCenter}
-            nearestData={nearestData}
-            businessAddress={businessAddress}
-            onCenterSelect={handleCenterSelect}
-            onCenterMarkerClick={async (center) => {
-              const place = await searchKakaoPlace(center.name);
-              if (place) {
-                setModalPlace(place);
-                setShowModal(true);
-              }
-            }}
-          />
-        ) : activeMainFilter === 'announcements' ? (
-          <AnnouncementsList
-            announcements={announcements}
-            loading={announcementLoading}
-            onDetailClick={handleAnnouncementDetailClick}
-          />
-        ) : (
-          <FundsList
-            funds={funds}
-            bookmarkFunds={bookmarkFunds}
-            loading={loading}
-            bookmarkLoading={bookmarkLoading}
-            isBookmarkMode={activeMainFilter === 'bookmark'}
-            onDetailClick={openDetail}
-            onBookmarkClick={handleBookmark}
-          />
-        )}
+        <div className="animate-fade-in">
+          {activeMainFilter === 'map' ? (
+            <MapView
+              mapLoading={mapLoading}
+              allCenters={allCenters}
+              selectedCenter={selectedCenter}
+              nearestData={nearestData}
+              businessAddress={businessAddress}
+              onCenterSelect={handleCenterSelect}
+              onCenterMarkerClick={async (center) => {
+                const place = await searchKakaoPlace(center.name);
+                if (place) {
+                  setModalPlace(place);
+                  setShowModal(true);
+                }
+              }}
+            />
+          ) : activeMainFilter === 'announcements' ? (
+            <AnnouncementsList
+              announcements={announcements}
+              loading={announcementLoading}
+              onDetailClick={handleAnnouncementDetailClick}
+            />
+          ) : (
+            <FundsList
+              funds={funds}
+              bookmarkFunds={bookmarkFunds}
+              loading={loading}
+              bookmarkLoading={bookmarkLoading}
+              isBookmarkMode={activeMainFilter === 'bookmark'}
+              onDetailClick={openDetail}
+              onBookmarkClick={handleBookmark}
+            />
+          )}
+        </div>
       </div>
 
       {/* 상세 모달 */}

@@ -24,18 +24,18 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
   return (
     <div className="flex gap-1.5 mb-4 w-full max-w-md px-2">
       <button
-        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md flex items-center gap-1"
+        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 flex items-center gap-1 transform"
         style={{
           backgroundColor: activeMainFilter === 'filter' ? colors.navy : 'white',
           color: activeMainFilter === 'filter' ? 'white' : colors.navy,
         }}
         onClick={onFilterClick}
       >
-        <SlidersHorizontal size={14} />
+        <SlidersHorizontal size={14} className="transition-transform duration-200" />
         <span>필터</span>
       </button>
       <button
-        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'map' ? colors.navy : 'white',
           color: activeMainFilter === 'map' ? 'white' : colors.navy,
@@ -45,7 +45,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         내센터
       </button>
       <button
-        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'receiving' ? colors.navy : 'white',
           color: activeMainFilter === 'receiving' ? 'white' : colors.navy,
@@ -55,7 +55,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         접수중
       </button>
       <button
-        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+        className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'announcements' ? colors.navy : 'white',
           color: activeMainFilter === 'announcements' ? 'white' : colors.navy,
@@ -65,7 +65,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         맞춤공고
       </button>
       <button
-        className="w-8 h-8 rounded-lg font-medium flex items-center justify-center shadow-sm transition-all duration-200 hover:shadow-md"
+        className="w-8 h-8 rounded-lg font-medium flex items-center justify-center shadow-sm transition-all duration-200 hover:shadow-md hover:scale-110 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'bookmark' ? colors.navy : 'white',
         }}
@@ -73,7 +73,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         onClick={onBookmarkClick}
       >
         <span 
-          className="text-sm"
+          className="text-sm transition-all duration-200 hover:animate-pulse"
           style={{ 
             color: activeMainFilter === 'bookmark' ? '#FFD700' : '#FFC107'
           }}

@@ -76,7 +76,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
   };
 
   return (
-    showFilter && createPortal(
+    showFilter &&
+    createPortal(
       <div className="fixed inset-0 z-[9998] flex items-end justify-center bg-black bg-opacity-30">
         <div
           className="w-full max-w-sm pt-4 rounded-t-3xl shadow-xl flex flex-col mx-4"
@@ -84,7 +85,10 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
         >
           <div className="px-4 overflow-y-auto no-scrollbar">
             {/* 탭 영역 */}
-            <div className="sticky top-0 z-10 flex gap-2 px-2" style={{ backgroundColor: colors.bgSoft }}>
+            <div
+              className="sticky top-0 z-10 flex gap-2 px-2"
+              style={{ backgroundColor: colors.bgSoft }}
+            >
               {[
                 { key: 'keyword', label: '키워드' },
                 { key: 'type', label: '사업자구분' },
@@ -288,7 +292,10 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               />
             </div>
           </div>
-          <div className="sticky bottom-0 p-4 flex justify-between gap-2 shadow-[0_-4px_8px_rgba(0,0,0,0.05)]" style={{ backgroundColor: colors.bgSoft }}>
+          <div
+            className="sticky bottom-0 p-4 flex justify-between gap-2 shadow-[0_-4px_8px_rgba(0,0,0,0.05)]"
+            style={{ backgroundColor: colors.bgSoft }}
+          >
             <button
               className="flex-1 py-2.5 rounded-lg bg-gray-200 text-xs font-semibold"
               onClick={() => setShowFilter(false)}
@@ -311,7 +318,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
           </div>
         </div>
       </div>,
-      document.body
+      document.body,
     )
   );
 };
