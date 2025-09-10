@@ -17,12 +17,15 @@ const MyPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pb-8" style={{ background: colors.bgSoft }}>
+    <div
+      className="min-h-screen flex flex-col pb-8"
+      style={{ background: colors.bgSoft }}
+    >
       {/* 상단 헤더 */}
       <header className="relative bg-white/80 backdrop-blur-sm pt-6 pb-8 px-0 border-b border-white/50 shadow-sm">
         <div className="flex items-center justify-center relative">
           <button className="absolute right-4 top-1 text-gray-400 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-blue-50">
-            <FaCog size={22} />
+            <FaCog size={18} />
           </button>
         </div>
         <div className="flex flex-row items-center gap-4 mt-6 px-8">
@@ -47,41 +50,38 @@ const MyPage: React.FC = () => {
           </div>
         </div>
         {/* 통계 카드 */}
-        <div className="flex mt-8 mx-4 gap-3">
-          <div className="flex-1 bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-white/50 hover:shadow-md transition-all">
+        <div className="flex mt-6 mx-4 gap-2">
+          <div className="flex-1 bg-white/70 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-white/50 hover:shadow-md transition-all">
             <div className="flex flex-col items-center">
-              <Search
-                className="text-blue-600 mb-2"
-                size={24}
-              />
-              <div className="text-xl font-bold text-gray-900">4</div>
+              <Search className="text-gray-700 mb-1" size={18} strokeWidth={2.5} />
+              <div className="text-lg font-bold text-gray-900">4</div>
               <div className="text-xs text-gray-600 font-medium">
                 시뮬레이션
               </div>
             </div>
           </div>
-          <div className="flex-1 bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-white/50 hover:shadow-md transition-all">
+          <div className="flex-1 bg-white/70 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-white/50 hover:shadow-md transition-all">
             <div className="flex flex-col items-center">
               <Bookmark
-                className="text-pink-600 mb-2"
-                size={24}
+                className="text-pink-600 mb-1"
+                size={18}
                 fill="currentColor"
               />
-              <div className="text-xl font-bold text-gray-900">1</div>
+              <div className="text-lg font-bold text-gray-900">1</div>
               <div className="text-xs text-gray-600 font-medium">지원금</div>
             </div>
           </div>
           <div
-            className="flex-1 bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-white/50 hover:shadow-md transition-all cursor-pointer"
+            className="flex-1 bg-white/70 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-white/50 hover:shadow-md transition-all cursor-pointer"
             onClick={() => navigate('/hybrid-evaluation')}
           >
             <div className="flex flex-col items-center">
               <Sprout
-                className="text-green-600 mb-2"
-                size={24}
+                className="text-green-600 mb-1"
+                size={18}
                 fill="currentColor"
               />
-              <div className="text-xl font-bold text-gray-900">-</div>
+              <div className="text-lg font-bold text-gray-900">1</div>
               <div className="text-xs text-gray-600 font-medium">신용평가</div>
             </div>
           </div>
@@ -91,28 +91,28 @@ const MyPage: React.FC = () => {
       <div className="flex-1 px-0 py-0 mt-4">
         <div className="px-4">
           <div className="py-2">
-            <div className="text-lg font-bold text-gray-900 mb-4">내 활동</div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/50 overflow-hidden">
-              <div className="py-4 px-6 text-gray-800 font-medium text-base cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
+            <div className="text-base font-bold text-gray-900 mb-3">내 활동</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 overflow-hidden">
+              <div className="py-3 px-4 text-gray-800 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
                 <span>내가 쓴 글</span>
               </div>
-              <div className="py-4 px-6 text-gray-800 font-medium text-base cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
+              <div className="py-3 px-4 text-gray-800 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
                 <span>내가 쓴 댓글</span>
               </div>
-              <div className="py-4 px-6 text-gray-800 font-medium text-base cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
+              <div className="py-3 px-4 text-gray-800 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
                 <span>내가 한 좋아요</span>
               </div>
-              <div className="py-4 px-6 text-gray-800 font-medium text-base cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
+              <div className="py-3 px-4 text-gray-800 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-all duration-200 flex items-center gap-3">
                 <span>내 마케팅 팁</span>
               </div>
             </div>
           </div>
 
           <div className="py-2 mt-4">
-            <div className="text-lg font-bold text-gray-900 mb-4">계정</div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/50 overflow-hidden">
+            <div className="text-base font-bold text-gray-900 mb-3">계정</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/50 overflow-hidden">
               <div
-                className="py-4 px-6 text-red-600 font-medium text-base cursor-pointer hover:bg-red-50 transition-all duration-200 flex items-center gap-3"
+                className="py-3 px-4 text-red-600 font-medium text-sm cursor-pointer hover:bg-red-50 transition-all duration-200 flex items-center gap-3"
                 onClick={handleLogout}
               >
                 <span>로그아웃</span>
