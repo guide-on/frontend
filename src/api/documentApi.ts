@@ -15,6 +15,41 @@ export type DocumentSurveyResponse = {
   [key: string]: any;
 };
 
+export type SimulationSession = {
+  sessionId: string | number;
+  policyId: string | number;
+  policyName: string;
+  createdAt: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  progressPercentage?: number;
+  completedRequirements?: number;
+  totalRequirements?: number;
+};
+
+export type SimulationListResponse = {
+  success: boolean;
+  businessId: string | number;
+  sessions: SimulationSession[];
+  message?: string;
+};
+
+export type SurveyStatusResponse = {
+  success: boolean;
+  isCompleted: boolean;
+  businessId?: number | string;
+  surveyData?: {
+    businessId: number | string;
+    memberId: number | string;
+    loanPurpose: string;
+    industryCode?: string;
+    businessPeriod: number;
+    revenue: number;
+    employees: number;
+    placeType: string;
+    surveyCompletedAt: string | null;
+  };
+};
+
 const BASE_URL = '/api/survey';
 
 export const documentApi = {
@@ -50,7 +85,7 @@ export const documentApi = {
     success?: boolean;
     message?: string;
   }> {
-    const { data } = await api.post('/api/document/sessions', params);
+    const { data } = await api.post('/api/session/create', params);
     return data;
   },
 
@@ -127,6 +162,16 @@ export const documentApi = {
     const payload = { agreements };
     console.log('mydataSync API 요청 Payload:', JSON.stringify(payload, null, 2));
     const { data } = await api.post(`/api/document/mydata-sync/${sessionId}`, payload);
+    return data;
+  },
+
+  async getSimulations(businessId: string | number): Promise<SimulationListResponse> {
+    const { data } = await api.get<SimulationListResponse>(`/api/session/${businessId}/simulations`);
+    return data;
+  },
+
+  async getSurveyStatus(): Promise<SurveyStatusResponse> {
+    const { data } = await api.get<SurveyStatusResponse>(`${BASE_URL}/status`);
     return data;
   },
 };
@@ -244,6 +289,14 @@ export async function mydataSync(
   agreements: { serviceTerms: boolean; privacyPolicy: boolean; thirdPartyConsent: boolean },
 ): Promise<{ success: boolean; message?: string }> {
   return documentApi.mydataSync(sessionId, agreements);
+}
+
+export async function getSimulations(businessId: string | number): Promise<SimulationListResponse> {
+  return documentApi.getSimulations(businessId);
+}
+
+export async function getSurveyStatus(): Promise<SurveyStatusResponse> {
+  return documentApi.getSurveyStatus();
 }
 
 export default documentApi;

@@ -24,6 +24,7 @@ import SimulationList from './simulation/pages/SimulationList';
 import SimulationDetail from './simulation/pages/SimulationDetail';
 
 // 가이드(서류 등록)
+import { GuideRouter } from '@/guide/components/GuideRouter';
 import DocumentSurveyPage from '@/guide/pages/DocumentSurveyPage';
 import PolicyListPage from '@/guide/pages/PolicyListPage';
 import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
@@ -106,7 +107,8 @@ function AppChrome() {
                         <Route path="/" element={<Home />} />
 
                         {/* 가이드(서류 등록) */}
-                        <Route path="/guide" element={<DocumentSurveyPage />} />
+                        <Route path="/guide" element={<GuideRouter />} />
+                        <Route path="/guide/survey" element={<DocumentSurveyPage />} />
                         <Route path="/guide/policy/:businessId" element={<PolicyListPage />} />
                         <Route path="/guide/documents/:sessionId" element={<RequiredDocumentsPage />} />
                         <Route path="/guide/mydata/:sessionId" element={<MydataConsentPage />} />
