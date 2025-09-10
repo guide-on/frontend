@@ -29,7 +29,11 @@ const ApplicationConfirmModal: React.FC<ApplicationConfirmModalProps> = ({
       {/* 모달 컨텐츠 */}
       <div className="relative bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-bold mb-4">대출 신청 확인</h3>
+          <h3 className="text-lg font-bold mb-2">대출 신청 확인</h3>
+          
+          <div className="text-sm text-gray-600 mb-4">
+            대출가이드는 다음과 같이 이뤄집니다
+          </div>
           
           {/* 단계 표시 */}
           <div className="flex justify-center items-center mb-6">
@@ -83,14 +87,12 @@ const ApplicationConfirmModal: React.FC<ApplicationConfirmModalProps> = ({
           </div>
           
           <div className="text-sm text-gray-600 mb-4">
-            대출 가이드는 다음과 같은 단계로 이뤄집니다
+            해당 자금을 신청할 경우,<br />
+            다른 지원자금은 중복 신청할 수 없습니다.
           </div>
           
-          <div className="font-medium text-base mb-2">
-            <span className="font-bold">{policyName}</span>
-          </div>
-          <div className="text-sm text-gray-600">
-            신청하시겠습니까?
+          <div className="text-sm text-gray-800 font-medium">
+            <span className="font-bold">{policyName}</span>을 신청하시겠습니까?
           </div>
         </div>
         
