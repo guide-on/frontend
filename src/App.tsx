@@ -7,7 +7,7 @@ import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import SplashScreen from './components/common/SplashScreen';
 
-// 페이지 컴포넌트
+// 페이지 ��포넌트
 import Home from './home/pages/Home';
 import Support from './pages/Support';
 import MyPage from './pages/MyPage';
@@ -34,6 +34,8 @@ import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
 import StartHybridEvaluation from './pages/Hybrid Evaluation/Start.tsx'
+import BankConnect from './pages/Hybrid Evaluation/BankConnect'
+import BankConnectComplete from './pages/Hybrid Evaluation/BankConnectComplete'
 
 /**
  * 라우팅에 따라 Header, Navbar 및 메인 콘텐츠의 패딩/애니메이션을 관리하는 컴포넌트
@@ -50,6 +52,8 @@ function AppChrome() {
         '/auth/signup',
         '/auth/find',
         '/hybrid-evaluation/start',
+        '/bank-connect',
+        '/bank-connect/complete',
     ]);
 
     // === Navbar 숨김 조건 ===
@@ -58,6 +62,8 @@ function AppChrome() {
         '/auth/signup',
         '/auth/find',
         '/hybrid-evaluation/start',
+        '/bank-connect',
+        '/bank-connect/complete',
     ]);
     const hideNavbarPrefixes = ['/simulation/'];
 
@@ -131,6 +137,10 @@ function AppChrome() {
                         {/* 하이브리드 평가 */}
                         <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
                         <Route path="/hybrid-evaluation/start" element={<StartHybridEvaluation />} />
+
+                        {/* 계좌 연결 */}
+                        <Route path="/bank-connect" element={<BankConnect />} />
+                        <Route path="/bank-connect/complete" element={<BankConnectComplete />} />
                     </Routes>
                 </div>
             </main>
