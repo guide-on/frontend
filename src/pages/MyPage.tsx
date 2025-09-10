@@ -25,8 +25,12 @@ const MyPage: React.FC = () => {
           </button>
         </div>
         <div className="flex flex-row items-center gap-4 mt-6 px-8">
-          <div className="w-16 h-16 rounded-full bg-orange-200 flex items-center justify-center text-3xl">
-            <span className="text-2xl">😊</span>
+          <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden">
+            <img
+              src="/images/logo.png"
+              alt="Profile"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
           <div className="flex flex-col justify-center">
             <span className="text-lg font-bold text-gray-900">홍길동님</span>
