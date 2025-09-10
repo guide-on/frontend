@@ -73,8 +73,8 @@ function AppChrome() {
         hideNavbarPrefixes.some((p) => pathname.startsWith(p));
 
     // Header / Navbar 유무에 따른 main 패딩
-    const paddingTop = isHeaderHidden ? 0 : 56; // px
-    const paddingBottom = isNavbarHidden ? 0 : 50; // px
+    const paddingTop = isHeaderHidden ? 0 : 56; // px (헤더 높이 14 -> 56px)
+    const paddingBottom = isNavbarHidden ? 0 : 70; // px (네비바 높이 60 -> 70px)
 
     return (
         <>
