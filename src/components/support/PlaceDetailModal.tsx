@@ -22,8 +22,8 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   if (!isOpen || !place) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-5">
-      <div className="bg-white rounded-2xl w-full max-w-sm h-[70vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-full h-[70vh] flex flex-col">
         {/* 헤더 - 축소 */}
         <div className="flex justify-between items-center p-3 border-b flex-shrink-0">
           <h3 className="text-base font-bold text-gray-800 truncate">
