@@ -131,6 +131,12 @@ export const creditEvaluationApi = {
     const { data } = await api.delete<CommonResponseDTO<string>>(`${BASE_URL}/${sessionId}/${evaluationDate}`);
     return data;
   },
+
+  // 하이브리드 평가 데이터 초기화
+  async initialize(sessionId: string): Promise<CommonResponseDTO<string>> {
+    const { data } = await api.post<CommonResponseDTO<string>>(`${BASE_URL}/initialize/${sessionId}`);
+    return data;
+  },
 };
 
 export default creditEvaluationApi;

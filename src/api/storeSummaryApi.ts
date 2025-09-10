@@ -85,10 +85,29 @@ export interface StoreSummaryDetailResponse {
   data: StoreSummaryResponse;
 }
 
+export interface SalesDataRow {
+  totalSalesAmount?: number;
+  weekdaySalesAmount?: number;
+  weekendSalesAmount?: number;
+  lunchSalesRatio?: number;
+  dinnerSalesRatio?: number;
+  transactionCount?: number;
+  weekdayTransactionCount?: number;
+  weekendTransactionCount?: number;
+  momGrowthRate?: number;
+  yoyGrowthRate?: number;
+  salesCv?: number;
+  avgTransactionValue?: number;
+  cashPaymentRatio?: number;
+  cardPaymentRatio?: number;
+  revisitCustomerSalesRatio?: number;
+  newCustomerRatio?: number;
+}
+
 export interface StoreSummaryCsvUploadRequest {
   sessionId: number;
   businessRegistrationNo: string;
-  salesData?: any[]; // 구체적인 타입은 백엔드 구조에 따라 정의
+  salesData: SalesDataRow[];
 }
 
 class StoreSummaryApi {
