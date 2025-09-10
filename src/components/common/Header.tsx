@@ -48,7 +48,7 @@ const Header = () => {
     '/mypage',
   ];
   const isMainNavPage =
-    mainNavPages.includes(path) || /^\/guide\/policy\/\d+$/.test(path);
+    mainNavPages.includes(path) || /^\/guide\/policy\/\d+$/.test(path) || /^\/guide\/documents\/\d+$/.test(path);
 
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md shadow-sm w-full max-w-[480px]">
