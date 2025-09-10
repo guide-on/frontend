@@ -51,59 +51,93 @@ const Login: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen from-slate-50 to-slate-100 py-6 px-4">
-      <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 343 }}>
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="text-slate-800 text-center text-2xl font-bold">
-            로그인
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-6 px-4">
+      <div className="max-w-sm mx-auto w-full relative">
+        {/* Background decoration */}
+        <div className="absolute -top-10 -left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl"></div>
+        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-200/30 rounded-full blur-xl"></div>
+
+        {/* Logo section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-4 border border-blue-100 overflow-hidden">
+            <img
+              src="/images/logo.png"
+              alt="logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">환영합니다!</h1>
+          <p className="text-gray-600 text-sm">
+            계정에 로그인하여 서비스를 이용하세요
+          </p>
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl transition-all duration-300">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-8 shadow-lg shadow-blue-500/10 transition-all duration-300">
           <form onSubmit={onSubmit}>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Email Field */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 block">
                   이메일
                 </label>
-                <input
-                  value={member.username}
-                  onChange={onChange('username')}
-                  type="email"
-                  placeholder="이메일을 입력하세요"
-                  required
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-slate-700 text-md"
-                />
+                <div className="relative">
+                  <input
+                    value={member.username}
+                    onChange={onChange('username')}
+                    type="email"
+                    placeholder="이메일을 입력하세요"
+                    required
+                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white transition-all duration-200 text-gray-700 placeholder-gray-400"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = colors.navy;
+                      e.target.style.boxShadow = `0 0 0 4px ${colors.navy}26`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Password Field */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5 ps-1">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 block">
                   비밀번호
                 </label>
-                <input
-                  value={member.password}
-                  onChange={onChange('password')}
-                  type="password"
-                  placeholder="비밀번호를 입력하세요"
-                  required
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-slate-700 text-md"
-                />
+                <div className="relative">
+                  <input
+                    value={member.password}
+                    onChange={onChange('password')}
+                    type="password"
+                    placeholder="비밀번호를 입력하세요"
+                    required
+                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white transition-all duration-200 text-gray-700 placeholder-gray-400"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = colors.navy;
+                      e.target.style.boxShadow = `0 0 0 4px ${colors.navy}26`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
             {!!error && (
-              <div className="text-red-600 text-sm mt-1 ms-1">{error}</div>
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <div className="text-red-600 text-sm font-medium">{error}</div>
+              </div>
             )}
 
             {/* Find ID/PW Link */}
-            <div className="text-right my-1.5">
+            <div className="text-right mt-4">
               <Link
                 to="/auth/find"
-                className="text-btn text-sm font-medium transition-colors hover:opacity-90"
+                className="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors"
               >
                 아이디/비밀번호 찾기
               </Link>
@@ -113,44 +147,41 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={disableSubmit}
-              className="login-button w-full h-11 bg-gradient-to-r text-white rounded-md font-bold text-md transition-all duration-200 hover:opacity-90 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+              className="w-full mt-6 py-3 text-white rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2 group"
+              style={{
+                backgroundColor: disableSubmit ? '#9ca3af' : colors.navy,
+                boxShadow: !disableSubmit
+                  ? `0 10px 25px ${colors.navy}25`
+                  : 'none',
+              }}
             >
               {isLoggingIn && (
                 <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
               )}
-              {isLoggingIn ? '로그인 중...' : '로그인'}
+              <span className="group-hover:scale-105 transition-transform">
+                {isLoggingIn ? '로그인 중...' : '로그인'}
+              </span>
             </button>
           </form>
 
-          {/* Divider */}
-          {/* <div className="my-5 flex items-center">
-            <div className="flex-1 border-t border-slate-200" />
-            <span className="px-3 text-xs text-slate-500 bg-white">또는</span>
-            <div className="flex-1 border-t border-slate-200" />
-          </div> */}
-
           {/* Signup Link */}
-          <div className="mt-5 text-center">
-            <p className="text-slate-600 text-sm">
-              아직 계정이 없으신가요?
-              <Link
-                to="/auth/signup"
-                className="text-btn font-semibold transition-colors hover:opacity-90"
-              >
-                {' '}
-                회원가입
-              </Link>
-            </p>
+          <div className="mt-8 text-center">
+            <div className="flex items-center my-6">
+              <div className="flex-1 border-t border-gray-200" />
+              <span className="px-4 text-xs text-gray-500 bg-white">또는</span>
+              <div className="flex-1 border-t border-gray-200" />
+            </div>
+
+            <Link
+              to="/auth/signup"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <span>아직 계정이 없으신가요?</span>
+              <span className="text-blue-600 font-bold text-lg">회원가입</span>
+            </Link>
           </div>
         </div>
       </div>
-
-      {/* SFC <style scoped> 대응용 보조 스타일 */}
-      <style>{`
-        .text-color,
-        .text-btn { color: ${colors.navy}; }
-        .login-button { background:  ${colors.navy}; border: none; touch-action: manipulation; }
-      `}</style>
     </div>
   );
 };

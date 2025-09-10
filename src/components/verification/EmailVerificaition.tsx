@@ -153,14 +153,15 @@ const EmailVerification: React.FC<Props> = ({
   // 메시지 색상
   const messageClass = useMemo(() => {
     if (!message) return '';
-    if (verified) return 'text-green-600';
+    if (verified) return 'message-success';
     const isBad =
       message.includes('오류') ||
       message.includes('만료') ||
       message.includes('이미') ||
       message.includes('진행') ||
-      message.includes('재전송');
-    return isBad ? 'text-red-600' : 'text-blue-600';
+      message.includes('재전송') ||
+      message.includes('실패');
+    return isBad ? 'message-error' : 'message-info';
   }, [message, verified]);
 
   return (
@@ -230,6 +231,9 @@ const EmailVerification: React.FC<Props> = ({
       {/* SFC <style scoped> 대체용 보조 스타일 */}
       <style>{`
         .send-btn { background: ${colors.navy}; }
+        .message-success { color: #059669; }
+        .message-error { color: #dc2626; }
+        .message-info { color: #2563eb; }
       `}</style>
     </div>
   );

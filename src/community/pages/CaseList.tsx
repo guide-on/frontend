@@ -3,6 +3,7 @@ import { api } from "../utils/api";
 import PostCard from "../components/PostCard";
 import type { PostListItem, Paged, PostSort } from "../types/models";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 function makeExcerpt(item: PostListItem, max = 80) {
     const raw = item.excerpt ?? item.contentPreview ?? "";
@@ -78,6 +79,14 @@ export default function CaseList(){
             )}
 
             <div className="grid gap-3">{items.map(p=><PostCard key={p.id} item={p}/>)}</div>
+            
+            {/* 무한 스크롤 로딩 표시 */}
+            {hasMore && items.length > 0 && (
+                <div className="py-4 flex justify-center">
+                    <LoadingSpinner type="dots" size="sm" color="#6b7280" />
+                </div>
+            )}
+            
             <div ref={sentinelRef} className="h-10"/>
         </div>
     );

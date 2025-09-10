@@ -10,47 +10,76 @@ type Props = {
 };
 
 const StepType: React.FC<Props> = ({
-  totalSteps,
   memberType,
   onSelect,
   onNext,
 }) => {
   const isSelected = !!memberType;
   return (
-    <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
-      <div className="absolute top-6 right-6">
-        <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`1/${totalSteps}`}</span>
-      </div>
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">회원가입 유형</h2>
-        <p className="text-slate-600 text-sm">
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">회원가입 유형</h2>
+        <p className="text-gray-600 text-sm">
           가입할 서비스 유형을 선택해주세요
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      
+      <div className="grid grid-cols-1 gap-4 mb-8">
         <button
           type="button"
           onClick={() => onSelect('GENERAL')}
-          className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'GENERAL' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+          className={`selection-button p-6 flex items-center gap-4 text-left transition-all duration-200 ${
+            memberType === 'GENERAL' ? 'selected' : ''
+          }`}
         >
-          <i className="fa-solid fa-user fa-4x text-slate-700"></i>
-          <span className="font-semibold text-md">일반 회원</span>
+          <div className="flex-shrink-0">
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ 
+                backgroundColor: memberType === 'GENERAL' ? colors.paleBlue : '#f3f4f6',
+                color: memberType === 'GENERAL' ? colors.navy : '#6b7280'
+              }}
+            >
+              <i className="fa-solid fa-user fa-xl"></i>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg text-gray-800">일반 회원</h3>
+            <p className="text-sm text-gray-600 mt-1">개인 사용자로 서비스를 이용합니다</p>
+          </div>
         </button>
+        
         <button
           type="button"
           onClick={() => onSelect('SOLE_PROPRIETOR')}
-          className={`border-2 rounded-xl py-7 flex flex-col items-center gap-4 transition-all ${memberType === 'SOLE_PROPRIETOR' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+          className={`selection-button p-6 flex items-center gap-4 text-left transition-all duration-200 ${
+            memberType === 'SOLE_PROPRIETOR' ? 'selected' : ''
+          }`}
         >
-          <i className="fa-solid fa-store fa-4x text-slate-700"></i>
-          <span className="font-semibold">사업자 회원</span>
+          <div className="flex-shrink-0">
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ 
+                backgroundColor: memberType === 'SOLE_PROPRIETOR' ? colors.paleBlue : '#f3f4f6',
+                color: memberType === 'SOLE_PROPRIETOR' ? colors.navy : '#6b7280'
+              }}
+            >
+              <i className="fa-solid fa-store fa-xl"></i>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg text-gray-800">사업자 회원</h3>
+            <p className="text-sm text-gray-600 mt-1">사업자로서 서비스를 이용합니다</p>
+          </div>
         </button>
       </div>
+      
       <button
         onClick={onNext}
         disabled={!isSelected}
-        className="next-button w-full text-white py-3 rounded-md font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="next-button w-full text-white py-4 rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        다음
+        다음 단계로
       </button>
     </div>
   );

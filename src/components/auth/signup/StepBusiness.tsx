@@ -21,7 +21,6 @@ type Props = {
 };
 
 const StepBusiness: React.FC<Props> = ({
-  totalSteps,
   value,
   onChange,
   isValid,
@@ -160,14 +159,10 @@ const StepBusiness: React.FC<Props> = ({
   );
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-xl relative">
-      <div className="absolute top-6 right-6">
-        <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">{`5/${totalSteps}`}</span>
-      </div>
-
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-slate-800 mb-1">사업자 정보</h2>
-        <p className="text-slate-600 text-sm">
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">사업자 정보</h2>
+        <p className="text-gray-600 text-sm">
           유효한 사업자 정보를 입력해주세요.
         </p>
       </div>
@@ -332,14 +327,14 @@ const StepBusiness: React.FC<Props> = ({
       <div className="flex gap-3">
         <button
           onClick={onPrev}
-          className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-md font-bold text-sm transition-all duration-200 hover:bg-slate-300"
+          className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-semibold text-base transition-all duration-200 hover:bg-gray-200 hover:-translate-y-0.5"
         >
           이전
         </button>
         <button
           onClick={onSubmit}
           disabled={!isValid || submitting}
-          className="flex-1 next-button text-white py-3 rounded-md font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 next-button text-white py-4 rounded-xl font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
             <>
@@ -347,7 +342,7 @@ const StepBusiness: React.FC<Props> = ({
               가입 중...
             </>
           ) : (
-            '가입하기'
+            '회원가입 완료'
           )}
         </button>
       </div>

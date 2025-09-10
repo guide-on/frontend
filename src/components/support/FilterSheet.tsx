@@ -80,7 +80,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
     createPortal(
       <div className="fixed inset-0 z-[9998] flex items-end justify-center bg-black bg-opacity-30">
         <div
-          className="w-full max-w-sm pt-4 rounded-t-3xl shadow-xl flex flex-col mx-4"
+          className="w-full pt-4 rounded-t-3xl shadow-xl flex flex-col"
           style={{ maxHeight: '80vh', backgroundColor: colors.bgSoft }}
         >
           <div className="px-4 overflow-y-auto no-scrollbar">
@@ -98,7 +98,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
               ].map((tab) => (
                 <button
                   key={tab.key}
-                  className={`flex-1 py-2 text-[10px] font-medium -mb-px border-b-2 mx-1 justify-center tracking-wide ${activeTab === tab.key ? '' : 'text-gray-700'}`}
+                  className={`flex-1 py-2 text-[11px] font-medium -mb-px border-b-2 mx-1 justify-center tracking-wide ${activeTab === tab.key ? '' : 'text-gray-700'}`}
                   style={{
                     borderColor:
                       activeTab === tab.key ? colors.navy : 'transparent',
@@ -126,8 +126,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
                 </button>
               ))}
             </div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-sm">필터</span>
+            <div className="flex justify-end items-center mb-2">
               <button
                 className="text-xs font-bold text-gray-600"
                 onClick={() =>

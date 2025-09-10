@@ -9,6 +9,7 @@ import SectorSelector from "../components/SectorSelector";
 import { api } from "../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PostDetail, FreeType, HashtagDto, HashtagType } from "../types/models";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 type UpdatePostPayload = {
     title: string;
@@ -63,7 +64,7 @@ export default function PostEdit(){
         nav(`/community/posts/${id}`);
     };
 
-    if (!detail) return <div className="container-mobile py-8">로딩중...</div>;
+    if (!detail) return <div className="container-mobile py-8 flex justify-center"><LoadingSpinner type="dots" color="#25437B" /></div>;
 
     const allowedEtc:HashtagType[] = detail.category==='CASE' ? ["GENERIC"] : ["POST_TYPE","GENERIC"];
 

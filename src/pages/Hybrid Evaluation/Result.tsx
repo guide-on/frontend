@@ -7,6 +7,7 @@ import { creditEvaluationResultApi } from '../../api/creditEvaluationResultApi';
 import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { useAuthStore } from '../../stores/useAuthStore';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const TabButton = ({
   label,
@@ -546,8 +547,8 @@ const ResultOverlay = ({
 
         {loading ? (
           <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
-            <div className="text-center text-sm text-gray-600">
-              데이터 로딩 중...
+            <div className="text-center text-sm text-gray-600 flex justify-center">
+              <LoadingSpinner type="dots" color="#25437B" />
             </div>
             <div className="mt-4 animate-pulse">
               <div className="h-16 bg-gray-200 rounded"></div>

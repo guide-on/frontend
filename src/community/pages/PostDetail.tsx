@@ -4,6 +4,7 @@ import { api } from "../utils/api";
 import type { PostDetail, CommentItem } from "../types/models";
 import { Eye, Heart, Bookmark, MessageSquare, MoreVertical } from "lucide-react";
 import Button from "../components/ui/Button";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 /** 서버 토글 응답 타입 */
 type ToggleLikeRes = { postId: number; liked: boolean };
@@ -185,7 +186,7 @@ export default function PostDetailPage() {
         }
     };
 
-    if (!data) return <div className="py-8">로딩중...</div>;
+    if (!data) return <div className="py-8 flex justify-center"><LoadingSpinner type="dots" color="#25437B" /></div>;
 
     const dateText = new Date(data.createdAt).toISOString().slice(0, 10);
     const images = data.images ?? [];

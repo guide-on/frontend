@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 declare global {
   interface Window {
@@ -178,11 +179,11 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
       <div ref={mapRef} className="w-full h-full" />
       {/* 카카오맵 로딩 실패 시 fallback */}
       <div
-        className="flex items-center justify-center text-gray-500 text-sm absolute inset-0 bg-gray-100 rounded-xl"
+        className="flex items-center justify-center absolute inset-0 bg-gray-100 rounded-xl"
         style={{ display: 'none' }}
         id="map-fallback"
       >
-        지도를 불러오는 중입니다...
+        <LoadingSpinner type="dots" color="#25437B" />
       </div>
     </div>
   );
