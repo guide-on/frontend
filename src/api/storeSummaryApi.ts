@@ -2,12 +2,10 @@ import api from '@/api';
 import type { AxiosResponse } from 'axios';
 
 export interface StoreSummaryResponse {
-  storeId: number;
-  ownerId: number;
-  businessRegistrationNo: string;
-  industryCode?: string;
-  openDate?: string;
-  summaryYearMonth: string;
+  sessionId?: number;
+  businessRegistrationNo?: string;
+  
+  // 매출 관련 (매출성장성 및 안정성)
   totalSalesAmount?: number;
   weekdaySalesAmount?: number;
   weekendSalesAmount?: number;
@@ -20,12 +18,17 @@ export interface StoreSummaryResponse {
   yoyGrowthRate?: number;
   salesCv?: number;
   avgTransactionValue?: number;
-  weekdayAvgTransactionValue?: number;
-  weekendAvgTransactionValue?: number;
   cashPaymentRatio?: number;
   cardPaymentRatio?: number;
   revisitCustomerSalesRatio?: number;
   newCustomerRatio?: number;
+  
+  // 생성/수정 일시
+  createdDttm?: string;
+  updatedDttm?: string;
+  lastUpdatedDttm?: string;
+  
+  // ESG 관련
   electricityUsageKwh?: number;
   electricityBillAmount?: number;
   gasUsageM3?: number;
@@ -43,17 +46,19 @@ export interface StoreSummaryResponse {
   customerReviewPositiveRatio?: number;
   hygieneCertified?: boolean;
   originPriceViolationCount?: number;
+  
+  // 재무 관련
   operatingProfit?: number;
   costOfGoodsSold?: number;
   totalSalary?: number;
-  operatingExpenses?: number;
   rentExpense?: number;
   otherExpenses?: number;
   operatingProfitRatio?: number;
   cogsRatio?: number;
   salaryRatio?: number;
   rentRatio?: number;
-  operatingExpenseRatio?: number;
+  
+  // 현금흐름 건전성 관련
   cashPaymentRatioDetail?: number;
   cardPaymentRatioDetail?: number;
   otherPaymentRatio?: number;
@@ -66,9 +71,6 @@ export interface StoreSummaryResponse {
   utilityPaymentComplianceRate?: number;
   salaryPaymentRegularity?: number;
   taxPaymentIntegrity?: number;
-  createdDttm?: string;
-  updatedDttm?: string;
-  lastUpdatedDttm?: string;
 }
 
 export interface StoreSummaryListResponse {
@@ -83,31 +85,49 @@ export interface StoreSummaryDetailResponse {
   data: StoreSummaryResponse;
 }
 
+export interface SalesDataRow {
+  totalSalesAmount?: number;
+  weekdaySalesAmount?: number;
+  weekendSalesAmount?: number;
+  lunchSalesRatio?: number;
+  dinnerSalesRatio?: number;
+  transactionCount?: number;
+  weekdayTransactionCount?: number;
+  weekendTransactionCount?: number;
+  momGrowthRate?: number;
+  yoyGrowthRate?: number;
+  salesCv?: number;
+  avgTransactionValue?: number;
+  cashPaymentRatio?: number;
+  cardPaymentRatio?: number;
+  revisitCustomerSalesRatio?: number;
+  newCustomerRatio?: number;
+}
+
+export interface StoreSummaryCsvUploadRequest {
+  sessionId: number;
+  businessRegistrationNo: string;
+  salesData: SalesDataRow[];
+}
+
 class StoreSummaryApi {
   async getMyStoreSummary(
-    summaryYearMonth?: string,
+    sessionId: number,
     page: number = 1,
     limit: number = 20
   ): Promise<StoreSummaryListResponse> {
-    let url = `/api/store-summary/my-data?page=${page}&limit=${limit}`;
-    if (summaryYearMonth) {
-      url += `&summaryYearMonth=${summaryYearMonth}`;
-    }
+    const url = `/api/store-summary/my-data/${sessionId}?page=${page}&limit=${limit}`;
     const response: AxiosResponse<StoreSummaryListResponse> = await api.get(url);
     return response.data;
   }
 
-  async getStoreSummaryByOwnerId(
-    ownerId: number,
-    summaryYearMonth?: string,
-    page: number = 1,
-    limit: number = 20
-  ): Promise<StoreSummaryListResponse> {
-    let url = `/api/store-summary/owner/${ownerId}?page=${page}&limit=${limit}`;
-    if (summaryYearMonth) {
-      url += `&summaryYearMonth=${summaryYearMonth}`;
-    }
-    const response: AxiosResponse<StoreSummaryListResponse> = await api.get(url);
+  async uploadCsvData(
+    request: StoreSummaryCsvUploadRequest
+  ): Promise<StoreSummaryDetailResponse> {
+    const response: AxiosResponse<StoreSummaryDetailResponse> = await api.post(
+      '/api/store-summary/upload-csv',
+      request
+    );
     return response.data;
   }
 }

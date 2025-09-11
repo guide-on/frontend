@@ -10,13 +10,20 @@ import {
 import { colors } from '../../styles/colors';
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   creditEvaluationApi,
   type CreditEvaluationCreateRequest,
   type CreditEvaluationResponse,
 } from '../../api/creditEvaluationApi';
+import { 
+  storeSummaryApi, 
+  type StoreSummaryCsvUploadRequest,
+  type SalesDataRow 
+} from '../../api/storeSummaryApi';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { EsgSection } from './components/EsgSection';
+import { UploadCard } from './components/UploadCard';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -52,32 +59,6 @@ const CATEGORY_CONTENT: Record<
   },
 };
 
-const ESG_STEPS: {
-  title: string;
-  desc: string;
-  items: string[];
-}[] = [
-  {
-    title: 'ESG (1/4)',
-    desc: 'ESG 중 Environmental(환경 친화적 운영)을 평가합니다.',
-    items: ['자원 관리 및 폐기물 감축', '에너지 효율성'],
-  },
-  {
-    title: 'ESG (2/4)',
-    desc: 'ESG 중 Social(사회적 책임 및 지역사회 상생)을 평가합니다.',
-    items: ['노란우산 공제 성실 납부', '고객 리뷰', '식품/위생 안전 관리'],
-  },
-  {
-    title: 'ESG (3/4)',
-    desc: 'ESG 중 Governance(투명경영 및 준법경영)을 평가합니다.',
-    items: ['성실납세 이력', '4대 보험료 납부 이력', '투명한 정보 공개'],
-  },
-  {
-    title: 'ESG (4/4)',
-    desc: 'ESG 추가 지표를 수기 입력합니다.',
-    items: ['에너지 사용량 입력', '재활용률 입력', '안전사고 건수 입력', '기타 메모'],
-  },
-];
 
 const Modal = ({
   open,
@@ -159,42 +140,14 @@ const ScoreChip = ({ v }: { v: string }) => {
   );
 };
 
-const UploadCard = ({
-  onPdfPicked,
-  fileName,
-}: {
-  onPdfPicked: (f: File) => void;
-  fileName?: string;
-}) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  return (
-    <div className="rounded-md p-4 space-y-3 border bg-white border-lightBlue/50">
-      <button
-        onClick={() => inputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-md bg-paleBlue text-navy hover:bg-lightBlue/20 transition"
-      >
-        <FaFileUpload />
-        <span>
-          {fileName ? `업로드됨: ${fileName}` : '파일을 클릭하여 업로드'}
-        </span>
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onPdfPicked(f);
-        }}
-      />
-    </div>
-  );
-};
 
 const StartHybridEvaluation = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  console.log('🔍 [StartHybridEvaluation] URL sessionId:', sessionId);
+  console.log('🔍 [StartHybridEvaluation] user.sessionId:', user?.sessionId);
   const [selected, setSelected] = useState<CategoryKey>('sales');
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [isAttachHelpModalOpen, setAttachHelpModalOpen] = useState(false);
@@ -250,21 +203,179 @@ const StartHybridEvaluation = () => {
   const [evaluationResult, setEvaluationResult] =
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // CSV 업로드 관련 상태
+  const [isUploadingCsv, setIsUploadingCsv] = useState(false);
+  const [csvUploadError, setCsvUploadError] = useState<string | null>(null);
+  const [csvUploadSuccess, setCsvUploadSuccess] = useState(false);
 
-  // ESG 전용 스텝 상태 및 파일명
-  const [esgStep, setEsgStep] = useState(1); // 1~4
-  const [esgFiles, setEsgFiles] = useState<Record<number, string | undefined>>({
-    1: undefined,
-    2: undefined,
-    3: undefined,
-    4: undefined,
-  });
-  const [esgManual, setEsgManual] = useState({
-    energyConsumption: '',
-    recyclingRate: '',
-    safetyIncidents: '',
-    notes: '',
-  });
+  // CSV 파일 파싱 함수
+  const parseCsvFile = (file: File): Promise<SalesDataRow[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string;
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          if (lines.length < 2) {
+            reject(new Error('CSV 파일이 비어있거나 헤더만 있습니다.'));
+            return;
+          }
+          
+          // 첫 번째 줄은 헤더
+          const headers = lines[0].split(',').map(h => h.trim());
+          const expectedHeaders = [
+            'total_sales_amount', 'weekday_sales_amount', 'weekend_sales_amount',
+            'lunch_sales_ratio', 'dinner_sales_ratio', 'transaction_count',
+            'weekday_transaction_count', 'weekend_transaction_count', 'mom_growth_rate',
+            'yoy_growth_rate', 'sales_cv', 'avg_transaction_value',
+            'cash_payment_ratio', 'card_payment_ratio', 'revisit_customer_sales_ratio',
+            'new_customer_ratio'
+          ];
+          
+          // 헤더 검증
+          const missingHeaders = expectedHeaders.filter(header => !headers.includes(header));
+          if (missingHeaders.length > 0) {
+            reject(new Error(`필수 컬럼이 누락되었습니다: ${missingHeaders.join(', ')}`));
+            return;
+          }
+          
+          // 데이터 파싱
+          const salesData: SalesDataRow[] = [];
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length !== headers.length) {
+              reject(new Error(`${i + 1}번째 행의 컬럼 수가 일치하지 않습니다.`));
+              return;
+            }
+            
+            const row: SalesDataRow = {};
+            headers.forEach((header, index) => {
+              const value = values[index];
+              if (value && value !== '') {
+                // snake_case를 camelCase로 변환
+                const camelCaseHeader = header.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+                (row as any)[camelCaseHeader] = parseFloat(value) || 0;
+                console.debug(`🔄 변환: ${header} -> ${camelCaseHeader} = ${value}`);
+              }
+            });
+            salesData.push(row);
+          }
+          
+          if (salesData.length === 0) {
+            reject(new Error('CSV 파일에 데이터가 없습니다.'));
+            return;
+          }
+          
+          resolve(salesData);
+        } catch (error) {
+          reject(new Error(`CSV 파싱 중 오류가 발생했습니다: ${error instanceof Error ? error.message : error}`));
+        }
+      };
+      reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다.'));
+      reader.readAsText(file);
+    });
+  };
+
+  // CSV 파일 업로드 처리 함수
+  const handleCsvUpload = async (file: File) => {
+    if (!sessionId) {
+      setCsvUploadError('세션 ID가 없습니다.');
+      return;
+    }
+
+    // 파일 유효성 검사
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setCsvUploadError('CSV 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB 제한
+      setCsvUploadError('파일 크기가 10MB를 초과할 수 없습니다.');
+      return;
+    }
+
+    if (file.size === 0) {
+      setCsvUploadError('빈 파일은 업로드할 수 없습니다.');
+      return;
+    }
+
+    try {
+      setIsUploadingCsv(true);
+      setCsvUploadError(null);
+      setCsvUploadSuccess(false);
+      
+      console.log('🔄 CSV 파일 파싱 시작:', file.name);
+      
+      // CSV 파일 파싱
+      const salesData = await parseCsvFile(file);
+      console.log('📊 파싱된 데이터:', salesData);
+      
+      // API 요청 데이터 구성
+      const uploadRequest: StoreSummaryCsvUploadRequest = {
+        sessionId: parseInt(sessionId),
+        businessRegistrationNo: '000-00-00000', // 기본값 또는 사용자 입력값
+        salesData: salesData
+      };
+      
+      console.log('📡 CSV 업로드 API 호출:', uploadRequest);
+      
+      // API 호출
+      const response = await storeSummaryApi.uploadCsvData(uploadRequest);
+      
+      if (response.success) {
+        console.log('✅ CSV 업로드 성공:', response.message);
+        setCsvUploadSuccess(true);
+        // sales 항목을 완료로 표시
+        setCompleted((prev) => ({ ...prev, sales: true }));
+        
+        // 파일명 저장
+        setFileNames((prev) => ({ ...prev, sales: file.name }));
+        
+        // 로컬 스토리지에 상태 저장
+        try {
+          localStorage.setItem('hybridStart.completed', JSON.stringify({ ...completed, sales: true }));
+          localStorage.setItem('hybridStart.files', JSON.stringify({ ...fileNames, sales: file.name }));
+        } catch (storageError) {
+          console.warn('로컬 스토리지 저장 실패:', storageError);
+        }
+      } else {
+        throw new Error(response.message || 'CSV 업로드에 실패했습니다.');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ CSV 업로드 실패 - 전체 에러 객체:', error);
+      console.error('❌ 에러 응답:', error?.response);
+      console.error('❌ 에러 응답 데이터:', error?.response?.data);
+      console.error('❌ 에러 상태 코드:', error?.response?.status);
+      console.error('❌ 에러 메시지:', error?.message);
+      console.error('❌ 요청 설정:', error?.config);
+      
+      // 서버 에러 응답에서 더 구체적인 메시지 추출
+      let errorMessage = 'CSV 업로드 중 오류가 발생했습니다.';
+      
+      if (error?.response?.status === 500) {
+        const serverError = error?.response?.data?.message || error?.response?.data?.error || 'Internal Server Error';
+        errorMessage = `서버 오류 (500): ${serverError}`;
+        console.error('❌ 서버 500 오류 상세:', serverError);
+      } else if (error?.response?.status === 400) {
+        errorMessage = error?.response?.data?.message || '잘못된 요청입니다. CSV 파일 형식을 확인해주세요.';
+      } else if (error?.response?.status === 404) {
+        errorMessage = '요청한 리소스를 찾을 수 없습니다.';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message && error.message !== '[object Object]') {
+        errorMessage = error.message;
+      } else {
+        errorMessage = `네트워크 오류가 발생했습니다. (상태: ${error?.response?.status || 'unknown'})`;
+      }
+      
+      setCsvUploadError(errorMessage);
+    } finally {
+      setIsUploadingCsv(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -273,11 +384,18 @@ const StartHybridEvaluation = () => {
     setError(null);
 
     try {
+      // sessionId 검증
+      console.log('🚀 [StartHybridEvaluation] handleSubmit - using sessionId:', sessionId);
+      if (!sessionId) {
+        throw new Error('세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.');
+      }
+
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 2, 90));
       }, 100);
 
       const evaluationData: CreditEvaluationCreateRequest = {
+        sessionId: sessionId,
         totalOverdueCount: 0,
         recent12mOverdueCount: 0,
         maxOverdueDays: 0,
@@ -309,7 +427,7 @@ const StartHybridEvaluation = () => {
         setEvaluationResult(response.data);
         setTimeout(() => {
           setSubmitting(false);
-          navigate('/hybrid-evaluation/complete');
+          navigate(`/hybrid-evaluation/complete/${sessionId}`);
         }, 500);
       } else {
         throw new Error(response.message || '평��� 생성에 실패했습니다.');
@@ -369,156 +487,14 @@ const StartHybridEvaluation = () => {
 
       <section className="pt-3 space-y-3 border-t border-gray-200">
         {selected === 'esg' ? (
-          <>
-            <h3 className="text-xl font-extrabold text-navy">{ESG_STEPS[esgStep - 1].title}</h3>
-            <p className="text-sm text-gray-600">{ESG_STEPS[esgStep - 1].desc}</p>
-
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900">평가 항목</span>
-              <button
-                aria-label="도움말"
-                onClick={() => setHelpModalOpen(true)}
-                className="text-blue hover:text-navy"
-              >
-                <FaQuestionCircle />
-              </button>
-            </div>
-
-            <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
-              {ESG_STEPS[esgStep - 1].items.map((it) => (
-                <div key={it} className="flex items-start gap-2">
-                  <span>•</span>
-                  <span>{it}</span>
-                </div>
-              ))}
-            </div>
-
-            {esgStep !== 4 ? (
-              <>
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="font-semibold text-gray-900">관련 서류 첨부</span>
-                  <button
-                    aria-label="도움말"
-                    onClick={() => setAttachHelpModalOpen(true)}
-                    className="text-blue hover:text-navy"
-                  >
-                    <FaQuestionCircle />
-                  </button>
-                </div>
-                <UploadCard
-                  fileName={esgFiles[esgStep]}
-                  onPdfPicked={(f) => {
-                    setEsgFiles((prev) => ({ ...prev, [esgStep]: f.name }));
-                  }}
-                />
-              </>
-            ) : (
-              <div className="flex items-center gap-2 pt-2">
-                <span className="font-semibold text-gray-900">수기 입력</span>
-              </div>
-            )}
-
-            {esgStep === 4 && (
-              <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-                <div className="grid grid-cols-1 gap-3">
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">에너지 사용량(월간 kWh)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.energyConsumption}
-                      onChange={(e) => setEsgManual({ ...esgManual, energyConsumption: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">폐기물 재활용률(%)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.recyclingRate}
-                      onChange={(e) => setEsgManual({ ...esgManual, recyclingRate: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">안전사고 건수(월간)</span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={esgManual.safetyIncidents}
-                      onChange={(e) => setEsgManual({ ...esgManual, safetyIncidents: e.target.value })}
-                    />
-                  </label>
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">기타 메모</span>
-                    <textarea
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 min-h-[80px]"
-                      value={esgManual.notes}
-                      onChange={(e) => setEsgManual({ ...esgManual, notes: e.target.value })}
-                    />
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {esgStep === 1 && (
-              <button
-                onClick={() => setEsgStep(2)}
-                className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                다음
-              </button>
-            )}
-            {esgStep === 2 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(1)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => setEsgStep(3)}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  다음
-                </button>
-              </div>
-            )}
-            {esgStep === 3 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(2)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => setEsgStep(4)}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  다음
-                </button>
-              </div>
-            )}
-            {esgStep === 4 && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEsgStep(3)}
-                  className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-                >
-                  이전
-                </button>
-                <button
-                  onClick={() => {
-                    setCompleted((prev) => ({ ...prev, esg: true }));
-                  }}
-                  className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-                >
-                  완료
-                </button>
-              </div>
-            )}
-          </>
+          <EsgSection
+            completed={completed}
+            onHelpClick={() => setHelpModalOpen(true)}
+            onAttachHelpClick={() => setAttachHelpModalOpen(true)}
+            onComplete={() => {
+              setCompleted((prev) => ({ ...prev, esg: true }));
+            }}
+          />
         ) : (
           <>
             <h3 className="text-xl font-extrabold text-navy">{content.title}</h3>
@@ -590,19 +566,64 @@ const StartHybridEvaluation = () => {
                     <FaQuestionCircle />
                   </button>
                 </div>
+                
+                {selected === 'sales' && (
+                  <div className="mt-2 p-3 border border-gray-200 rounded-md bg-blue-50">
+                    <p className="text-sm text-gray-700 mb-2">
+                      <strong>CSV 파일 형식:</strong> 다음 컬럼들을 포함해야 합니다:
+                    </p>
+                    <p className="text-xs text-gray-600 break-all">
+                      total_sales_amount, weekday_sales_amount, weekend_sales_amount, lunch_sales_ratio, 
+                      dinner_sales_ratio, transaction_count, weekday_transaction_count, weekend_transaction_count, 
+                      mom_growth_rate, yoy_growth_rate, sales_cv, avg_transaction_value, cash_payment_ratio, 
+                      card_payment_ratio, revisit_customer_sales_ratio, new_customer_ratio
+                    </p>
+                  </div>
+                )}
+                
                 <UploadCard
                   fileName={fileNames[selected]}
+                  acceptedFileTypes={selected === 'sales' ? '.csv' : '.pdf'}
                   onPdfPicked={(f) => {
-                    const nextFiles = { ...fileNames, [selected]: f.name };
-                    const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
-                    setFileNames(nextFiles);
-                    setCompleted(nextCompleted);
-                    try {
-                      localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
-                      localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
-                    } catch {}
+                    if (selected === 'sales') {
+                      // 매출 안정성 탭에서는 CSV 파일만 허용
+                      if (!f.name.endsWith('.csv')) {
+                        setCsvUploadError('매출 데이터는 CSV 파일만 업로드 가능합니다.');
+                        return;
+                      }
+                      // CSV 파일 업로드 처리
+                      handleCsvUpload(f);
+                    } else {
+                      // 기존 PDF 파일 처리
+                      const nextFiles = { ...fileNames, [selected]: f.name };
+                      const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
+                      setFileNames(nextFiles);
+                      setCompleted(nextCompleted);
+                      try {
+                        localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
+                        localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+                      } catch {}
+                    }
                   }}
                 />
+
+                {selected === 'sales' && isUploadingCsv && (
+                  <div className="mt-3 text-center py-2">
+                    <p className="text-sm text-blue-600">CSV 파일 업로드 중...</p>
+                  </div>
+                )}
+
+                {selected === 'sales' && csvUploadError && (
+                  <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+                    {csvUploadError}
+                  </div>
+                )}
+
+                {selected === 'sales' && csvUploadSuccess && (
+                  <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                    ✅ CSV 파일이 성공적으로 업로드되었습니다!
+                  </div>
+                )}
               </>
             )}
             {error && (

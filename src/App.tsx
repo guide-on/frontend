@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Header from './components/common/Header';
 import Navbar from './components/common/Navbar';
 import SplashScreen from './components/common/SplashScreen';
+import AuthModal from '@/community/components/auth/AuthModal';
 
 // 페이지 컴포넌트
 import Home from './home/pages/Home';
@@ -53,32 +54,43 @@ function AppChrome() {
     '/auth/login',
     '/auth/signup',
     '/auth/find',
-    '/hybrid-evaluation/start',
     '/bank-connect',
     '/bank-connect/complete',
+    '/hybrid-evaluation/start',
     '/hybrid-evaluation/complete',
   ]);
+  const hideHeaderPrefixes = [
+    '/hybrid-evaluation/start', // 파라미터 대응
+    '/hybrid-evaluation/complete', // 파라미터 대응
+  ];
 
   // === Navbar 숨김 조건 ===
   const hideNavbarExact = new Set<string>([
     '/auth/login',
     '/auth/signup',
     '/auth/find',
-    '/hybrid-evaluation/start',
     '/bank-connect',
     '/bank-connect/complete',
+    '/hybrid-evaluation/start',
     '/hybrid-evaluation/complete',
   ]);
-  const hideNavbarPrefixes = ['/simulation/'];
+  const hideNavbarPrefixes = [
+    '/simulation/', // 목록/상세 공통
+    '/hybrid-evaluation/start', // 파라미터 대응
+    '/hybrid-evaluation/complete', // 파라미터 대응
+  ];
 
-  const isHeaderHidden = hideHeaderExact.has(pathname);
+  const isHeaderHidden =
+    hideHeaderExact.has(pathname) ||
+    hideHeaderPrefixes.some((p) => pathname.startsWith(p));
+
   const isNavbarHidden =
     hideNavbarExact.has(pathname) ||
     hideNavbarPrefixes.some((p) => pathname.startsWith(p));
 
   // Header / Navbar 유무에 따른 main 패딩
-  const paddingTop = isHeaderHidden ? 0 : 64; // px (헤더 높이 16 -> 64px)
-  const paddingBottom = isNavbarHidden ? 0 : 70; // px (네비바 높이 60 -> 70px)
+  const paddingTop = isHeaderHidden ? 0 : 64; // px
+  const paddingBottom = isNavbarHidden ? 0 : 70; // px
 
   return (
     <>
@@ -156,11 +168,23 @@ function AppChrome() {
             {/* 하이브리드 평가 */}
             <Route path="/hybrid-evaluation" element={<HybridEvaluation />} />
             <Route
+              path="/hybrid-evaluation/:sessionId"
+              element={<HybridEvaluation />}
+            />
+            <Route
               path="/hybrid-evaluation/start"
               element={<StartHybridEvaluation />}
             />
             <Route
+              path="/hybrid-evaluation/start/:sessionId"
+              element={<StartHybridEvaluation />}
+            />
+            <Route
               path="/hybrid-evaluation/complete"
+              element={<HybridEvaluationComplete />}
+            />
+            <Route
+              path="/hybrid-evaluation/complete/:sessionId"
               element={<HybridEvaluationComplete />}
             />
 
@@ -210,11 +234,13 @@ export default function App() {
         flexDirection: 'column',
       }}
     >
+      {/* ✅ 전역 모달은 Router 안에서 어느 라우트에서나 뜨도록 */}
       <BrowserRouter>
+        <AuthModal />
         <AppChrome />
       </BrowserRouter>
 
-      {/* 스플래시를 최상단 오버레이로 ��� 뒤에 홈이 준비된 상태에서 자연스러운 전환 */}
+      {/* 스플래시를 최상단 오버레이로 두어 뒤에 홈이 준비된 상태에서 자연스러운 전환 */}
       {showSplash && <SplashScreen fading={fadeSplash} />}
     </div>
   );
