@@ -407,10 +407,8 @@ const StartHybridEvaluation = () => {
       setProgress(100);
 
       setEvaluationResult(creditResponse.data);
-      setTimeout(() => {
-        setSubmitting(false);
-        navigate(`/hybrid-evaluation/complete/${sessionId}`);
-      }, 500);
+      // 로딩 페이지로 이동
+      navigate(`/hybrid-evaluation/loading/${sessionId}`);
     } catch (err: any) {
       setSubmitting(false);
       setError(
@@ -424,7 +422,7 @@ const StartHybridEvaluation = () => {
 
   return (
     <>
-      <ProcessStepHeader currentStep={2} />
+      {!isSubmitting && <ProcessStepHeader currentStep={2} />}
 
       <div
         className="px-4 pt-4 pb-24 space-y-5 min-h-screen"
@@ -566,7 +564,6 @@ const StartHybridEvaluation = () => {
           ) : null}
         </section>
 
-        {isSubmitting && <LoadingOverlay progress={progress} />}
 
         {showResult && (
           <ResultOverlay

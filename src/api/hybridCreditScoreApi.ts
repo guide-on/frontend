@@ -3,14 +3,14 @@ import type { AxiosResponse } from 'axios';
 
 // 하이브리드 신용점수 응답 타입 정의
 export interface HybridCreditScoreResponse {
-  session_id: number;
-  total_credit_score: number;
-  hybrid_credit_score: number;
-  traditional_credit_score: number;
-  last_updated_dttm: string;
-  sales_summary_score_scaled: number;
-  financial_info_score_scaled: number;
-  operational_info_score_scaled: number;
+  sessionId: number;
+  totalCreditScore: number;
+  hybridCreditScore: number;
+  traditionalCreditScore: number;
+  lastUpdatedDttm: string;
+  salesSummaryScoreScaled: number;
+  financialInfoScoreScaled: number;
+  operationalInfoScoreScaled: number;
 }
 
 export interface CommonResponseDTO<T> {

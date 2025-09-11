@@ -12,8 +12,6 @@ import {
 } from '../../api/hybridCreditScoreApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import Header from '../../components/common/Header';
-import Navbar from '../../components/common/Navbar';
 
 import { colors } from '@/styles/colors';
 
@@ -71,7 +69,16 @@ const ExpandableRow = ({
       </div>
       <div className="mt-1 text-sm text-gray-600">{desc}</div>
       <div className="mt-3 h-2 w-full rounded bg-paleBlue">
-        <div className="h-full w-11/12 rounded bg-blue" />
+        <div
+          className="h-full rounded bg-blue transition-all duration-300"
+          style={{
+            width: `${
+              score !== undefined && maxScore !== undefined
+                ? Math.min(100, Math.max(0, (score / maxScore) * 100))
+                : 0
+            }%`,
+          }}
+        />
       </div>
 
       <button
@@ -558,7 +565,7 @@ const HybridEvaluationResult = () => {
         t: '매출 안정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
         g: hybridScoreData
-          ? getHybridScoreGrade(hybridScoreData.sales_summary_score_scaled)
+          ? getHybridScoreGrade(hybridScoreData.salesSummaryScoreScaled)
           : 'N/A',
         details: [
           {
@@ -589,7 +596,7 @@ const HybridEvaluationResult = () => {
         t: '현금흐름 건전성',
         d: '영업이익과 현금 보유 상황을 분석한 결과입니다.',
         g: hybridScoreData
-          ? getHybridScoreGrade(hybridScoreData.financial_info_score_scaled)
+          ? getHybridScoreGrade(hybridScoreData.financialInfoScoreScaled)
           : 'N/A',
         details: [
           {
@@ -614,7 +621,7 @@ const HybridEvaluationResult = () => {
         t: 'ESG',
         d: '환경·사회·지배구조 리스크 관리와 실천 활동을 평가합니다.',
         g: hybridScoreData
-          ? getHybridScoreGrade(hybridScoreData.operational_info_score_scaled)
+          ? getHybridScoreGrade(hybridScoreData.operationalInfoScoreScaled)
           : 'N/A',
         details: [
           {
@@ -651,7 +658,6 @@ const HybridEvaluationResult = () => {
 
   return (
     <>
-      <Header />
       <div
         className="px-4 pt-20 pb-24 space-y-5 min-h-screen"
         style={{ background: colors.bgSoft }}
@@ -675,15 +681,41 @@ const HybridEvaluationResult = () => {
               <div className="text-center text-sm text-gray-600">종합 점수</div>
               <div className="mt-1 flex items-end justify-center gap-2">
                 <div className="text-5xl font-extrabold text-gray-900">
-                  {hybridScoreData?.total_credit_score || 0}
+                  {hybridScoreData?.totalCreditScore ?? 0}
                 </div>
                 <div className="pb-1 text-gray-600">/ 1000</div>
               </div>
               <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
                 {hybridScoreData
-                  ? getTotalGrade(hybridScoreData.total_credit_score)
+                  ? getTotalGrade(hybridScoreData.totalCreditScore)
                   : 'N/A'}{' '}
                 등급
+              </div>
+              <div className="mt-4 h-2 w-full rounded bg-paleBlue">
+                <div
+                  className="h-full rounded bg-blue transition-all duration-300"
+                  style={{
+                    width: `${
+                      hybridScoreData?.totalCreditScore
+                        ? Math.min(
+                            100,
+                            Math.max(
+                              0,
+                              (hybridScoreData.totalCreditScore / 1000) * 100,
+                            ),
+                          )
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+              <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="text-center text-xs text-gray-600 font-medium">
+                  산출 방식
+                </div>
+                <div className="text-center text-xs text-gray-500 mt-1">
+                  기존 신용평가 점수 70% + guideON 점수 30%
+                </div>
               </div>
             </div>
           )}
@@ -742,13 +774,6 @@ const HybridEvaluationResult = () => {
               </div>
             )}
           </div>
-
-          <button
-            onClick={() => navigate(-1)}
-            className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50"
-          >
-            이전으로
-          </button>
         </div>
       </div>
     </>

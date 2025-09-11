@@ -1,9 +1,32 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FaClock } from 'react-icons/fa';
 import { colors } from '../../styles/colors';
 
+const LoadingPage = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  const navigate = useNavigate();
+  const [progress, setProgress] = useState(0);
 
+  // 자동 진행 및 리디렉션 로직
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          // 진행률 100% 도달 시 Complete 페이지로 이동
+          setTimeout(() => {
+            navigate(`/hybrid-evaluation/complete/${sessionId}`);
+          }, 1000);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 100);
 
-const LoadingOverlay = ({ progress }: { progress: number }) => {
+    return () => clearInterval(progressInterval);
+  }, [sessionId, navigate]);
+
   const radius = 44;
   const stroke = 6;
   const circumference = 2 * Math.PI * radius;
@@ -19,7 +42,7 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
   return (
     <>
 
-      <div className="fixed inset-0 z-50 flex flex-col items-center bg-white px-6 pt-10 pb-8" aria-live="polite">
+      <div className="flex flex-col items-center bg-white px-6 pt-10 pb-8 w-full h-screen min-h-screen" aria-live="polite" style={{ background: colors.bgSoft }}>
       <style>
         {`
         @keyframes slide {
@@ -143,4 +166,4 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
   );
 };
 
-export default LoadingOverlay;
+export default LoadingPage;
