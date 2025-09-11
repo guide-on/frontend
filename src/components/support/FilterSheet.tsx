@@ -81,7 +81,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({
       <div className="fixed inset-0 z-[9998] flex items-end justify-center bg-black bg-opacity-30">
         <div
           className="w-full pt-4 rounded-t-3xl shadow-xl flex flex-col"
-          style={{ maxHeight: '80vh', backgroundColor: colors.bgSoft }}
+          style={{ maxHeight: '80vh', maxWidth: '480px', backgroundColor: colors.bgSoft }}
         >
           <div className="px-4 overflow-y-auto no-scrollbar">
             {/* 탭 영역 */}
