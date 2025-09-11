@@ -7,9 +7,10 @@ interface CashflowSectionProps {
   completed: Record<CategoryKey, boolean>;
   error: string | null;
   isSubmitting: boolean;
+  isBankConsentCompleted: boolean;
   onHelpClick: () => void;
   onBankConsentClick: () => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 export const CashflowSection: React.FC<CashflowSectionProps> = ({
@@ -17,6 +18,7 @@ export const CashflowSection: React.FC<CashflowSectionProps> = ({
   completed,
   error,
   isSubmitting,
+  isBankConsentCompleted,
   onHelpClick,
   onBankConsentClick,
   onSubmit,
@@ -58,9 +60,14 @@ export const CashflowSection: React.FC<CashflowSectionProps> = ({
         <button
           aria-label="계좌연결 및 조회 동의"
           onClick={onBankConsentClick}
-          className="w-full rounded-xl py-3 text-white font-medium bg-blue hover:bg-navy transition"
+          disabled={isBankConsentCompleted}
+          className={`w-full rounded-xl py-3 text-white font-medium transition ${
+            isBankConsentCompleted
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue hover:bg-navy'
+          }`}
         >
-          계좌연결 및 조회 동의
+          {isBankConsentCompleted ? '동의 완료' : '계좌연결 및 조회 동의'}
         </button>
       </div>
 
@@ -72,7 +79,7 @@ export const CashflowSection: React.FC<CashflowSectionProps> = ({
 
       <button
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || !onSubmit}
         className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? '처리 중...' : '제출하기'}

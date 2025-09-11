@@ -7,9 +7,10 @@ interface CeoSectionProps {
   completed: Record<CategoryKey, boolean>;
   error: string | null;
   isSubmitting: boolean;
+  isCreditConsentCompleted: boolean;
   onHelpClick: () => void;
   onConsentClick: () => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 export const CeoSection: React.FC<CeoSectionProps> = ({
@@ -17,6 +18,7 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
   completed,
   error,
   isSubmitting,
+  isCreditConsentCompleted,
   onHelpClick,
   onConsentClick,
   onSubmit,
@@ -58,9 +60,14 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
         <button
           aria-label="신용정보 조회 동의"
           onClick={onConsentClick}
-          className="w-full rounded-xl py-3 text-white font-medium bg-blue hover:bg-navy transition"
+          disabled={isCreditConsentCompleted}
+          className={`w-full rounded-xl py-3 text-white font-medium transition ${
+            isCreditConsentCompleted
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue hover:bg-navy'
+          }`}
         >
-          신용정보 조회 동의
+          {isCreditConsentCompleted ? '동의 완료' : '신용정보 조회 동의'}
         </button>
       </div>
 
@@ -72,7 +79,7 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
 
       <button
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || !onSubmit}
         className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? '처리 중...' : '제출하기'}

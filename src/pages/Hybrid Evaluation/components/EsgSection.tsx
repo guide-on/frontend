@@ -96,6 +96,9 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
   const [isMydataSuccessModalOpen, setMydataSuccessModalOpen] = useState(false);
   const [esgError, setEsgError] = useState<string | null>(null);
   const [isUpdatingEsg, setIsUpdatingEsg] = useState(false);
+  const [fileUploadSuccess, setFileUploadSuccess] = useState<
+    Record<number, boolean>
+  >({});
 
   const currentStep = ESG_STEPS[esgStep - 1];
 
@@ -146,6 +149,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
 
   const handleFileUpload = (file: File) => {
     setEsgFiles((prev) => ({ ...prev, [esgStep]: file.name }));
+    setFileUploadSuccess((prev) => ({ ...prev, [esgStep]: true }));
   };
 
   const handleSentimentalAnalysis = async () => {
@@ -534,6 +538,11 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                 fileName={esgFiles[esgStep]}
                 onPdfPicked={handleFileUpload}
               />
+              {fileUploadSuccess[esgStep] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -701,8 +710,14 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                 fileName={esgFiles[31]} // step 3-1용 파일
                 onPdfPicked={(f) => {
                   setEsgFiles((prev) => ({ ...prev, 31: f.name }));
+                  setFileUploadSuccess((prev) => ({ ...prev, 31: true }));
                 }}
               />
+              {fileUploadSuccess[31] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
+                </div>
+              )}
             </div>
           </div>
 
@@ -725,8 +740,14 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                 fileName={esgFiles[32]} // step 3-2용 파일
                 onPdfPicked={(f) => {
                   setEsgFiles((prev) => ({ ...prev, 32: f.name }));
+                  setFileUploadSuccess((prev) => ({ ...prev, 32: true }));
                 }}
               />
+              {fileUploadSuccess[32] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
+                </div>
+              )}
             </div>
           </div>
         </div>
