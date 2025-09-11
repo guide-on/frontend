@@ -8,6 +8,7 @@ import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { createPortal } from 'react-dom';
 
 const TabButton = ({
   label,
@@ -194,7 +195,7 @@ const ResultOverlay = ({
     return 'D';
   };
 
-  // 실제 데이터를 기반으로 legacyRows 생성
+  // 실제 데이터�� 기반으로 legacyRows 생성
   const getLegacyRows = () => {
     if (!creditData || !creditResult) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -286,7 +287,7 @@ const ResultOverlay = ({
           {
             section: '대안신용점수',
             items: [
-              `대안신용점수: ${creditData.alternativeCreditScore || 0}점 (최대 100점)`,
+              `대안신용점수: ${creditData.alternativeCreditScore || 0}��� (최대 100점)`,
             ],
           },
         ],
@@ -554,8 +555,8 @@ const ResultOverlay = ({
 
   const rows = tab === 'legacy' ? legacyRows : guideRows;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-white p-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[9998] overflow-auto bg-white p-6">
       <div className="mx-auto w-full max-w-sm space-y-5">
         <h3 className="text-center text-2xl font-extrabold text-navy">
           하이브리드 신용평가 결과
@@ -661,7 +662,7 @@ const ResultOverlay = ({
           ) : (
             <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
               <div className="text-gray-500">
-                {tab === 'legacy' 
+                {tab === 'legacy'
                   ? '신용평가 데이터를 찾을 수 없습니다.'
                   : '매장 요약 데이터를 찾을 수 없습니다.'
                 }
@@ -683,7 +684,8 @@ const ResultOverlay = ({
           닫기
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
