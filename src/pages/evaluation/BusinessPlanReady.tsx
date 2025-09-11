@@ -79,31 +79,30 @@ export default function BusinessPlanReady() {
   }, [data]);
 
   return (
-    <div className="px-4 py-5">
+    <div className="px-4 py-5" style={{ background: colors.bgSoft, minHeight: '100vh' }}>
       <div className="max-w-sm mx-auto">
         {/* 헤더 문구 */}
-        <section
-          className="rounded-2xl p-2 shadow-sm bg-white"
-          style={{ borderColor: colors.navyBorder }}
-        >
+        <section className="rounded-2xl p-6 bg-white shadow-sm mb-4">
           <h3 className="text-xl leading-tight font-extrabold text-gray-900">
-            작성하신 <span className="text-blue">사업계획서</span>를
+            작성하신 <span style={{ color: colors.blue }}>사업계획서</span>를
             평가해드려요!
           </h3>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
             사업계획서를 제출하지 않으셨다면 아래의 서류 확인으로 이동해 제출 후
             평가를 진행해주세요.
           </p>
         </section>
 
         {/* 미니 �����어로 */}
-        <section
-          className="mt-4 rounded-2xl overflow-hidden border bg-indigo-50"
-          style={{ borderColor: colors.navyBorder }}
+        <section 
+          className="mb-4 rounded-2xl overflow-hidden shadow-sm"
+          style={{ 
+            background: 'linear-gradient(to right, #eff6ff, #eef2ff)' 
+          }}
         >
           <div className="p-6 flex items-center gap-4">
-            <div className="shrink-0 inline-flex items-center justify-center w-16 h-16 rounded-xl bg-white border border-blue/20">
-              <FileText className="w-8 h-8 text-blue" />
+            <div className="shrink-0 inline-flex items-center justify-center w-16 h-16 rounded-xl bg-white shadow-sm">
+              <FileText className="w-8 h-8" style={{ color: colors.blue }} />
             </div>
             <div className="min-w-0">
               <div className="text-[15px] font-semibold text-gray-900 truncate">
@@ -113,15 +112,12 @@ export default function BusinessPlanReady() {
                 최근 업로드하신 파일을 기반으로 평가합니다.
               </div>
             </div>
-            <Sparkles className="ml-auto w-6 h-6 text-blue" />
+            <Sparkles className="ml-auto w-6 h-6" style={{ color: colors.blue }} />
           </div>
         </section>
 
         {/* 어떤 점을 평가하나요 */}
-        <section
-          className="mt-4 rounded-2xl p-5 bg-white border"
-          style={{ borderColor: colors.navyBorder }}
-        >
+        <section className="mb-4 rounded-2xl p-6 bg-white shadow-sm">
           <h3 className="text-sm font-bold text-gray-900">
             어떤 점을 평가하나요?
           </h3>
@@ -149,7 +145,7 @@ export default function BusinessPlanReady() {
               },
             ].map((item) => (
               <li key={item.title} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 w-4 h-4 text-blue" />
+                <CheckCircle2 className="mt-0.5 w-4 h-4" style={{ color: colors.blue }} />
                 <p className="text-[13px]">
                   <span className="font-semibold text-gray-900">
                     {item.title}
@@ -160,7 +156,7 @@ export default function BusinessPlanReady() {
             ))}
           </ul>
 
-          <div className="mt-4 rounded-lg border bg-blue-50/60 text-[12px] text-gray-700 p-3">
+          <div className="mt-4 rounded-lg bg-blue-50/60 text-[12px] text-gray-700 p-3">
             업로드된 파일은 본 서비스의 승인 시뮬레이션을 위해서만 이용됩니다.
             실제 대출 심사 결과는 금융사 정책·심사 기준에 따라 달라질 수 있어요.
           </div>
@@ -175,11 +171,11 @@ export default function BusinessPlanReady() {
           )}
         </section>
 
-        {/* 하단 액션 유지 */}
-        <div className="mt-5 grid grid-cols-2 gap-2">
+        {/* 하단 액션 */}
+        <div className="mt-6 grid grid-cols-2 gap-3">
           <Link
             to={`/guide/documents/${data?.sessionId ?? sessionId}`}
-            className="text-center rounded-md border py-3 font-semibold text-gray-700 bg-white hover:bg-gray-50 border-gray-200"
+            className="text-center rounded-xl py-3 font-semibold text-gray-700 bg-white hover:bg-gray-50 shadow-sm"
           >
             서류 확인
           </Link>
@@ -196,7 +192,7 @@ export default function BusinessPlanReady() {
               }
             }}
             // disabled={!businessPlanSubmitted || starting}
-            className="rounded-md py-3 font-bold text-white shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl py-3 font-bold text-white shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: colors.navy }}
           >
             {starting ? '시작 중…' : '평가 시작'}

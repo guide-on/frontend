@@ -14,7 +14,7 @@ const routeTitle = (path: string): string => {
     return '하이브리드 신용평가';
 
   // 사업계획서 평가
-  if (path === '/guide/business-plan' || path.startsWith('/guide/business-plan/'))
+  if (path === '/guide/business-plan' || path.includes('/business-plan/'))
     return '사업계획서 평가';
 
   // 2) 가이드 하위
