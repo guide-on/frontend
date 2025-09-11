@@ -19,7 +19,7 @@ interface SalesSectionProps {
   onHelpClick: () => void;
   onAttachHelpClick: () => void;
   onFileUpload: (file: File) => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
   onCsvUploadComplete: (fileName: string) => void;
 }
 
@@ -320,7 +320,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
 
       <button
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || !onSubmit}
         className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? '처리 중...' : '제출하기'}

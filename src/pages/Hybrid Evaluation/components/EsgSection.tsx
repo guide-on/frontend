@@ -4,6 +4,9 @@ import { ESG_STEPS } from './EsgSteps';
 import { UploadCard } from './UploadCard';
 import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
 import StoreMap from './StoreMap';
+import api from '@/api';
+import axios from 'axios';
+import { storeSummaryApi } from '../../../api/storeSummaryApi';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -47,6 +50,7 @@ const Modal = ({
 
 interface EsgSectionProps {
   completed: Record<CategoryKey, boolean>;
+  sessionId: string;
   onHelpClick: () => void;
   onAttachHelpClick: () => void;
   onComplete: () => void;
@@ -54,6 +58,7 @@ interface EsgSectionProps {
 
 export const EsgSection: React.FC<EsgSectionProps> = ({
   completed,
+  sessionId,
   onHelpClick,
   onAttachHelpClick,
   onComplete,
@@ -88,6 +93,12 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
   const [step3Loading, setStep3Loading] = useState(false);
   const [step3Error, setStep3Error] = useState<string | null>(null);
   const [isEnergyModalOpen, setEnergyModalOpen] = useState(false);
+  const [isMydataSuccessModalOpen, setMydataSuccessModalOpen] = useState(false);
+  const [esgError, setEsgError] = useState<string | null>(null);
+  const [isUpdatingEsg, setIsUpdatingEsg] = useState(false);
+  const [fileUploadSuccess, setFileUploadSuccess] = useState<
+    Record<number, boolean>
+  >({});
 
   const currentStep = ESG_STEPS[esgStep - 1];
 
@@ -126,7 +137,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       // 마이데이터 연동 API 호출 (실제 구현에서는 mydataSync 함수 사용)
       await new Promise((resolve) => setTimeout(resolve, 2000)); // 시뮬레이션
       // 성공 시 처리
-      alert('마이데이터 연동이 완료되었습니다.');
+      setMydataSuccessModalOpen(true);
     } catch (e) {
       setStep3Error(
         e instanceof Error ? e.message : '연동 중 오류가 발생했습니다.',
@@ -138,6 +149,81 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
 
   const handleFileUpload = (file: File) => {
     setEsgFiles((prev) => ({ ...prev, [esgStep]: file.name }));
+    setFileUploadSuccess((prev) => ({ ...prev, [esgStep]: true }));
+  };
+
+  const handleSentimentalAnalysis = async () => {
+    if (!sessionId) {
+      console.error('Session ID not found');
+      return;
+    }
+
+    try {
+      console.log('리뷰 감정 분석 API 호출');
+      // Vite 프록시를 사용하기 위해 axios 기본 인스턴스 사용 (baseURL 없이)
+      axios.post(`/sentimental-analysis-result/${sessionId}`);
+      setEsgStep(3);
+    } catch (error) {
+      console.error('Error calling sentimental analysis API:', error);
+      // 에러가 발생해도 다음 단계로 이동 (필요��� 따라 수정 가능)
+      setEsgStep(3);
+    }
+  };
+
+  // ESG 데이터 업데이트 함수
+  const handleEsgUpdate = async () => {
+    if (!sessionId) {
+      console.error('세션 ID가 없습니다.');
+      setEsgError('세션 ID가 없어 ESG 데이터 업데이트를 진행할 수 없습니다.');
+      return;
+    }
+
+    // 계산된 에너지 효율 기기 비율 가져오기
+    const totalCount = Number(step1Manual.totalApplianceCount);
+    const highEffCount = Number(step1Manual.highEfficiencyApplianceCount);
+
+    if (!totalCount || !highEffCount || totalCount === 0) {
+      setEsgError('에너지 효율 기기 정보를 올바르게 입력해주세요.');
+      return;
+    }
+
+    const energyEffRatio = Math.round((highEffCount / totalCount) * 100);
+
+    try {
+      setIsUpdatingEsg(true);
+      setEsgError(null);
+
+      console.log('🔄 ESG 데이터 업데이트 시작:', sessionId, energyEffRatio);
+
+      const response = await storeSummaryApi.updateEsgData(
+        parseInt(sessionId),
+        energyEffRatio,
+      );
+
+      if (response.success) {
+        console.log('✅ ESG 데이터 업데이트 성공:', response.message);
+
+        // ESG 완료 상태 표시
+        onComplete();
+      } else {
+        throw new Error(
+          response.message || 'ESG 데이터 업데이트에 실패했습니다.',
+        );
+      }
+    } catch (error: any) {
+      console.error('❌ ESG 데이터 업데이트 실패:', error);
+
+      let errorMessage = 'ESG 데이터 업데이트 중 오류가 발생했습니다.';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      setEsgError(errorMessage);
+    } finally {
+      setIsUpdatingEsg(false);
+    }
   };
 
   return (
@@ -452,173 +538,248 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                 fileName={esgFiles[esgStep]}
                 onPdfPicked={handleFileUpload}
               />
+              {fileUploadSuccess[esgStep] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
       {esgStep === 3 && (
-        <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-          <div>
-            <p className="font-bold text-sm mb-2">마이데이터 연동 동의</p>
-            <p className="text-xs text-gray-600 mb-4">
-              성실납세 이력, 4대 보험료 납부 이력 자동 수집을 위해 아래 약관에
-              동의해 주세요.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div
-              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
-              onClick={() => handleStep3MydataToggle('serviceTerms')}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={step3Mydata.serviceTerms}
-                  onChange={() => handleStep3MydataToggle('serviceTerms')}
-                  className="pointer-events-none"
-                />
-                <div>
-                  <div className="font-semibold text-sm">서비스 이용 약관</div>
-                  <div className="text-xs text-gray-500">
-                    마이데이터 서비스 이용을 위한 약관입니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
-              onClick={() => handleStep3MydataToggle('privacyPolicy')}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={step3Mydata.privacyPolicy}
-                  onChange={() => handleStep3MydataToggle('privacyPolicy')}
-                  className="pointer-events-none"
-                />
-                <div>
-                  <div className="font-semibold text-sm">개인정보 처리방침</div>
-                  <div className="text-xs text-gray-500">
-                    마이데이터 수집/처리 관련 개인정보 처리 방침입니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
-              onClick={() => handleStep3MydataToggle('thirdPartyConsent')}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={step3Mydata.thirdPartyConsent}
-                  onChange={() => handleStep3MydataToggle('thirdPartyConsent')}
-                  className="pointer-events-none"
-                />
-                <div>
-                  <div className="font-semibold text-sm">제3자 제공 동의</div>
-                  <div className="text-xs text-gray-500">
-                    제3자에게 정보 제공에 대한 동의입니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {step3Error && (
-            <div className="text-sm text-red-600">{step3Error}</div>
-          )}
-
-          <div className="pt-2">
-            <button
-              onClick={handleStep3MydataSync}
-              className={`w-full py-3 rounded-lg font-semibold text-white mb-2 transition ${
-                step3Mydata.serviceTerms &&
-                step3Mydata.privacyPolicy &&
-                step3Mydata.thirdPartyConsent &&
-                !step3Loading
-                  ? 'bg-navy hover:bg-blue'
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
-              disabled={
-                !(
-                  step3Mydata.serviceTerms &&
-                  step3Mydata.privacyPolicy &&
-                  step3Mydata.thirdPartyConsent
-                ) || step3Loading
-              }
-            >
-              {step3Loading ? '연동 중…' : '동의하고 연동하기'}
-            </button>
-
-            <div className="text-center">
-              <button className="text-sm text-gray-600" disabled={step3Loading}>
-                연동하지 않고 서류 제출
+        <div className="space-y-4">
+          {/* 마이데이터 연동 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
+                마이데이터 활용 동의
+              </span>
+              <button
+                aria-label="마이데이터 연동 도움말"
+                onClick={() => setEnergyModalOpen(true)}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
               </button>
             </div>
+            <div className="mt-2 space-y-3">
+              <div className="rounded-xl p-3 space-y-3 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
+                <div className="space-y-4 p-3">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-4">
+                      성실납세 이력, 4대 보험료 납부 이력 자동 수집을 위해
+                      <br />
+                      아래 약관에 동의해 주세요.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div
+                      className="bg-gray-50 rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+                      onClick={() => handleStep3MydataToggle('serviceTerms')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={step3Mydata.serviceTerms}
+                          onChange={() =>
+                            handleStep3MydataToggle('serviceTerms')
+                          }
+                          className="pointer-events-none"
+                        />
+                        <div>
+                          <div className="font-semibold text-sm">
+                            서비스 이용 약관
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            마이데이터 서비스 이용을 위한 약관입니다.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="bg-gray-50 rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+                      onClick={() => handleStep3MydataToggle('privacyPolicy')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={step3Mydata.privacyPolicy}
+                          onChange={() =>
+                            handleStep3MydataToggle('privacyPolicy')
+                          }
+                          className="pointer-events-none"
+                        />
+                        <div>
+                          <div className="font-semibold text-sm">
+                            개인정보 처리방침
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            마이데이터 수집/처리 관련 개인정보 처리 방침입니다.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="bg-gray-50 rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+                      onClick={() =>
+                        handleStep3MydataToggle('thirdPartyConsent')
+                      }
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={step3Mydata.thirdPartyConsent}
+                          onChange={() =>
+                            handleStep3MydataToggle('thirdPartyConsent')
+                          }
+                          className="pointer-events-none"
+                        />
+                        <div>
+                          <div className="font-semibold text-sm">
+                            제3자 제공 동의
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            제3자에게 정보 제공에 대한 동의입니다.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {step3Error && (
+                    <div className="text-sm text-red-600">{step3Error}</div>
+                  )}
+
+                  <div className="pt-2">
+                    <button
+                      onClick={handleStep3MydataSync}
+                      className={`w-full py-3 rounded-lg font-semibold text-white mb-2 transition ${
+                        step3Mydata.serviceTerms &&
+                        step3Mydata.privacyPolicy &&
+                        step3Mydata.thirdPartyConsent &&
+                        !step3Loading
+                          ? 'bg-navy hover:bg-blue'
+                          : 'bg-gray-400 cursor-not-allowed'
+                      }`}
+                      disabled={
+                        !(
+                          step3Mydata.serviceTerms &&
+                          step3Mydata.privacyPolicy &&
+                          step3Mydata.thirdPartyConsent
+                        ) || step3Loading
+                      }
+                    >
+                      {step3Loading ? '연동 중…' : '동의하고 연동하기'}
+                    </button>
+
+                    <div className="text-center">
+                      <button
+                        className="text-sm text-gray-600"
+                        disabled={step3Loading}
+                      >
+                        연동하지 않고 서류 제출
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              투명한 정보 공개
-            </h4>
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-700 text-sm">
-                    알레르기 유발 성분 표시
-                  </span>
-                  <button
-                    aria-label="도움말"
-                    onClick={onAttachHelpClick}
-                    className="text-blue hover:text-navy"
-                  >
-                    <FaQuestionCircle />
-                  </button>
+          {/* 알레르기 유발 성분 표시 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
+                알레르기 유발 성분 표시
+              </span>
+              <button
+                aria-label="알레르기 유발 성분 표시 도움말"
+                onClick={onAttachHelpClick}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <UploadCard
+                fileName={esgFiles[31]} // step 3-1용 파일
+                onPdfPicked={(f) => {
+                  setEsgFiles((prev) => ({ ...prev, 31: f.name }));
+                  setFileUploadSuccess((prev) => ({ ...prev, 31: true }));
+                }}
+              />
+              {fileUploadSuccess[31] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
                 </div>
-                <UploadCard
-                  fileName={esgFiles[31]} // step 3-1용 파일
-                  onPdfPicked={(f) => {
-                    setEsgFiles((prev) => ({ ...prev, 31: f.name }));
-                  }}
-                />
-              </div>
+              )}
+            </div>
+          </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-700 text-sm">
-                    원산지/가격 표시 준수
-                  </span>
-                  <button
-                    aria-label="도움말"
-                    onClick={onAttachHelpClick}
-                    className="text-blue hover:text-navy"
-                  >
-                    <FaQuestionCircle />
-                  </button>
+          {/* 원산지/가격 표시 준수 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
+                원산지/가격 표시 준수
+              </span>
+              <button
+                aria-label="원��지/가격 표시 준수 도움말"
+                onClick={onAttachHelpClick}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <UploadCard
+                fileName={esgFiles[32]} // step 3-2용 파일
+                onPdfPicked={(f) => {
+                  setEsgFiles((prev) => ({ ...prev, 32: f.name }));
+                  setFileUploadSuccess((prev) => ({ ...prev, 32: true }));
+                }}
+              />
+              {fileUploadSuccess[32] && (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  파일이 업로드 되었습니다
                 </div>
-                <UploadCard
-                  fileName={esgFiles[32]} // step 3-2용 파일
-                  onPdfPicked={(f) => {
-                    setEsgFiles((prev) => ({ ...prev, 32: f.name }));
-                  }}
-                />
-              </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
+      {esgError && (
+        <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+          {esgError}
+        </div>
+      )}
+
+      {esgError && (
+        <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+          {esgError}
+        </div>
+      )}
+
       {esgStep === 1 && (
         <button
-          onClick={() => setEsgStep(2)}
+          onClick={async () => {
+            // ESG 데이터 업데이트 API 호출
+            await handleEsgUpdate();
+
+            // API 호출 성공 후 다음 단계로 이동
+            if (!esgError) {
+              setEsgStep(2);
+            }
+          }}
+          disabled={isUpdatingEsg}
           className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          다음
+          {isUpdatingEsg ? 'ESG 데이터 업데이트 중...' : '다음'}
         </button>
       )}
       {esgStep === 2 && (
@@ -630,7 +791,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
             이전
           </button>
           <button
-            onClick={() => setEsgStep(3)}
+            onClick={handleSentimentalAnalysis}
             className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
           >
             다음
@@ -709,6 +870,46 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
               실질적인 에너지 절약 노력을 보여주는 중요한 지표입니다.
             </p>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isMydataSuccessModalOpen}
+        onClose={() => setMydataSuccessModalOpen(false)}
+        title="마이데이터 연동 완료"
+      >
+        <div className="space-y-4 text-center">
+          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-lg font-semibold text-gray-900">
+              연동이 완료되었습니다!
+            </h4>
+            <p className="text-sm text-gray-600">
+              성실납세 이력과 4대 보험료 납부 이력이
+              <br />
+              성공적으로 수집되었습니다.
+            </p>
+          </div>
+          <button
+            onClick={() => setMydataSuccessModalOpen(false)}
+            className="w-full py-3 rounded-lg font-semibold text-white bg-navy hover:bg-blue transition"
+          >
+            확인
+          </button>
         </div>
       </Modal>
     </>

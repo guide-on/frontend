@@ -1,12 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-
-import {
-  FaBars,
-  FaTimes,
-  FaCheckCircle,
-} from 'react-icons/fa';
-
+import { FaBars, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -20,7 +14,6 @@ import { EsgSection } from './components/EsgSection';
 import { SalesSection } from './components/SalesSection';
 import { CashflowSection } from './components/CashflowSection';
 import { CeoSection } from './components/CeoSection';
-
 
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { colors } from '@/styles/colors';
@@ -38,7 +31,7 @@ const CATEGORY_CONTENT: Record<
   },
   cashflow: {
     title: '현금흐름 건전성',
-    desc: '현금의 유입과 유출이 안정적으로 관리되고 있는지를 평��합니다.',
+    desc: '현금의 유입과 유출이 안정적으로 관리되고 있는지를 평가합니다.',
     items: ['영업현금흐름 추이', '부채상환 커버리지', '현금보유 및 유동성'],
   },
   esg: {
@@ -152,6 +145,22 @@ const StartHybridEvaluation = () => {
   const [consentChecked, setConsentChecked] = useState(false);
   const [isBankConsentOpen, setBankConsentOpen] = useState(false);
   const [bankConsentChecked, setBankConsentChecked] = useState(false);
+
+  // 동의 완료 상태 관리
+  const [isCreditConsentCompleted, setCreditConsentCompleted] = useState(() => {
+    try {
+      return localStorage.getItem('hybridStart.creditConsent') === 'completed';
+    } catch {
+      return false;
+    }
+  });
+  const [isBankConsentCompleted, setBankConsentCompleted] = useState(() => {
+    try {
+      return localStorage.getItem('hybridStart.bankConsent') === 'completed';
+    } catch {
+      return false;
+    }
+  });
   const [isListOpen, setListOpen] = useState(true);
   const defaultFileNames: Record<CategoryKey, string | undefined> = {
     sales: undefined,
@@ -205,6 +214,10 @@ const StartHybridEvaluation = () => {
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 모든 항목이 완료되었는지 확인
+  const allItemsCompleted =
+    completed.sales && completed.cashflow && completed.esg && completed.ceo;
+
   // 현금흐름 데이터 업데이트 함수
   const handleCashflowUpdate = async () => {
     if (!sessionId) {
@@ -215,19 +228,21 @@ const StartHybridEvaluation = () => {
 
     try {
       console.log('🔄 현금흐름 데이터 업데이트 시작:', sessionId);
-      
-      const response = await storeSummaryApi.updateCashflowData(parseInt(sessionId));
-      
+
+      const response = await storeSummaryApi.updateCashflowData(
+        parseInt(sessionId),
+      );
+
       if (response.success) {
         console.log('✅ 현금흐름 데이터 업데이트 성공:', response.message);
-        
+
         // cashflow 항목을 완료로 표시
         const nextCompleted = {
           ...completed,
           cashflow: true,
         } as Record<CategoryKey, boolean>;
         setCompleted(nextCompleted);
-        
+
         // 로컬 스토리지에 상태 저장
         try {
           localStorage.setItem(
@@ -237,23 +252,24 @@ const StartHybridEvaluation = () => {
         } catch (storageError) {
           console.warn('로컬 스토리지 저장 실패:', storageError);
         }
-        
-        // 은행 연결 페이지로 이동
-        navigate('/bank-connect');
+
+        // 은행 연결 페이지로 이동 (현재 sessionId 포함)
+        navigate(`/bank-connect/${sessionId}`);
       } else {
-        throw new Error(response.message || '현금흐름 데이터 업데이트에 실패했습니다.');
+        throw new Error(
+          response.message || '현금흐름 데이터 업데이트에 실패했습니다.',
+        );
       }
-      
     } catch (error: any) {
       console.error('❌ 현금흐름 데이터 업데이트 실패:', error);
-      
+
       let errorMessage = '현금흐름 데이터 업데이트 중 오류가 발생했습니다.';
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
     }
   };
@@ -268,19 +284,21 @@ const StartHybridEvaluation = () => {
 
     try {
       console.log('🔄 신용평가 데이터 업데이트 시작:', sessionId);
-      
-      const response = await creditEvaluationApi.updateCreditData(parseInt(sessionId));
-      
+
+      const response = await creditEvaluationApi.updateCreditData(
+        parseInt(sessionId),
+      );
+
       if (response.success) {
         console.log('✅ 신용평가 데이터 업데이트 성공:', response.message);
-        
+
         // ceo 항목을 완료로 표시
         const nextCompleted = {
           ...completed,
           ceo: true,
         } as Record<CategoryKey, boolean>;
         setCompleted(nextCompleted);
-        
+
         // 로컬 스토리지에 상태 저장
         try {
           localStorage.setItem(
@@ -290,25 +308,24 @@ const StartHybridEvaluation = () => {
         } catch (storageError) {
           console.warn('로컬 스토리지 저장 실패:', storageError);
         }
-        
       } else {
-        throw new Error(response.message || '신용평가 데이터 업데이트에 실패했습니다.');
+        throw new Error(
+          response.message || '신용평가 데이터 업데이트에 실패했습니다.',
+        );
       }
-      
     } catch (error: any) {
       console.error('❌ 신용평가 데이터 업데이트 실패:', error);
-      
+
       let errorMessage = '신용평가 데이터 업데이트 중 오류가 발생했습니다.';
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
     }
   };
-
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -430,6 +447,7 @@ const StartHybridEvaluation = () => {
         {selected === 'esg' ? (
           <EsgSection
             completed={completed}
+            sessionId={sessionId || ''}
             onHelpClick={() => setHelpModalOpen(true)}
             onAttachHelpClick={() => setAttachHelpModalOpen(true)}
             onComplete={() => {
@@ -486,7 +504,7 @@ const StartHybridEvaluation = () => {
                 console.warn('로컬 스토리지 저장 실패:', storageError);
               }
             }}
-            onSubmit={handleSubmit}
+            onSubmit={allItemsCompleted ? handleSubmit : undefined}
           />
         ) : selected === 'cashflow' ? (
           <CashflowSection
@@ -494,9 +512,14 @@ const StartHybridEvaluation = () => {
             completed={completed}
             error={error}
             isSubmitting={isSubmitting}
+            isBankConsentCompleted={isBankConsentCompleted}
             onHelpClick={() => setHelpModalOpen(true)}
-            onBankConsentClick={() => setBankConsentOpen(true)}
-            onSubmit={handleSubmit}
+            onBankConsentClick={() => {
+              if (!isBankConsentCompleted) {
+                setBankConsentOpen(true);
+              }
+            }}
+            onSubmit={allItemsCompleted ? handleSubmit : undefined}
           />
         ) : selected === 'ceo' ? (
           <CeoSection
@@ -504,9 +527,14 @@ const StartHybridEvaluation = () => {
             completed={completed}
             error={error}
             isSubmitting={isSubmitting}
+            isCreditConsentCompleted={isCreditConsentCompleted}
             onHelpClick={() => setHelpModalOpen(true)}
-            onConsentClick={() => setConsentModalOpen(true)}
-            onSubmit={handleSubmit}
+            onConsentClick={() => {
+              if (!isCreditConsentCompleted) {
+                setConsentModalOpen(true);
+              }
+            }}
+            onSubmit={allItemsCompleted ? handleSubmit : undefined}
           />
         ) : null}
       </section>
@@ -1118,7 +1146,11 @@ const StartHybridEvaluation = () => {
               onClick={async () => {
                 setConsentModalOpen(false);
                 setConsentChecked(false);
-                
+
+                // 동의 완료 상태를 저장
+                setCreditConsentCompleted(true);
+                localStorage.setItem('hybridStart.creditConsent', 'completed');
+
                 // 신용평가 데이터 업데이트 API 호출
                 await handleCreditDataUpdate();
               }}
@@ -1173,7 +1205,11 @@ const StartHybridEvaluation = () => {
               onClick={async () => {
                 setBankConsentOpen(false);
                 setBankConsentChecked(false);
-                
+
+                // 동의 완료 상태를 저장
+                setBankConsentCompleted(true);
+                localStorage.setItem('hybridStart.bankConsent', 'completed');
+
                 // 현금흐름 데이터 업데이트 API 호출
                 await handleCashflowUpdate();
               }}

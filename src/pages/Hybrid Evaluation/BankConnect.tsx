@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaChevronRight, FaCheckCircle } from 'react-icons/fa';
 
 const BANKS: { id: string; name: string; img: string }[] = [
@@ -46,6 +46,7 @@ const BankLogo = ({ src, alt }: { src: string; alt: string }) => {
 
 export default function BankConnect() {
   const navigate = useNavigate();
+  const { sessionId } = useParams<{ sessionId: string }>();
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -60,7 +61,11 @@ export default function BankConnect() {
   const onNext = () => {
     setLoading(true);
     setTimeout(() => {
-      navigate('/bank-connect/complete', {
+      const targetPath = sessionId 
+        ? `/bank-connect/complete/${sessionId}`
+        : '/bank-connect/complete';
+      
+      navigate(targetPath, {
         replace: true,
         state: { banks: selected },
       });

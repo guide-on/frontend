@@ -8,6 +8,46 @@ import {
   type DocumentItem,
 } from '@/api/documentApi';
 import ProcessStepHeader from '@/components/guide/ProcessStepHeader';
+import { FaTimes } from 'react-icons/fa';
+import type { ReactNode } from 'react';
+
+const Modal = ({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-[343px] max-h-[calc(100vh-64px)] mx-4 overflow-auto rounded-xl bg-white shadow-lg">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-white/95 px-4 py-3 backdrop-blur">
+          {title ? (
+            <h4 className="text-sm font-extrabold tracking-tight" style={{ color: colors.navy }}>
+              {title}
+            </h4>
+          ) : (
+            <div />
+          )}
+          <button
+            aria-label="닫기"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <div className="px-4 py-3">{children}</div>
+      </div>
+    </div>
+  );
+};
 
 export function DocumentUploadPage() {
   const { sessionId = '', groupKey = '' } = useParams();
@@ -17,6 +57,10 @@ export function DocumentUploadPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadSuccessModal, setUploadSuccessModal] = useState<{
+    open: boolean;
+    documentName: string;
+  }>({ open: false, documentName: '' });
 
   useEffect(() => {
     let mounted = true;
@@ -153,7 +197,10 @@ export function DocumentUploadPage() {
           console.warn('서버 상태 동기화 실패, 로컬 상태 유지', err);
         }
 
-        alert(`${document.name} 업로드가 완료되었습니다.`);
+        setUploadSuccessModal({
+          open: true,
+          documentName: document.name
+        });
       } else {
         alert('업로드에 실패했습니다. 다시 시도해주세요.');
       }
@@ -386,6 +433,34 @@ export function DocumentUploadPage() {
           </div>
         </>
       )}
+
+      {/* 업로드 성공 모달 */}
+      <Modal
+        open={uploadSuccessModal.open}
+        onClose={() => setUploadSuccessModal({ open: false, documentName: '' })}
+        title="업로드 완료"
+      >
+        <div className="text-center space-y-4">
+          <div className="text-4xl">✅</div>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg" style={{ color: colors.navy }}>
+              업로드가 완료되었습니다!
+            </h3>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">{uploadSuccessModal.documentName}</span>
+              <br />
+              서류가 성공적으로 업로드되었습니다.
+            </p>
+          </div>
+          <button
+            onClick={() => setUploadSuccessModal({ open: false, documentName: '' })}
+            className="w-full py-3 rounded-lg font-semibold text-white"
+            style={{ backgroundColor: colors.navy }}
+          >
+            확인
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

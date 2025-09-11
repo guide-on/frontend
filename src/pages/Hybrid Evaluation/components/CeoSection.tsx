@@ -7,9 +7,10 @@ interface CeoSectionProps {
   completed: Record<CategoryKey, boolean>;
   error: string | null;
   isSubmitting: boolean;
+  isCreditConsentCompleted: boolean;
   onHelpClick: () => void;
   onConsentClick: () => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 export const CeoSection: React.FC<CeoSectionProps> = ({
@@ -17,6 +18,7 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
   completed,
   error,
   isSubmitting,
+  isCreditConsentCompleted,
   onHelpClick,
   onConsentClick,
   onSubmit,
@@ -37,7 +39,7 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
         </button>
       </div>
 
-      <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl p-3 text-sm space-y-1  bg-white shadow-[0_12px_36px_rgba(17,24,39,0.06)]">
         {content.items.map((item) => (
           <div key={item} className="flex items-start gap-2">
             <span>•</span>
@@ -46,18 +48,26 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
         ))}
       </div>
 
-      <div className="mt-2 rounded-md border p-3 space-y-2 bg-paleBlue/30 border-lightBlue">
+      <div className="mt-2 rounded-xl border p-3 space-y-4 bg-paleBlue/30 shadow-[0_12px_36px_rgba(17,24,39,0.06)]">
         <p className="text-sm text-gray-700">
-          <span className="font-semibold">신용정보 조회 동의:</span> 신용점수를
-          조회하기 위한 서비스 이용 약관 및 개인(신용)정보 조회 동의 절차를
-          진행합니다.
+          <span className="font-semibold">
+            신용정보 조회 동의:
+            <br />
+          </span>{' '}
+          신용점수를 조회하기 위한 서비스 이용 약관 및 개인(신용)정보 조회 동의
+          절차를 진행합니다.
         </p>
         <button
           aria-label="신용정보 조회 동의"
           onClick={onConsentClick}
-          className="w-full rounded-md py-3 text-white font-medium bg-blue hover:bg-navy transition"
+          disabled={isCreditConsentCompleted}
+          className={`w-full rounded-xl py-3 text-white font-medium transition ${
+            isCreditConsentCompleted
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue hover:bg-navy'
+          }`}
         >
-          신용정보 조회 동의
+          {isCreditConsentCompleted ? '동의 완료' : '신용정보 조회 동의'}
         </button>
       </div>
 
@@ -69,7 +79,7 @@ export const CeoSection: React.FC<CeoSectionProps> = ({
 
       <button
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || !onSubmit}
         className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? '처리 중...' : '제출하기'}
