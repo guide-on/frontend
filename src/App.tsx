@@ -14,6 +14,7 @@ import Support from './pages/Support';
 import MyPage from './pages/MyPage';
 import Community from './community/index.tsx';
 import NotFound from './pages/NotFound';
+import CommunityFab from './community/components/CommunityFab';
 
 // 인증
 import Login from '@/pages/auth/Login';
@@ -202,6 +203,7 @@ function AppChrome() {
       </main>
 
       {!isNavbarHidden && <Navbar />}
+      <CommunityFab />
     </>
   );
 }
@@ -232,6 +234,7 @@ export default function App() {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: '#F9F9F9',
       }}
     >
       {/* ✅ 전역 모달은 Router 안에서 어느 라우트에서나 뜨도록 */}

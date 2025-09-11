@@ -84,7 +84,7 @@ export default function Home(){
     },[]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 bg-bgSoft min-h-screen">
             <div className="mt-6"><BannerCarousel/></div>
             <SectionHeader title="대출 승인 사례" onMore={()=>nav("/community/cases")} />
             {topCase ? <PostCard item={topCase}/> : <EmptyCard/>}
