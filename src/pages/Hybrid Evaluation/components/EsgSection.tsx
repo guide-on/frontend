@@ -73,6 +73,8 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
     energyEfficiencyRate: '',
     energyEfficiencyBusinessNumber: '',
     highEfficiencyDeviceBusinessNumber: '',
+    totalApplianceCount: '',
+    highEfficiencyApplianceCount: '',
   });
   const [step2Manual, setStep2Manual] = useState({
     yellowUmbrellaId: '',
@@ -177,7 +179,9 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       {esgStep === 1 && (
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-900">에너지 자원 관리</span>
+            <span className="font-semibold text-gray-900">
+              에너지 자원 관리
+            </span>
             <button
               aria-label="에너지 자원 관리 도움말"
               onClick={() => setEnergyModalOpen(true)}
@@ -245,35 +249,84 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
           </div>
 
           <div className="flex flex-col gap-2 pt-2">
-            <span className="font-semibold text-gray-900">수기 입력</span>
-            <div className="rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900">수기 입력</span>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                  에너지 효율성
-                </h4>
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">
-                      에너지효율등급 가전 비율 (%)
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">에너지 효율성</span>
+              <button
+                aria-label="에너지 효율성 도움말"
+                onClick={() => setEnergyModalOpen(true)}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <div className="rounded-xl p-3 space-y-3 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
+                <div className="space-y-2 grid grid-cols-1 gap-2 p-3">
+                  <div className="space-y-2">
+                    <span className="block font-medium mb-2 text-sm text-gray-700">
+                      에너지효율등급 가전 비율 계산
                     </span>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      value={step1Manual.energyEfficiencyRate}
-                      onChange={(e) =>
-                        handleStep1ManualChange(
-                          'energyEfficiencyRate',
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="text-sm text-gray-700">
+                        <span className="block font-medium mb-1">
+                          전체 가전 개수
+                        </span>
+                        <input
+                          type="number"
+                          className="w-full rounded-md border border-gray-300 px-3 py-2"
+                          value={step1Manual.totalApplianceCount || ''}
+                          onChange={(e) =>
+                            handleStep1ManualChange(
+                              'totalApplianceCount',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="개수 입력"
+                          min="0"
+                        />
+                      </label>
+                      <label className="text-sm text-gray-700">
+                        <span className="block font-medium mb-1">
+                          효율 1등급 가전 개수
+                        </span>
+                        <input
+                          type="number"
+                          className="w-full rounded-md border border-gray-300 px-3 py-2"
+                          value={step1Manual.highEfficiencyApplianceCount || ''}
+                          onChange={(e) =>
+                            handleStep1ManualChange(
+                              'highEfficiencyApplianceCount',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="개수 입력"
+                          min="0"
+                          max={step1Manual.totalApplianceCount || undefined}
+                        />
+                      </label>
+                    </div>
+                    {step1Manual.totalApplianceCount &&
+                      step1Manual.highEfficiencyApplianceCount && (
+                        <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                          <span className="text-sm font-medium text-gray-700">
+                            계산된 비율:{' '}
+                            <span className="text-blue font-semibold">
+                              {Math.round(
+                                (Number(
+                                  step1Manual.highEfficiencyApplianceCount,
+                                ) /
+                                  Number(step1Manual.totalApplianceCount)) *
+                                  100,
+                              )}
+                              %
+                            </span>
+                          </span>
+                        </div>
+                      )}
+                  </div>
                   <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">
-                      에너지효율향상 지원사업 참여 여부 (사업자 번호)
+                    <span className="block font-medium mb-2">
+                      에너지효율향상 지원 사업 참여 여부
                     </span>
                     <input
                       type="text"
@@ -285,11 +338,12 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                           e.target.value,
                         )
                       }
+                      placeholder='사업자 번호 입력 (예: "123-45-67890")'
                     />
                   </label>
                   <label className="text-sm text-gray-700">
-                    <span className="block font-medium mb-1">
-                      고효율기기 구매 지원사업 참여 여부 (사업자 번호)
+                    <span className="block font-medium mb-2">
+                      고효율기기 구매 지원 사업 참여 여부
                     </span>
                     <input
                       type="text"
@@ -301,6 +355,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                           e.target.value,
                         )
                       }
+                      placeholder='사업자 번호 입력 (예: "123-45-67890")'
                     />
                   </label>
                 </div>
@@ -311,58 +366,88 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       )}
 
       {esgStep === 2 && (
-        <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                지역사회 상생
-              </h4>
-              <div className="space-y-2">
-                <label className="text-sm text-gray-700">
-                  <span className="block font-medium mb-1">
-                    노란우산 공제 아이디
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    value={step2Manual.yellowUmbrellaId}
-                    onChange={(e) =>
-                      handleStep2ManualChange(
-                        'yellowUmbrellaId',
-                        e.target.value,
-                      )
-                    }
-                  />
-                </label>
+        <div className="space-y-4">
+          {/* 지역사회 상생 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
+                지역사회 상생 - 노란우산 공제 정보
+              </span>
+              <button
+                aria-label="지역사회 상생 도움말"
+                onClick={() => setEnergyModalOpen(true)}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <div className="rounded-xl p-3 space-y-3 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
+                <div className="space-y-2 p-3">
+                  <label className="text-sm text-gray-700">
+                    <span className="block font-medium mb-2">
+                      노란우산 공제 아이디
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2"
+                      value={step2Manual.yellowUmbrellaId}
+                      onChange={(e) =>
+                        handleStep2ManualChange(
+                          'yellowUmbrellaId',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="노란우산 공제 아이디 입력"
+                    />
+                  </label>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                고객 만족 및 안전도
-              </h4>
-              <div className="space-y-2">
-                <StoreMap />
-                <label className="text-sm text-gray-700"></label>
+          {/* 고객 만족 및 안전도 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
+                고객 리뷰 만족도
+              </span>
+              <button
+                aria-label="고객 리뷰 만족도 도움말"
+                onClick={() => setEnergyModalOpen(true)}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <div className="rounded-xl p-3 space-y-3 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
+                <div className="space-y-2 p-3">
+                  <StoreMap />
+                  <label className="text-sm text-gray-700"></label>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+          {/* 식품/위생 안전 관리 섹션 */}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">
                 식품/위생 안전 관리
-              </h4>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold text-gray-900 text-sm">
-                  관련 서류 첨부
-                </span>
-                <button
-                  aria-label="도움말"
-                  onClick={onAttachHelpClick}
-                  className="text-blue hover:text-navy"
-                >
-                  <FaQuestionCircle />
-                </button>
-              </div>
+              </span>
+              <button
+                aria-label="식품/위생 안전 관리 도움말"
+                onClick={onAttachHelpClick}
+                className="text-blue hover:text-navy"
+              >
+                <FaQuestionCircle />
+              </button>
+            </div>
+            <div className="mt-2 space-y-3">
+              <span className="font-medium text-gray-700 text-sm">
+                위생 등급 참여 내역 (외식업의 경우)
+              </span>
               <UploadCard
                 fileName={esgFiles[esgStep]}
                 onPdfPicked={handleFileUpload}
@@ -576,40 +661,51 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       >
         <div className="space-y-3 text-sm text-gray-700">
           <p>
-            에너지 자원 관리는 기업의 환경 경영과 지속가능성을 평가하는 중요한 지표입니다.
+            에너지 자원 관리는 기업의 환경 경영과 지속가능성을 평가하는 중요한
+            지표입니다.
           </p>
-          
+
           <div className="space-y-2">
             <h5 className="font-semibold text-gray-800">평가 항목 설명</h5>
-            
+
             <div className="space-y-2">
               <div className="bg-gray-50 p-3 rounded-md">
-                <h6 className="font-medium text-gray-800 mb-1">전력 사용량 관리</h6>
+                <h6 className="font-medium text-gray-800 mb-1">
+                  전력 사용량 관리
+                </h6>
                 <p className="text-xs text-gray-600">
-                  한국전력공사 고객번호를 통해 전력 사용 효율성과 절약 노력을 평가합니다.
+                  한국전력공사 고객번호를 통해 전력 사용 효율성과 절약 노력을
+                  평가합니다.
                 </p>
               </div>
-              
+
               <div className="bg-gray-50 p-3 rounded-md">
-                <h6 className="font-medium text-gray-800 mb-1">가스 사용량 관리</h6>
+                <h6 className="font-medium text-gray-800 mb-1">
+                  가스 사용량 관리
+                </h6>
                 <p className="text-xs text-gray-600">
-                  도시가스 사용량을 통해 에너지 효율성과 친환경 경영을 평가합니다.
+                  도시가스 사용량을 통해 에너지 효율성과 친환경 경영을
+                  평가합니다.
                 </p>
               </div>
-              
+
               <div className="bg-gray-50 p-3 rounded-md">
-                <h6 className="font-medium text-gray-800 mb-1">상수도 사용량 관리</h6>
+                <h6 className="font-medium text-gray-800 mb-1">
+                  상수도 사용량 관리
+                </h6>
                 <p className="text-xs text-gray-600">
                   물 사용량 관리를 통해 자원 절약과 환경 보호 노력을 확인합니다.
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-blue-50 p-3 rounded-md">
-            <h6 className="font-medium text-blue-800 mb-1">에너지 효율화 사업</h6>
+            <h6 className="font-medium text-blue-800 mb-1">
+              에너지 효율화 사업
+            </h6>
             <p className="text-xs text-blue-600">
-              정부 지원 에너지 효율화 사업 참여는 기업의 친환경 경영 의지와 
+              정부 지원 에너지 효율화 사업 참여는 기업의 친환경 경영 의지와
               실질적인 에너지 절약 노력을 보여주는 중요한 지표입니다.
             </p>
           </div>

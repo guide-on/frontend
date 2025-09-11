@@ -37,7 +37,7 @@ export const CashflowSection: React.FC<CashflowSectionProps> = ({
         </button>
       </div>
 
-      <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl p-3 text-sm space-y-1  bg-white shadow-[0_12px_36px_rgba(17,24,39,0.06)]">
         {content.items.map((item) => (
           <div key={item} className="flex items-start gap-2">
             <span>•</span>
@@ -46,16 +46,19 @@ export const CashflowSection: React.FC<CashflowSectionProps> = ({
         ))}
       </div>
 
-      <div className="mt-2 rounded-md border p-3 space-y-2 bg-paleBlue/30 border-lightBlue">
+      <div className="mt-2 rounded-xl border p-3 space-y-4 bg-paleBlue/30 shadow-[0_12px_36px_rgba(17,24,39,0.06)]">
         <p className="text-sm text-gray-700">
-          <span className="font-semibold">계좌연결 및 조회 동의:</span> 현금흐름
-          분석을 위해 사업자(또는 대표자) 명의 계좌를 연결하고 최근 거래내역
-          조회에 동의해 주세요.
+          <span className="font-semibold">
+            계좌연결 및 조회 동의:
+            <br />
+          </span>{' '}
+          현금흐름 분석을 위해 사업자(또는 대표자) 명의 계좌를 연결하고 최근
+          거래내역 조회에 동의해 주세요.
         </p>
         <button
           aria-label="계좌연결 및 조회 동의"
           onClick={onBankConsentClick}
-          className="w-full rounded-md py-3 text-white font-medium bg-blue hover:bg-navy transition"
+          className="w-full rounded-xl py-3 text-white font-medium bg-blue hover:bg-navy transition"
         >
           계좌연결 및 조회 동의
         </button>
