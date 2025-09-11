@@ -69,6 +69,7 @@ function AppChrome() {
   const hideHeaderPrefixes = [
     '/hybrid-evaluation/start', // 파라미터 대응
     '/hybrid-evaluation/complete', // 파라미터 대응
+    '/guide/mydata/', // 마이데이터 페이지만
   ];
 
   // === Navbar 숨김 조건 ===

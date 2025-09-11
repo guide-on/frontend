@@ -7,6 +7,7 @@ import {
   type DocumentGroup,
   type DocumentItem,
 } from '@/api/documentApi';
+import ProcessStepHeader from '@/components/guide/ProcessStepHeader';
 
 export function DocumentUploadPage() {
   const { sessionId = '', groupKey = '' } = useParams();
@@ -222,6 +223,8 @@ export function DocumentUploadPage() {
       className="w-full min-h-screen py-5 flex flex-col gap-4"
       style={{ backgroundColor: colors.bgSoft }}
     >
+      <ProcessStepHeader currentStep={1} />
+      
       <section className="rounded-xl p-4 bg-white mx-4">
         <p className="font-bold text-lg mb-1">서류 업로드</p>
         <p className="text-sm leading-5">

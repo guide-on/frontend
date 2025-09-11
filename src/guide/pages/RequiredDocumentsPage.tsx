@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { getDocumentStatus, type DocumentGroup } from '@/api/documentApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ProcessStepHeader from '@/components/guide/ProcessStepHeader';
 
 export function RequiredDocumentsPage() {
   const { sessionId = '' } = useParams();
@@ -193,146 +194,151 @@ export function RequiredDocumentsPage() {
 
   return (
     <div
-      className="w-full min-h-screen py-5 flex flex-col gap-4"
+      className="w-full min-h-screen flex flex-col"
       style={{ backgroundColor: colors.bgSoft }}
     >
-      <section className="rounded-xl p-4 bg-white mx-4">
-        <p className="font-bold text-lg mb-1">필요 서류 안내</p>
-        <p className="text-sm leading-5">
-          {policyName && <span className="font-semibold">{policyName}</span>}
-          {policyName && ' '}신청에 필요한 서류 목록입니다.
-          <br />각 그룹별로 서류를 준비해주세요!
-        </p>
-      </section>
+      <ProcessStepHeader currentStep={1} />
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-8 gap-4">
-          <LoadingSpinner type="dots" size="md" color={colors.navy} />
-          <div className="text-sm text-gray-600">
-            서류 목록을 불러오는 중
+      <div className="flex-1 py-5 flex flex-col gap-4">
+        <section className="rounded-xl p-4 bg-white mx-4">
+          <p className="font-bold text-lg mb-1">필요 서류 안내</p>
+          <p className="text-sm leading-5">
+            {policyName && <span className="font-semibold">{policyName}</span>}
+            {policyName && ' '}신청에 필요한 서류 목록입니다.
+            <br />각 그룹별로 서류를 준비해주세요!
+          </p>
+        </section>
+
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-8 gap-4">
+            <LoadingSpinner type="dots" size="md" color={colors.navy} />
+            <div className="text-sm text-gray-600">서류 목록을 불러오는 중</div>
           </div>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="text-center py-8">
-          <p className="text-sm text-red-600">{error}</p>
-          <button
-            onClick={onBack}
-            className="mt-4 px-4 py-2 rounded-lg font-semibold text-white"
-            style={{ backgroundColor: colors.navy }}
-          >
-            이전으로 돌아가기
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && (
-        <>
-          {/* 세션 진행도 바 (총 서류 수, 제출 수) */}
-          {typeof progressPercentage === 'number' && (
-            <section className="bg-white rounded-lg p-4 mx-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <div className="font-semibold">서류 제출 진행도</div>
-                  <div className="text-xs text-gray-500">
-                    {completedRequirements ?? 0}/{totalRequirements ?? 0}개 제출
-                  </div>
-                </div>
-                <div
-                  className="text-sm font-bold"
-                  style={{ color: colors.navy }}
-                >
-                  {progressPercentage}%
-                </div>
-              </div>
-
-              <div className="w-full h-3 rounded-full bg-gray-200">
-                <div
-                  className="h-3 rounded-full"
-                  style={{
-                    width: `${progressPercentage}%`,
-                    background:
-                      progressPercentage === 100 ? '#10B981' : '#F59E0B',
-                  }}
-                />
-              </div>
-            </section>
-          )}
-
-          {documentGroups.length > 0 && (
-            <section className="mx-4">
-              <h2 className="font-bold text-lg mb-3">
-                서류 그룹 ({documentGroups.length}개)
-              </h2>
-              <div className="flex flex-col gap-3">
-                {documentGroups.map((group) => {
-                  const status = getGroupStatus(group);
-                  const completedCount =
-                    typeof (group as any).completedCount === 'number'
-                      ? (group as any).completedCount
-                      : group.documents.filter(
-                          (doc) => doc.status === 'completed',
-                        ).length;
-
-                  return (
-                    <div
-                      key={group.groupKey}
-                      className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => onGroupClick(group)}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                            style={{ backgroundColor: getStatusColor(status) }}
-                          >
-                            {getStatusIcon(status)}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-base">
-                              {group.label}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {completedCount}/{group.minSelect}개 완료 (최소{' '}
-                              {group.minSelect}개 필요)
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-gray-400">→</div>
-                      </div>
-
-                      {group.description && (
-                        <div className="text-sm text-gray-600 mb-3">
-                          {group.description}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {documentGroups.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-600">
-                필요한 서류 그룹이 없습니다.
-              </p>
-            </div>
-          )}
-
-          <div className="mt-6 mx-4">
+        {error && (
+          <div className="text-center py-8">
+            <p className="text-sm text-red-600">{error}</p>
             <button
-              className="w-full py-3 rounded-lg font-semibold text-white"
+              onClick={onBack}
+              className="mt-4 px-4 py-2 rounded-lg font-semibold text-white"
               style={{ backgroundColor: colors.navy }}
-              onClick={() => nav(`/hybrid-evaluation/${sessionId}`)}
             >
-              다음 단계로 이동
+              이전으로 돌아가기
             </button>
           </div>
-        </>
-      )}
+        )}
+
+        {!loading && !error && (
+          <>
+            {/* 세션 진행도 바 (총 서류 수, 제출 수) */}
+            {typeof progressPercentage === 'number' && (
+              <section className="bg-white rounded-lg p-4 mx-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-semibold">서류 제출 진행도</div>
+                    <div className="text-xs text-gray-500">
+                      {completedRequirements ?? 0}/{totalRequirements ?? 0}개
+                      제출
+                    </div>
+                  </div>
+                  <div
+                    className="text-sm font-bold"
+                    style={{ color: colors.navy }}
+                  >
+                    {progressPercentage}%
+                  </div>
+                </div>
+
+                <div className="w-full h-3 rounded-full bg-gray-200">
+                  <div
+                    className="h-3 rounded-full"
+                    style={{
+                      width: `${progressPercentage}%`,
+                      background:
+                        progressPercentage === 100 ? '#10B981' : '#F59E0B',
+                    }}
+                  />
+                </div>
+              </section>
+            )}
+
+            {documentGroups.length > 0 && (
+              <section className="mx-4">
+                <h2 className="font-bold text-lg mb-3">
+                  서류 그룹 ({documentGroups.length}개)
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {documentGroups.map((group) => {
+                    const status = getGroupStatus(group);
+                    const completedCount =
+                      typeof (group as any).completedCount === 'number'
+                        ? (group as any).completedCount
+                        : group.documents.filter(
+                            (doc) => doc.status === 'completed',
+                          ).length;
+
+                    return (
+                      <div
+                        key={group.groupKey}
+                        className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => onGroupClick(group)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                              style={{
+                                backgroundColor: getStatusColor(status),
+                              }}
+                            >
+                              {getStatusIcon(status)}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-base">
+                                {group.label}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {completedCount}/{group.minSelect}개 완료 (최소{' '}
+                                {group.minSelect}개 필요)
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-gray-400">→</div>
+                        </div>
+
+                        {group.description && (
+                          <div className="text-sm text-gray-600 mb-3">
+                            {group.description}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {documentGroups.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-sm text-gray-600">
+                  필요한 서류 그룹이 없습니다.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 mx-4">
+              <button
+                className="w-full py-3 rounded-lg font-semibold text-white"
+                style={{ backgroundColor: colors.navy }}
+                onClick={() => nav(`/hybrid-evaluation/${sessionId}`)}
+              >
+                다음 단계로 이동
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
