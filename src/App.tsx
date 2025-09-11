@@ -14,6 +14,7 @@ import Support from './pages/Support';
 import MyPage from './pages/MyPage';
 import Community from './community/index.tsx';
 import NotFound from './pages/NotFound';
+import CommunityFab from './community/components/CommunityFab';
 
 // 인증
 import Login from '@/pages/auth/Login';
@@ -32,6 +33,10 @@ import RequiredDocumentsPage from '@/guide/pages/RequiredDocumentsPage';
 import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
 import MydataConsentPage from '@/guide/pages/MydataConsentPage';
 import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
+
+// 사업계획서
+import BusinessPlanResult from './pages/evaluation/BusinessPlanResult';
+import BusinessPlanReady from './pages/evaluation/BusinessPlanReady';
 
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
@@ -155,6 +160,16 @@ function AppChrome() {
             <Route path="/community/*" element={<Community />} />
             <Route path="/mypage" element={<MyPage />} />
 
+            {/* 사업계획서 평가 */}
+            <Route
+              path="/guide/:sessionId/business-plan/result"
+              element={<BusinessPlanResult />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/ready"
+              element={<BusinessPlanReady />}
+            />
+
             {/* 인증 */}
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
@@ -202,6 +217,7 @@ function AppChrome() {
       </main>
 
       {!isNavbarHidden && <Navbar />}
+      <CommunityFab />
     </>
   );
 }
@@ -232,6 +248,7 @@ export default function App() {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: '#F9F9F9',
       }}
     >
       {/* ✅ 전역 모달은 Router 안에서 어느 라우트에서나 뜨도록 */}
