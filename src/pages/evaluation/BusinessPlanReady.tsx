@@ -4,6 +4,7 @@ import { getDocumentStatus } from '@/api/documentApi';
 import type {} from '@/api/documentApi';
 import { colors } from '@/styles/colors';
 import { CheckCircle2, FileText, Sparkles } from 'lucide-react';
+import { planEvalApi } from '@/api/bizPlanApi';
 
 type DocStatus = Awaited<ReturnType<typeof getDocumentStatus>>;
 
@@ -13,6 +14,7 @@ export default function BusinessPlanReady() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DocStatus | null>(null);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -94,7 +96,7 @@ export default function BusinessPlanReady() {
           </p>
         </section>
 
-        {/* 미니 ���어로 */}
+        {/* 미니 �����어로 */}
         <section
           className="mt-4 rounded-2xl overflow-hidden border bg-indigo-50"
           style={{ borderColor: colors.navyBorder }}
@@ -182,12 +184,22 @@ export default function BusinessPlanReady() {
             서류 확인
           </Link>
           <button
-            onClick={() => navigate('/guide/business-plan')}
-            disabled={!businessPlanSubmitted}
+            onClick={async () => {
+              if (!sessionId) return;
+              try {
+                setStarting(true);
+                await planEvalApi.evaluate(sessionId);
+              } catch (e) {
+                console.error('평가 시작 실패', e);
+              } finally {
+                navigate(`/guide/${sessionId}/business-plan/result`);
+              }
+            }}
+            // disabled={!businessPlanSubmitted || starting}
             className="rounded-md py-3 font-bold text-white shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: colors.navy }}
           >
-            평가 시작
+            {starting ? '시작 중…' : '평가 시작'}
           </button>
         </div>
 

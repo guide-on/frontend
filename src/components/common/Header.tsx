@@ -13,6 +13,10 @@ const routeTitle = (path: string): string => {
   if (path === '/hybrid-evaluation' || path === '/hybrid-evaluation/start')
     return '하이브리드 신용평가';
 
+  // 사업계획서 평가
+  if (path === '/guide/business-plan' || path.startsWith('/guide/business-plan/'))
+    return '사업계획서 평가';
+
   // 2) 가이드 하위
   if (path.startsWith('/guide')) return '대출가이드';
 
