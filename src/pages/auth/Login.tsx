@@ -1,188 +1,149 @@
-// src/pages/auth/Login.tsx
 import React, { useCallback, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { colors } from '@/styles/colors';
 
-type Member = {
-  username: string;
-  password: string;
-};
+type Member = { username: string; password: string };
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const loc = useLocation();
   const loginAction = useAuthStore((s) => s.login);
 
-  // 폼 데이터
   const [member, setMember] = useState<Member>({ username: '', password: '' });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState('');
 
   const disableSubmit = useMemo(
-    () => !(member.username && member.password),
-    [member.username, member.password],
+      () => !(member.username && member.password),
+      [member.username, member.password],
   );
 
   const onChange =
-    (key: keyof Member) => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setMember((prev) => ({ ...prev, [key]: e.target.value }));
+      (key: keyof Member) => (e: React.ChangeEvent<HTMLInputElement>) =>
+          setMember((prev) => ({ ...prev, [key]: e.target.value }));
 
   const onSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (disableSubmit || isLoggingIn) return;
+      async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (disableSubmit || isLoggingIn) return;
 
-      setIsLoggingIn(true);
-      setError('');
-      try {
-        await loginAction(member);
-        navigate('/'); // { name: 'home' } 대응
-      } catch (e: any) {
-        // 서버가 문자열/JSON/텍스트 등 다양하게 줄 수 있어 방어적으로 처리
-        const msg =
-          e?.response?.data ?? e?.message ?? '로그인 중 오류가 발생했습니다';
-        setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-        console.error(e);
-      } finally {
-        setIsLoggingIn(false);
-      }
-    },
-    [disableSubmit, isLoggingIn, loginAction, member, navigate],
+        setIsLoggingIn(true);
+        setError('');
+        try {
+          await loginAction(member);
+          // redirectTo 존재 시 복귀, 없으면 홈
+          const to = (loc.state as any)?.redirectTo ?? '/';
+          navigate(to);
+        } catch (e: any) {
+          const msg = e?.response?.data ?? e?.message ?? '로그인 중 오류가 발생했습니다';
+          setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+          console.error(e);
+        } finally {
+          setIsLoggingIn(false);
+        }
+      },
+      [disableSubmit, isLoggingIn, loginAction, member, navigate, loc.state],
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-6 px-4">
-      <div className="max-w-sm mx-auto w-full relative">
-        {/* Background decoration */}
-        <div className="absolute -top-10 -left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl"></div>
-        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-200/30 rounded-full blur-xl"></div>
+      <div className="min-h-screen flex items-center justify-center py-10 px-5 bg-gradient-to-b from-[#F6F8FC] to-[#F3F6FF]">
+        <div className="relative w-full max-w-[420px]">
+          {/* ← 아주 작고 연한 회색 뒤로가기 : 무조건 홈으로 이동 */}
+          <button
+              type="button"
+              aria-label="뒤로가기"
+              onClick={() => navigate('/')}
+              className="absolute -top-2 left-1 text-[12px] text-gray-400 hover:text-gray-500"
+          >
+            ← 뒤로
+          </button>
 
-        {/* Logo section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-4 border border-blue-100 overflow-hidden">
-            <img
-              src="/images/logo.png"
-              alt="logo"
-              className="w-full h-full object-cover"
-            />
+          {/* 상단 인사/로고 */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-sm mb-4 border border-[rgba(37,67,123,0.08)] overflow-hidden">
+              <img src="/images/logo.png" alt="logo" className="w-full h-full object-cover" />
+            </div>
+            <h1 className="text-[26px] font-extrabold text-[#1F2937] tracking-tight">환영합니다 👋</h1>
+            <p className="mt-1 text-[14px] text-[#4B5563]">계정에 로그인하여 서비스를 이용하세요</p>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">환영합니다!</h1>
-          <p className="text-gray-600 text-sm">
-            계정에 로그인하여 서비스를 이용하세요
-          </p>
-        </div>
 
-        {/* Login Form Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-8 shadow-lg shadow-blue-500/10 transition-all duration-300">
-          <form onSubmit={onSubmit}>
-            <div className="space-y-5">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 block">
-                  이메일
-                </label>
-                <div className="relative">
+          {/* 카드 */}
+          <div className="bg-white/90 backdrop-blur-[2px] rounded-3xl border border-white shadow-[0_10px_24px_rgba(37,67,123,0.06)] px-6 py-7">
+            <form onSubmit={onSubmit}>
+              <div className="space-y-5">
+                {/* 이메일 */}
+                <div>
+                  <label className="text-[12px] font-semibold text-gray-700 block mb-1.5">이메일</label>
                   <input
-                    value={member.username}
-                    onChange={onChange('username')}
-                    type="email"
-                    placeholder="이메일을 입력하세요"
-                    required
-                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white transition-all duration-200 text-gray-700 placeholder-gray-400"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = colors.navy;
-                      e.target.style.boxShadow = `0 0 0 4px ${colors.navy}26`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.boxShadow = 'none';
-                    }}
+                      value={member.username}
+                      onChange={onChange('username')}
+                      type="email"
+                      placeholder="이메일을 입력하세요"
+                      required
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[color:var(--brand-primary)] focus:ring-4 focus:ring-[rgba(37,67,123,0.15)] transition"
+                  />
+                </div>
+
+                {/* 비밀번호 */}
+                <div>
+                  <label className="text-[12px] font-semibold text-gray-700 block mb-1.5">비밀번호</label>
+                  <input
+                      value={member.password}
+                      onChange={onChange('password')}
+                      type="password"
+                      placeholder="비밀번호를 입력하세요"
+                      required
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[color:var(--brand-primary)] focus:ring-4 focus:ring-[rgba(37,67,123,0.15)] transition"
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 block">
-                  비밀번호
-                </label>
-                <div className="relative">
-                  <input
-                    value={member.password}
-                    onChange={onChange('password')}
-                    type="password"
-                    placeholder="비밀번호를 입력하세요"
-                    required
-                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white transition-all duration-200 text-gray-700 placeholder-gray-400"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = colors.navy;
-                      e.target.style.boxShadow = `0 0 0 4px ${colors.navy}26`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {!!error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-                <div className="text-red-600 text-sm font-medium">{error}</div>
-              </div>
-            )}
-
-            {/* Find ID/PW Link */}
-            <div className="text-right mt-4">
-              <Link
-                to="/auth/find"
-                className="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors"
-              >
-                아이디/비밀번호 찾기
-              </Link>
-            </div>
-
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={disableSubmit}
-              className="w-full mt-6 py-3 text-white rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2 group"
-              style={{
-                backgroundColor: disableSubmit ? '#9ca3af' : colors.navy,
-                boxShadow: !disableSubmit
-                  ? `0 10px 25px ${colors.navy}25`
-                  : 'none',
-              }}
-            >
-              {isLoggingIn && (
-                <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+              {!!error && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                    {error}
+                  </div>
               )}
-              <span className="group-hover:scale-105 transition-transform">
-                {isLoggingIn ? '로그인 중...' : '로그인'}
-              </span>
-            </button>
-          </form>
 
-          {/* Signup Link */}
-          <div className="mt-8 text-center">
-            <div className="flex items-center my-6">
-              <div className="flex-1 border-t border-gray-200" />
-              <span className="px-4 text-xs text-gray-500 bg-white">또는</span>
-              <div className="flex-1 border-t border-gray-200" />
+              {/* 로그인 버튼 */}
+              <button
+                  type="submit"
+                  disabled={disableSubmit}
+                  className="w-full mt-5 py-3 rounded-xl font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: disableSubmit ? '#9CA3AF' : colors.navy,
+                    boxShadow: disableSubmit ? 'none' : `0 12px 28px ${colors.navy}22`,
+                  }}
+              >
+                {isLoggingIn ? '로그인 중…' : '로그인'}
+              </button>
+            </form>
+
+            {/* 하단 구분선 + 찾기/가입 섹션 */}
+            <div className="mt-8">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-gray-200" />
+                <span className="text-[12px] text-gray-400">또는</span>
+                <div className="flex-1 border-t border-gray-200" />
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-[13px] text-gray-500">혹시 계정을 잊어버리셨나요?</span>
+                <Link to="/auth/find" className="text-[13px] text-gray-500">
+                  아이디/비밀번호 찾기 <span className="text-blue-600">›</span>
+                </Link>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-[13px] text-gray-500">처음 오셨나요?</span>
+                <Link to="/auth/signup" className="text-[13px] text-gray-500">
+                  회원가입 하러가기 <span className="text-blue-600">›</span>
+                </Link>
+              </div>
             </div>
-
-            <Link
-              to="/auth/signup"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <span>아직 계정이 없으신가요?</span>
-              <span className="text-blue-600 font-bold text-lg">회원가입</span>
-            </Link>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

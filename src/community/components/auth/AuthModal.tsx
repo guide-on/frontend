@@ -20,7 +20,9 @@ export default function AuthModal() {
         if (!open) return;
         const prev = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = prev; };
+        return () => {
+            document.body.style.overflow = prev;
+        };
     }, [open]);
 
     if (!open) return null;
@@ -31,13 +33,16 @@ export default function AuthModal() {
         nav('/auth/login', { state: { redirectTo } });
     };
 
-    return createPortal(
-        // 🔳 화면 전체 덮기 (좌우 여백 없음)
-        <div className="fixed inset-0 z-[120] pointer-events-auto">
-            {/* 어둡게 */}
-            <div className="absolute inset-0 bg-black/40" />
+    const goHome = () => {
+        // 커뮤니티에서 발생 → 커뮤니티 홈으로, 그 외(홈/다른 화면) → 앱 홈으로
+        const to = loc.pathname.startsWith('/community') ? '/community' : '/';
+        setOpen(false);
+        nav(to);
+    };
 
-            {/* 앱 프레임 중앙에 카드 정렬 */}
+    return createPortal(
+        <div className="fixed inset-0 z-[120] pointer-events-auto">
+            <div className="absolute inset-0 bg-black/40" />
             <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-[var(--app-w,375px)]" style={{ ['--app-w' as any]: `${APP_W}px` }}>
                     <div className="mx-auto flex items-center justify-center">
@@ -45,10 +50,7 @@ export default function AuthModal() {
                             <div className="text-[15px] font-semibold">로그인 필요</div>
                             <div className="mt-2 text-sm text-gray-600">로그인 후 이용해주세요.</div>
                             <div className="mt-4 flex gap-2 justify-end">
-                                <button
-                                    className="px-4 py-2 text-sm rounded-xl border"
-                                    onClick={() => { setOpen(false); nav('/community'); }}
-                                >
+                                <button className="px-4 py-2 text-sm rounded-xl border" onClick={goHome}>
                                     홈으로
                                 </button>
                                 <button
@@ -63,6 +65,6 @@ export default function AuthModal() {
                 </div>
             </div>
         </div>,
-        document.body
+        document.body,
     );
 }
