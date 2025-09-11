@@ -87,9 +87,14 @@ export function RequiredDocumentsPage() {
         console.log('📊 마이데이터 문서 확인:', { hasMydataDocuments });
 
         if (hasMydataDocuments) {
-          // 사용자가 이미 마이데이터 연동을 시도했거나 건너뛰었는지 확인
-          const mydataAttempted = localStorage.getItem(
-            `mydata_attempted_${sessionId}`,
+          // 마이데이터 연동 성공 여부 확인 (영구 저장)
+          const mydataSuccess = localStorage.getItem(
+            `mydata_success_${sessionId}`,
+          );
+          
+          // 이번 세션에서 건너뛰기 했는지 확인 (세션 저장)
+          const mydataSkipped = sessionStorage.getItem(
+            `mydata_skipped_${sessionId}`,
           );
 
           // 마이데이터 대상 서류가 있는지 체크 (1개라도 연동되어 있으면 연동 완료로 간주)
@@ -100,12 +105,13 @@ export function RequiredDocumentsPage() {
           );
 
           console.log('🔄 마이데이터 상태:', {
-            mydataAttempted,
+            mydataSuccess,
+            mydataSkipped,
             hasSyncedDocuments,
           });
 
-          if (!hasSyncedDocuments && !mydataAttempted) {
-            // 연동되지 않았고 아직 시도하지 않았으면 마이데이터 연동 페이지로 이동
+          // 연동이 성공하지 않았고, 이번 세션에서 건너뛰지도 않았고, 실제로 연동된 문서도 없으면 마이데이터 페이지로 이동
+          if (!hasSyncedDocuments && !mydataSuccess && !mydataSkipped) {
             console.log(
               '🔀 마이데이터 연동 필요 -> MydataConsentPage로 리다이렉트',
             );
@@ -194,7 +200,8 @@ export function RequiredDocumentsPage() {
         <p className="font-bold text-lg mb-1">필요 서류 안내</p>
         <p className="text-sm leading-5">
           {policyName && <span className="font-semibold">{policyName}</span>}
-          {policyName && ' '}신청에 필요한 서류 목록입니다.<br />각 그룹별로 서류를 준비해주세요!
+          {policyName && ' '}신청에 필요한 서류 목록입니다.
+          <br />각 그룹별로 서류를 준비해주세요!
         </p>
       </section>
 
@@ -300,7 +307,6 @@ export function RequiredDocumentsPage() {
                           {group.description}
                         </div>
                       )}
-
                     </div>
                   );
                 })}
@@ -319,7 +325,7 @@ export function RequiredDocumentsPage() {
           <div className="mt-6 mx-4">
             <button
               className="w-full py-3 rounded-lg font-semibold text-white"
-              style={{ backgroundColor: '#9ca3af' }}
+              style={{ backgroundColor: colors.navy }}
               onClick={() => nav(`/hybrid-evaluation/${sessionId}`)}
             >
               서류 확인 중
