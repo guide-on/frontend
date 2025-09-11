@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '@/styles/colors';
 import { getDocumentStatus } from '@/api/documentApi';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function MydataSyncComplete() {
   const { sessionId = '' } = useParams();
@@ -16,7 +17,7 @@ export default function MydataSyncComplete() {
     console.log(`[3] 연동 완료 페이지 로드 ID: ${sessionId}`);
     // 마이데이터 연동 시도 기록 (완료 페이지까지 왔으면 시도한 것으로 간주, 영구 저장)
     localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
-    
+
     let mounted = true;
     const load = async () => {
       setLoading(true);
@@ -32,7 +33,9 @@ export default function MydataSyncComplete() {
       } catch (e) {
         if (!mounted) return;
         setError(
-          e instanceof Error ? e.message : '진행도 정보를 불러오는 중 오류가 발생했습니다.',
+          e instanceof Error
+            ? e.message
+            : '진행도 정보를 불러오는 중 오류가 발생했습니다.',
         );
       } finally {
         if (mounted) setLoading(false);
@@ -45,10 +48,13 @@ export default function MydataSyncComplete() {
   }, [sessionId]);
 
   return (
-    <div className="max-w-[375px] mx-auto px-4 py-8 flex flex-col items-center gap-6">
+    <div
+      className="w-full min-h-screen py-8 flex flex-col items-center gap-6"
+      style={{ backgroundColor: colors.bgSoft }}
+    >
       <div
-        className="w-full bg-white rounded-2xl p-6 text-center"
-        style={{ border: `1px solid ${colors.paleBlue}` }}
+        className="w-full bg-white rounded-2xl p-6 text-center mx-4"
+        style={{ maxWidth: 'calc(100% - 32px)' }}
       >
         <div
           className="mx-auto mb-4 w-28 h-28 rounded-full grid place-items-center"
@@ -69,13 +75,18 @@ export default function MydataSyncComplete() {
           마이데이터 수집 완료
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          마이데이터로 서류 자동 수집을 시도했습니다. 결과는 아래에서
-          확인하세요.
+          마이데이터로 서류 자동 수집을 시도했습니다.<br />
+          결과는 아래에서 확인하세요.
         </div>
 
         <div className="mb-4 text-left">
           {loading ? (
-            <div className="text-sm text-gray-500">진행도 불러오는 중…</div>
+            <div className="flex items-center justify-center py-4">
+              <div className="flex flex-col items-center gap-2">
+                <LoadingSpinner type="dots" size="md" color="#6b7280" />
+                <div className="text-sm text-gray-500">진행도 불러오는 중</div>
+              </div>
+            </div>
           ) : error ? (
             <div className="text-sm text-red-600">{error}</div>
           ) : (
@@ -104,7 +115,7 @@ export default function MydataSyncComplete() {
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 mt-3">
+        <div className="mt-3">
           <button
             onClick={() => nav(`/guide/documents/${sessionId}`)}
             className="w-full py-3 px-4 rounded-lg font-semibold text-white"
@@ -112,19 +123,12 @@ export default function MydataSyncComplete() {
           >
             서류 확인하러 가기
           </button>
-          <button
-            onClick={() => nav('/')}
-            className="w-full py-3 px-4 rounded-lg font-semibold border"
-            style={{ borderColor: colors.navy, color: colors.navy }}
-          >
-            홈으로 돌아가기
-          </button>
         </div>
       </div>
 
-      <div className="w-full text-sm text-gray-500">
-        자동 수집으로 반영되지 않은 항목은 수동으로 업로드하시거나, 서류 확인
-        화면에서 상태를 갱신하세요.
+      <div className="text-sm text-gray-500 mx-4">
+        자동 수집으로 반영되지 않은 항목은 수동으로 업로드하시거나,<br />
+        서류 확인 화면에서 상태를 갱신하세요.
       </div>
     </div>
   );
