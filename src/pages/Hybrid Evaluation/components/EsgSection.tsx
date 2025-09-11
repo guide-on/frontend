@@ -6,6 +6,7 @@ import { UploadCard } from './UploadCard';
 import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
 import StoreMap from './StoreMap';
 import api from '@/api';
+import axios from 'axios';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -151,9 +152,9 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
     }
 
     try {
-      const response = await api.get(`http://localhost:8000/sentimental-analysis-result/${sessionId}`);
-      console.log('Sentimental analysis result:', response.data);
-      // 성공적으로 API 호출 완료 후 다음 단계로 이동
+      console.log('리뷰 감정 분석 API 호출');
+      // Vite 프록시를 사용하기 위해 axios 기본 인스턴스 사용 (baseURL 없이)
+      axios.post(`/sentimental-analysis-result/${sessionId}`);
       setEsgStep(3);
     } catch (error) {
       console.error('Error calling sentimental analysis API:', error);
