@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+
+
 const HybridEvaluationComplete = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   
@@ -20,7 +22,9 @@ const HybridEvaluationComplete = () => {
   }, []);
 
   return (
-    <div className="relative px-4 py-8">
+    <>
+
+      <div className="relative px-4 py-10 min-h-screen flex items-center justify-center">
       <style>{`
         @keyframes rise {
           0%   { transform: translateY(0) rotate(var(--r)); opacity: 0; }
@@ -48,7 +52,7 @@ const HybridEvaluationComplete = () => {
         }
       `}</style>
 
-      <div className="relative overflow-hidden rounded-2xl border border-lightBlue/60 shadow-sm">
+      <div className="w-full max-w-md relative overflow-hidden rounded-2xl border border-lightBlue/60 shadow-sm">
         <div
           className="absolute inset-0 -z-10"
           style={{
@@ -130,7 +134,9 @@ const HybridEvaluationComplete = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+
+    </>
   );
 };
 

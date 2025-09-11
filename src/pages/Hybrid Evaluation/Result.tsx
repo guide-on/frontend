@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
 import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
@@ -8,7 +8,9 @@ import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { createPortal } from 'react-dom';
+
+
+import { colors } from '@/styles/colors';
 
 const TabButton = ({
   label,
@@ -95,15 +97,10 @@ const ExpandableRow = ({
   );
 };
 
-const ResultOverlay = ({
-  onClose,
-  evaluationResult,
-}: {
-  onClose: () => void;
-  evaluationResult?: CreditEvaluationResponse | null;
-}) => {
+const HybridEvaluationResult = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   // sessionId 우선순위: URL 파라미터 > useAuthStore
   const currentSessionId = sessionId ? parseInt(sessionId) : user?.sessionId;
@@ -123,7 +120,7 @@ const ResultOverlay = ({
       try {
         setLoading(true);
 
-        // 신용평가 결과 조회 (에러가 나도 계속 진행)
+        // 신용평가 결과 조회 (���러가 나도 계속 진행)
         if (currentSessionId) {
           try {
             const resultResponse =
@@ -226,7 +223,7 @@ const ResultOverlay = ({
 
     return [
       {
-        t: '상환이력',
+        t: '상환���력',
         d: '연체 발생/해제 이력과 상환 성실도를 평가합니다.',
         score: creditResult.repaymentHistoryScore,
         maxScore: 284,
@@ -373,7 +370,7 @@ const ResultOverlay = ({
     },
     {
       t: '신용형태',
-      d: '카드 이용 패턴과 현금서비스/할부 사용 등을 평가합니다.',
+      d: '카드 이용 패턴과 현금서비스/할부 사용 등을 평���합니다.',
       g: 'A',
       details: [
         {
@@ -412,7 +409,7 @@ const ResultOverlay = ({
   // 실제 데���터를 기반으로 guideRows 생성
   const getGuideRows = () => {
     if (!storeSummaryData) {
-      return []; // 데이터가 없으면 빈 배열 반환
+      return []; // 데이터가 없으면 빈 배��� 반환
     }
 
     const data = storeSummaryData;
@@ -576,103 +573,109 @@ const ResultOverlay = ({
 
   const rows = tab === 'legacy' ? legacyRows : guideRows;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9998] overflow-auto bg-white p-6">
-      <div className="mx-auto w-full max-w-sm space-y-5">
-        <h3 className="text-center text-2xl font-extrabold text-navy">
-          하이브리드 신용평가 결과
-        </h3>
+  return (
+    <>
 
-        {loading ? (
-          <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
-            <div className="text-center text-sm text-gray-600 flex justify-center">
-              <LoadingSpinner type="dots" color="#25437B" />
-            </div>
-            <div className="mt-4 animate-pulse">
-              <div className="h-16 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
-            <div className="text-center text-sm text-gray-600">종합 점수</div>
-            <div className="mt-1 flex items-end justify-center gap-2">
-              <div className="text-5xl font-extrabold text-gray-900">
-                {creditResult?.totalScore || 0}
-              </div>
-              <div className="pb-1 text-gray-600">/ 1000</div>
-            </div>
-            <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
-              {creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A'}{' '}
-              등급
-            </div>
-          </div>
-        )}
+      <div
+        className="px-4 py-6 space-y-5 min-h-screen"
+        style={{ background: colors.bgSoft }}
+      >
+        <div className="mx-auto w-full max-w-sm space-y-5">
+          <h3 className="text-center text-2xl font-extrabold text-navy">
+            하이브리드 신용평가 결과
+          </h3>
 
-        <div className="flex items-center justify-between px-1">
-          <TabButton
-            label="기존 신용 분석"
-            active={tab === 'legacy'}
-            onClick={() => setTab('legacy')}
-          />
-          <TabButton
-            label="guideON 분석"
-            active={tab === 'guideon'}
-            onClick={() => setTab('guideon')}
-          />
-        </div>
-        <div className="h-0.5 w-full rounded bg-gray-200" />
-
-        <div className="space-y-3">
           {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm animate-pulse"
-                >
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : rows.length > 0 ? (
-            rows.map((r) => (
-              <ExpandableRow
-                key={r.t}
-                title={r.t}
-                desc={r.d}
-                grade={r.g}
-                score={r.score}
-                maxScore={r.maxScore}
-                details={r.details}
-              />
-            ))
-          ) : (
-            <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
-              <div className="text-gray-500">
-                {tab === 'legacy'
-                  ? '신용평가 데이터를 찾을 수 없습니다.'
-                  : '매장 요약 데��터를 찾을 수 없습니다.'}
+            <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
+              <div className="text-center text-sm text-gray-600 flex justify-center">
+                <LoadingSpinner type="dots" color="#25437B" />
               </div>
-              <div className="text-sm text-gray-400 mt-1">
-                {tab === 'legacy'
-                  ? '먼저 신용평가를 진행해주세요.'
-                  : '매장 데이터가 아직 준비되지 않았습니다.'}
+              <div className="mt-4 animate-pulse">
+                <div className="h-16 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
+              <div className="text-center text-sm text-gray-600">종합 점수</div>
+              <div className="mt-1 flex items-end justify-center gap-2">
+                <div className="text-5xl font-extrabold text-gray-900">
+                  {creditResult?.totalScore || 0}
+                </div>
+                <div className="pb-1 text-gray-600">/ 1000</div>
+              </div>
+              <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
+                {creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A'}{' '}
+                등급
               </div>
             </div>
           )}
-        </div>
 
-        <button
-          onClick={onClose}
-          className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50"
-        >
-          닫기
-        </button>
+          <div className="flex items-center justify-between px-1">
+            <TabButton
+              label="기존 신용 분석"
+              active={tab === 'legacy'}
+              onClick={() => setTab('legacy')}
+            />
+            <TabButton
+              label="guideON 분석"
+              active={tab === 'guideon'}
+              onClick={() => setTab('guideon')}
+            />
+          </div>
+          <div className="h-0.5 w-full rounded bg-gray-200" />
+
+          <div className="space-y-3">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm animate-pulse"
+                  >
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : rows.length > 0 ? (
+              rows.map((r) => (
+                <ExpandableRow
+                  key={r.t}
+                  title={r.t}
+                  desc={r.d}
+                  grade={r.g}
+                  score={r.score}
+                  maxScore={r.maxScore}
+                  details={r.details}
+                />
+              ))
+            ) : (
+              <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
+                <div className="text-gray-500">
+                  {tab === 'legacy'
+                    ? '신용평가 데이터를 찾을 수 없습니다.'
+                    : '매장 요약 데��터를 찾을 수 없습니다.'}
+                </div>
+                <div className="text-sm text-gray-400 mt-1">
+                  {tab === 'legacy'
+                    ? '먼저 신용평가를 진행해주세요.'
+                    : '매장 데이터가 아직 준비되지 않았습니다.'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50"
+          >
+            이전으로
+          </button>
+        </div>
       </div>
-    </div>,
-    document.body,
+
+    </>
   );
 };
 
-export default ResultOverlay;
+export default HybridEvaluationResult;

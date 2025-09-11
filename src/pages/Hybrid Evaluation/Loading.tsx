@@ -1,6 +1,8 @@
 import { FaClock } from 'react-icons/fa';
 import { colors } from '../../styles/colors';
 
+
+
 const LoadingOverlay = ({ progress }: { progress: number }) => {
   const radius = 44;
   const stroke = 6;
@@ -15,7 +17,9 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center bg-white px-6 pt-10 pb-8" aria-live="polite">
+    <>
+
+      <div className="fixed inset-0 z-50 flex flex-col items-center bg-white px-6 pt-10 pb-8" aria-live="polite">
       <style>
         {`
         @keyframes slide {
@@ -133,7 +137,9 @@ const LoadingOverlay = ({ progress }: { progress: number }) => {
         </div>
         <div className="text-xs text-gray-400">잠시만 기다려주세요</div>
       </div>
-    </div>
+      </div>
+
+    </>
   );
 };
 

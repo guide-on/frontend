@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaChevronRight, FaCheckCircle } from 'react-icons/fa';
 
+
+
 const BANKS: { id: string; name: string; img: string }[] = [
   { id: 'kb', name: 'KB국민은행', img: '/images/banks/KB.png' },
   { id: 'shinhan', name: '신한은행', img: '/images/banks/Shinhan.png' },
@@ -73,7 +75,9 @@ export default function BankConnect() {
   };
 
   return (
-    <div className="px-4 py-6 space-y-4">
+    <>
+
+      <div className="px-4 py-6 space-y-4">
       <h1 className="text-xl font-extrabold text-navy">계좌연결</h1>
       <p className="text-sm text-gray-600">
         연결할 은행을 선택하세요. 복수 선택 가능합니다.
@@ -124,6 +128,8 @@ export default function BankConnect() {
           <div className="mt-4 text-sm text-gray-600">연결 중...</div>
         </div>
       )}
-    </div>
+      </div>
+
+    </>
   );
 }

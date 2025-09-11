@@ -18,6 +18,8 @@ import { CeoSection } from './components/CeoSection';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { colors } from '@/styles/colors';
 
+
+
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
 const CATEGORY_CONTENT: Record<
@@ -27,7 +29,7 @@ const CATEGORY_CONTENT: Record<
   sales: {
     title: '매출 안정성 및 성장성',
     desc: '사업이 실제로 돈을 얼마나 꾸준히 벌고 있는지를 평가합니다. 전월·전년 대비 꾸준히 성장하고 있는지 등을 파악하여, 지속 가능한 수익 구조를 갖추고 있는지를 판단합니다.',
-    items: ['월/분기별 매출 추이', '매출 변동성', '전년/월 동기 대비 성장률'],
+    items: ['월/분기별 매출 추이', '매출 변동��', '전년/월 동기 대비 성장률'],
   },
   cashflow: {
     title: '현금흐름 건전성',
@@ -257,7 +259,7 @@ const StartHybridEvaluation = () => {
         navigate(`/bank-connect/${sessionId}`);
       } else {
         throw new Error(
-          response.message || '현금흐름 데이터 업데이트에 실패했습니다.',
+          response.message || '현금흐름 데이터 업데이트에 실��했습니다.',
         );
       }
     } catch (error: any) {
@@ -399,10 +401,12 @@ const StartHybridEvaluation = () => {
   };
 
   return (
-    <div
-      className="px-4 py-6 space-y-5 min-h-screen"
-      style={{ background: colors.bgSoft }}
-    >
+    <>
+
+      <div
+        className="px-4 py-6 space-y-5 min-h-screen"
+        style={{ background: colors.bgSoft }}
+      >
       <h2 className="flex items-center justify-between text-base font-bold text-navy">
         <span>항목 선택</span>
         <button
@@ -418,7 +422,7 @@ const StartHybridEvaluation = () => {
         <div className="space-y-3">
           <CategoryButton
             active={selected === 'sales'}
-            label="매출 안정성 및 성장성"
+            label="���출 안정성 및 성장성"
             done={completed.sales}
             onClick={() => setSelected('sales')}
           />
@@ -715,7 +719,7 @@ const StartHybridEvaluation = () => {
                     <td className="border border-gray-200 p-2" rowSpan={6}>
                       단기연체의 기준은 5영업일 10만원 이상이며, 장기연체는 90일
                       이상 연체 등을 기준으로 하고 있습니다. 단, 임시적
-                      소액연체는 신용평가에 활용되지 않습니다.
+                      소액연체는 신용평���에 활용되지 않습니다.
                     </td>
                   </tr>
                   <tr className="odd:bg-white even:bg-gray-50/60">
@@ -1220,7 +1224,9 @@ const StartHybridEvaluation = () => {
           </div>
         </div>
       </Modal>
-    </div>
+      </div>
+
+    </>
   );
 };
 
