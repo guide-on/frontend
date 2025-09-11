@@ -11,42 +11,21 @@ import { fetchSimulationDetail, type DetailVM } from '../api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { AUTH_REQUIRED_EVENT } from '@/community/utils/api';
 import { getSessionStep } from '@/api/sessionApi';
+import {
+  hybridCreditScoreApi,
+  type HybridCreditScoreResponse,
+} from '../../api/hybridCreditScoreApi';
 
 // 스텝 상태 계산
 function stepStatus(
   vm: DetailVM,
 ): Array<{ stepCode: SimulationStepCode; status: SimulationStatus }> {
-  const docDone = vm.docSessionStatus === 'COMPLETED';
-  const creditDone = vm.totalCreditScore != null;
-  const planDone = vm.planTotalScore != null;
-  const finalDone = vm.overallStatus === 'COMPLETED';
-
-  const sDoc: SimulationStatus = docDone
-    ? 'COMPLETED'
-    : vm.currentStep === 'DOCS'
-      ? 'IN_PROGRESS'
-      : 'PENDING';
-  const sCredit: SimulationStatus = creditDone
-    ? 'COMPLETED'
-    : vm.currentStep === 'CREDIT'
-      ? 'IN_PROGRESS'
-      : 'PENDING';
-  const sPlan: SimulationStatus = planDone
-    ? 'COMPLETED'
-    : vm.currentStep === 'PLAN'
-      ? 'IN_PROGRESS'
-      : 'PENDING';
-  const sFinal: SimulationStatus = finalDone
-    ? 'COMPLETED'
-    : vm.currentStep === 'RESULT'
-      ? 'IN_PROGRESS'
-      : 'PENDING';
-
+  // 시뮬레이션 상세 페이지에서는 모든 단계를 완료로 표시
   return [
-    { stepCode: 'DOCUMENT_CHECK', status: sDoc },
-    { stepCode: 'CREDIT_CHECK', status: sCredit },
-    { stepCode: 'BUSINESS_PLAN', status: sPlan },
-    { stepCode: 'FINAL_REVIEW', status: sFinal },
+    { stepCode: 'DOCUMENT_CHECK', status: 'COMPLETED' },
+    { stepCode: 'CREDIT_CHECK', status: 'COMPLETED' },
+    { stepCode: 'BUSINESS_PLAN', status: 'COMPLETED' },
+    { stepCode: 'FINAL_REVIEW', status: 'COMPLETED' },
   ];
 }
 
@@ -54,6 +33,7 @@ export default function SimulationDetailPage() {
   const { id } = useParams();
   const nav = useNavigate();
   const [vm, setVm] = useState<DetailVM | null>(null);
+  const [hybridScoreData, setHybridScoreData] = useState<HybridCreditScoreResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [openImp, setOpenImp] = useState(false);
 
@@ -100,6 +80,16 @@ export default function SimulationDetailPage() {
         // RESULT 단계면 시뮬레이션 상세 데이터 로드
         const data = await fetchSimulationDetail(Number(id));
         if (alive) setVm(data);
+
+        // 하이브리드 신용점수 데이터 로드
+        try {
+          const hybridResponse = await hybridCreditScoreApi.getResult(Number(id));
+          if (hybridResponse.success && alive) {
+            setHybridScoreData(hybridResponse.data);
+          }
+        } catch (hybridError) {
+          console.error('하이브리드 신용점수 조회 실패:', hybridError);
+        }
       } catch (error) {
         console.error(
           '세션 단계 확인 또는 시뮬레이션 데이터 로드 실패:',
@@ -109,6 +99,16 @@ export default function SimulationDetailPage() {
         try {
           const data = await fetchSimulationDetail(Number(id));
           if (alive) setVm(data);
+
+          // 하이브리드 신용점수 데이터 로드
+          try {
+            const hybridResponse = await hybridCreditScoreApi.getResult(Number(id));
+            if (hybridResponse.success && alive) {
+              setHybridScoreData(hybridResponse.data);
+            }
+          } catch (hybridError) {
+            console.error('하이브리드 신용점수 조회 실패:', hybridError);
+          }
         } catch (fallbackError) {
           console.error('시뮬레이션 데이터 로드 실패:', fallbackError);
         }
@@ -136,7 +136,7 @@ export default function SimulationDetailPage() {
     const pass = expected >= 80;
 
     const creditGrade = (() => {
-      const v = vm.totalCreditScore ?? 0;
+      const v = hybridScoreData?.totalCreditScore ?? vm.totalCreditScore ?? 0;
       if (v >= 900) return 'AAA';
       if (v >= 800) return 'AA';
       if (v >= 700) return 'A';
@@ -240,15 +240,19 @@ export default function SimulationDetailPage() {
             title="신용등급"
             chip={{
               label: metrics.creditGrade,
-              tone:
-                metrics.creditNorm >= 75
-                  ? 'ok'
-                  : metrics.creditNorm >= 55
-                    ? 'warn'
-                    : 'bad',
+              tone: (() => {
+                const grade = metrics.creditGrade;
+                if (grade === 'AAA' || grade === 'AA' || grade === 'A') return 'ok';
+                if (grade === 'BBB' || grade === 'BB' || grade === 'B') return 'warn';
+                return 'bad';
+              })(),
             }}
-            main={<span>{vm.totalCreditScore ?? '-'}점</span>}
-            desc={`1000점 기준 변환 (${metrics.creditNorm}%)`}
+            main={
+              <div className="flex items-center justify-start w-full">
+                <span>{hybridScoreData?.totalCreditScore ?? vm.totalCreditScore ?? '-'}점</span>
+              </div>
+            }
+            desc={`1000점 기준 변환 (${Math.round(((hybridScoreData?.totalCreditScore ?? vm.totalCreditScore ?? 0) / 1000) * 100)}%)`}
             onClick={goCreditResult}
             showSearchIcon
           />
