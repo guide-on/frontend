@@ -441,9 +441,23 @@ export function DocumentUploadPage() {
         title="업로드 완료"
       >
         <div className="text-center space-y-4">
-          <div className="text-4xl">✅</div>
+          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg" style={{ color: colors.navy }}>
+            <h3 className="text-lg font-semibold text-gray-900">
               업로드가 완료되었습니다!
             </h3>
             <p className="text-sm text-gray-600">
@@ -454,7 +468,7 @@ export function DocumentUploadPage() {
           </div>
           <button
             onClick={() => setUploadSuccessModal({ open: false, documentName: '' })}
-            className="w-full py-3 rounded-lg font-semibold text-white"
+            className="w-full py-3 rounded-lg font-semibold text-white transition"
             style={{ backgroundColor: colors.navy }}
           >
             확인
