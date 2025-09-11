@@ -154,8 +154,7 @@ const StoreMap = () => {
           marginBottom: '10px',
           display: 'flex',
           gap: '10px',
-          padding: '10px',
-          backgroundColor: '#f8f9fa',
+          padding: '1px',
           borderRadius: '8px',
         }}
       >

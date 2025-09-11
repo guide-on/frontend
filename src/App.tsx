@@ -34,6 +34,10 @@ import DocumentUploadPage from '@/guide/pages/DocumentUploadPage';
 import MydataConsentPage from '@/guide/pages/MydataConsentPage';
 import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 
+// 사업계획서
+import BusinessPlanResult from './pages/evaluation/BusinessPlanResult';
+import BusinessPlanReady from './pages/evaluation/BusinessPlanReady';
+
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
 import StartHybridEvaluation from './pages/Hybrid Evaluation/Start.tsx';
@@ -155,6 +159,16 @@ function AppChrome() {
             <Route path="/support" element={<Support />} />
             <Route path="/community/*" element={<Community />} />
             <Route path="/mypage" element={<MyPage />} />
+
+            {/* 사업계획서 평가 */}
+            <Route
+              path="/guide/:sessionId/business-plan/result"
+              element={<BusinessPlanResult />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/ready"
+              element={<BusinessPlanReady />}
+            />
 
             {/* 인증 */}
             <Route path="/auth/login" element={<Login />} />

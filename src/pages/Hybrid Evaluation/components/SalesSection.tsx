@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { UploadCard } from './UploadCard';
-import { 
-  storeSummaryApi, 
+import {
+  storeSummaryApi,
   type StoreSummaryCsvUploadRequest,
-  type SalesDataRow 
+  type SalesDataRow,
 } from '../../../api/storeSummaryApi';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
@@ -48,61 +48,88 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       reader.onload = (e) => {
         try {
           const text = e.target?.result as string;
-          const lines = text.split('\n').filter(line => line.trim());
-          
+          const lines = text.split('\n').filter((line) => line.trim());
+
           if (lines.length < 2) {
             reject(new Error('CSV 파일이 비어있거나 헤더만 있습니다.'));
             return;
           }
-          
+
           // 첫 번째 줄은 헤더
-          const headers = lines[0].split(',').map(h => h.trim());
+          const headers = lines[0].split(',').map((h) => h.trim());
           const expectedHeaders = [
-            'total_sales_amount', 'weekday_sales_amount', 'weekend_sales_amount',
-            'lunch_sales_ratio', 'dinner_sales_ratio', 'transaction_count',
-            'weekday_transaction_count', 'weekend_transaction_count', 'mom_growth_rate',
-            'yoy_growth_rate', 'sales_cv', 'avg_transaction_value',
-            'cash_payment_ratio', 'card_payment_ratio', 'revisit_customer_sales_ratio',
-            'new_customer_ratio'
+            'total_sales_amount',
+            'weekday_sales_amount',
+            'weekend_sales_amount',
+            'lunch_sales_ratio',
+            'dinner_sales_ratio',
+            'transaction_count',
+            'weekday_transaction_count',
+            'weekend_transaction_count',
+            'mom_growth_rate',
+            'yoy_growth_rate',
+            'sales_cv',
+            'avg_transaction_value',
+            'cash_payment_ratio',
+            'card_payment_ratio',
+            'revisit_customer_sales_ratio',
+            'new_customer_ratio',
           ];
-          
+
           // 헤더 검증
-          const missingHeaders = expectedHeaders.filter(header => !headers.includes(header));
+          const missingHeaders = expectedHeaders.filter(
+            (header) => !headers.includes(header),
+          );
           if (missingHeaders.length > 0) {
-            reject(new Error(`필수 컬럼이 누락되었습니다: ${missingHeaders.join(', ')}`));
+            reject(
+              new Error(
+                `필수 컬럼이 누락되었습니다: ${missingHeaders.join(', ')}`,
+              ),
+            );
             return;
           }
-          
+
           // 데이터 파싱
           const salesData: SalesDataRow[] = [];
           for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(v => v.trim());
+            const values = lines[i].split(',').map((v) => v.trim());
             if (values.length !== headers.length) {
-              reject(new Error(`${i + 1}번째 행의 컬럼 수가 일치하지 않습니다.`));
+              reject(
+                new Error(`${i + 1}번째 행의 컬럼 수가 일치하지 않습니다.`),
+              );
               return;
             }
-            
+
             const row: SalesDataRow = {};
             headers.forEach((header, index) => {
               const value = values[index];
               if (value && value !== '') {
                 // snake_case를 camelCase로 변환
-                const camelCaseHeader = header.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+                const camelCaseHeader = header.replace(
+                  /_([a-z])/g,
+                  (match, letter) => letter.toUpperCase(),
+                );
                 (row as any)[camelCaseHeader] = parseFloat(value) || 0;
-                console.debug(`🔄 변환: ${header} -> ${camelCaseHeader} = ${value}`);
+                console.debug(
+                  `🔄 변환: ${header} -> ${camelCaseHeader} = ${value}`,
+                );
               }
             });
             salesData.push(row);
           }
-          
+
           if (salesData.length === 0) {
             reject(new Error('CSV 파일에 데이터가 없습니다.'));
             return;
           }
-          
+
           resolve(salesData);
         } catch (error) {
-          reject(new Error(`CSV 파싱 중 오류가 발생했습니다: ${error instanceof Error ? error.message : error}`));
+          reject(
+            new Error(
+              `CSV 파싱 중 오류가 발생했습니다: ${error instanceof Error ? error.message : error}`,
+            ),
+          );
         }
       };
       reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다.'));
@@ -123,7 +150,8 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB 제한
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB 제한
       setCsvUploadError('파일 크기가 10MB를 초과할 수 없습니다.');
       return;
     }
@@ -137,36 +165,34 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       setIsUploadingCsv(true);
       setCsvUploadError(null);
       setCsvUploadSuccess(false);
-      
+
       console.log('🔄 CSV 파일 파싱 시작:', file.name);
-      
+
       // CSV 파일 파싱
       const salesData = await parseCsvFile(file);
       console.log('📊 파싱된 데이터:', salesData);
-      
+
       // API 요청 데이터 구성
       const uploadRequest: StoreSummaryCsvUploadRequest = {
         sessionId: parseInt(sessionId),
         businessRegistrationNo: '000-00-00000', // 기본값 또는 사용자 입력값
-        salesData: salesData
+        salesData: salesData,
       };
-      
+
       console.log('📡 CSV 업로드 API 호출:', uploadRequest);
-      
+
       // API 호출
       const response = await storeSummaryApi.uploadCsvData(uploadRequest);
-      
+
       if (response.success) {
         console.log('✅ CSV 업로드 성공:', response.message);
         setCsvUploadSuccess(true);
-        
+
         // 상위 컴포넌트에 업로드 완료 알림
         onCsvUploadComplete(file.name);
-        
       } else {
         throw new Error(response.message || 'CSV 업로드에 실패했습니다.');
       }
-      
     } catch (error: any) {
       console.error('❌ CSV 업로드 실패 - 전체 에러 객체:', error);
       console.error('❌ 에러 응답:', error?.response);
@@ -174,16 +200,21 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       console.error('❌ 에러 상태 코드:', error?.response?.status);
       console.error('❌ 에러 메시지:', error?.message);
       console.error('❌ 요청 설정:', error?.config);
-      
+
       // 서버 에러 응답에서 더 구체적인 메시지 추출
       let errorMessage = 'CSV 업로드 중 오류가 발생했습니다.';
-      
+
       if (error?.response?.status === 500) {
-        const serverError = error?.response?.data?.message || error?.response?.data?.error || 'Internal Server Error';
+        const serverError =
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          'Internal Server Error';
         errorMessage = `서버 오류 (500): ${serverError}`;
         console.error('❌ 서버 500 오류 상세:', serverError);
       } else if (error?.response?.status === 400) {
-        errorMessage = error?.response?.data?.message || '잘못된 요청입니다. CSV 파일 형식을 확인해주세요.';
+        errorMessage =
+          error?.response?.data?.message ||
+          '잘못된 요청입니다. CSV 파일 형식을 확인해주세요.';
       } else if (error?.response?.status === 404) {
         errorMessage = '요청한 리소스를 찾을 수 없습니다.';
       } else if (error?.response?.data?.message) {
@@ -193,7 +224,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       } else {
         errorMessage = `네트워크 오류가 발생했습니다. (상태: ${error?.response?.status || 'unknown'})`;
       }
-      
+
       setCsvUploadError(errorMessage);
     } finally {
       setIsUploadingCsv(false);
@@ -216,7 +247,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
         </button>
       </div>
 
-      <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl p-3 text-sm space-y-1 bg-white shadow-[0_12px_36px_rgba(17,24,39,0.06)] ">
         {content.items.map((item) => (
           <div key={item} className="flex items-start gap-2">
             <span>•</span>
@@ -235,19 +266,20 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
           <FaQuestionCircle />
         </button>
       </div>
-      
-      <div className="mt-2 p-3 border border-gray-200 rounded-md bg-blue-50">
-        <p className="text-sm text-gray-700 mb-2">
-          <strong>CSV 파일 형식:</strong> 다음 컬럼들을 포함해야 합니다:
-        </p>
-        <p className="text-xs text-gray-600 break-all">
-          total_sales_amount, weekday_sales_amount, weekend_sales_amount, lunch_sales_ratio, 
-          dinner_sales_ratio, transaction_count, weekday_transaction_count, weekend_transaction_count, 
-          mom_growth_rate, yoy_growth_rate, sales_cv, avg_transaction_value, cash_payment_ratio, 
-          card_payment_ratio, revisit_customer_sales_ratio, new_customer_ratio
-        </p>
-      </div>
-      
+
+      {/* <div className="mt-2 p-3 border border-gray-200 rounded-xl bg-blue-50 shadow-[0_12px_36px_rgba(17,24,39,0.06)]">
+          <p className="text-sm text-gray-700 mb-2">
+            <strong>CSV 파일 형식:</strong> 다음 컬럼들을 포함해야 합니다.
+          </p>
+          <p className="text-xs text-gray-600 break-all">
+            총 매출액, 평일 매출액, 주말 매출액, 점심 매출 비율, <br />
+            저녁 매출 비율, 거래 건수, 평일 거래 건수, 주말 거래 건수, <br />
+            전월 대비 성장률, 전년 대비 성장률, 매출 변동계수, <br />
+            평균 거래 금액, 현금 결제 비율, 카드 결제 비율, <br />
+            재방문 고객 매출 비율, 신규 고객 비율
+          </p>
+        </div> */}
+
       <UploadCard
         fileName={fileNames.sales}
         acceptedFileTypes=".csv"
