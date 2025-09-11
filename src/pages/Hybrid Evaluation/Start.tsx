@@ -9,6 +9,10 @@ import {
   type CreditEvaluationCreateRequest,
   type CreditEvaluationResponse,
 } from '../../api/creditEvaluationApi';
+import {
+  hybridCreditScoreApi,
+  type HybridCreditScoreResponse,
+} from '../../api/hybridCreditScoreApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { EsgSection } from './components/EsgSection';
 import { SalesSection } from './components/SalesSection';
@@ -375,20 +379,31 @@ const StartHybridEvaluation = () => {
         alternativeCreditScore: 72,
       };
 
-      const response = await creditEvaluationApi.create(evaluationData);
+      // 신용평가 API 호출
+      const creditResponse = await creditEvaluationApi.create(evaluationData);
+      
+      if (!creditResponse.success) {
+        throw new Error(creditResponse.message || '신용평가 생성에 실패했습니다.');
+      }
+
+      // 하이브리드 신용점수 API 호출
+      console.log('🔄 하이브리드 신용점수 계산 시작:', sessionId);
+      const hybridResponse = await hybridCreditScoreApi.calculate(parseInt(sessionId));
+      
+      if (!hybridResponse.success) {
+        throw new Error(hybridResponse.message || '하이브리드 신용점수 계산에 실패했습니다.');
+      }
+
+      console.log('✅ 하이브리드 신용점수 계산 완료:', hybridResponse.data);
 
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (response.success) {
-        setEvaluationResult(response.data);
-        setTimeout(() => {
-          setSubmitting(false);
-          navigate(`/hybrid-evaluation/complete/${sessionId}`);
-        }, 500);
-      } else {
-        throw new Error(response.message || '평    생성에 실패했습니다.');
-      }
+      setEvaluationResult(creditResponse.data);
+      setTimeout(() => {
+        setSubmitting(false);
+        navigate(`/hybrid-evaluation/complete/${sessionId}`);
+      }, 500);
     } catch (err: any) {
       setSubmitting(false);
       setError(

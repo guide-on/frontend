@@ -6,6 +6,10 @@ import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
 import { creditEvaluationResultApi } from '../../api/creditEvaluationResultApi';
 import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
+import { 
+  hybridCreditScoreApi, 
+  type HybridCreditScoreResponse 
+} from '../../api/hybridCreditScoreApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
@@ -112,6 +116,8 @@ const HybridEvaluationResult = () => {
   );
   const [storeSummaryData, setStoreSummaryData] =
     useState<StoreSummaryResponse | null>(null);
+  const [hybridScoreData, setHybridScoreData] = 
+    useState<HybridCreditScoreResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -192,6 +198,43 @@ const HybridEvaluationResult = () => {
           console.warn(
             'sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.',
           );
+        }
+
+        // 하이브리드 신용점수 결과 조회
+        if (currentSessionId) {
+          try {
+            console.log('🔍 하이브리드 신용점수 결과 조회 시작:', currentSessionId);
+            const hybridResponse = await hybridCreditScoreApi.getResult(currentSessionId);
+            console.log('🔍 하이브리드 신용점수 결과 응답:', hybridResponse);
+            
+            if (hybridResponse.success) {
+              setHybridScoreData(hybridResponse.data);
+              console.log('✅ 하이브리드 신용점수 데이터 설정 완료:', hybridResponse.data);
+            } else {
+              console.log('⚠️ 하이브리드 신용점수 결과가 없음:', hybridResponse.message);
+            }
+          } catch (hybridError) {
+            console.error('❌ 하이브리드 신용점수 조회 실패:', hybridError);
+          }
+        } else {
+          console.warn('sessionId를 찾을 수 없어 하이브리드 신용점수를 조회할 수 없습니다.');
+        }
+
+        // traditional_credit_score 업데이트 (credit_evaluation_result의 total_score를 member_credit의 traditional_credit_score로)
+        if (currentSessionId) {
+          try {
+            console.log('🔄 Traditional Credit Score 업데이트 시작:', currentSessionId);
+            const updateResponse = await hybridCreditScoreApi.updateTraditionalScore(currentSessionId);
+            console.log('🔄 Traditional Credit Score 업데이트 응답:', updateResponse);
+            
+            if (updateResponse.success) {
+              console.log('✅ Traditional Credit Score 업데이트 완료');
+            } else {
+              console.log('⚠️ Traditional Credit Score 업데이트 실패:', updateResponse.message);
+            }
+          } catch (updateError) {
+            console.error('❌ Traditional Credit Score 업데이트 실패:', updateError);
+          }
         }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);
@@ -406,6 +449,19 @@ const HybridEvaluationResult = () => {
     return 'C';
   };
 
+  // 하이브리드 점수를 등급으로 변환하는 함수 (0~1000 구간)
+  const getHybridScoreGrade = (score: number): string => {
+    if (score >= 900) return 'AAA';
+    if (score >= 800) return 'AA';
+    if (score >= 700) return 'A';
+    if (score >= 600) return 'BBB';
+    if (score >= 500) return 'BB';
+    if (score >= 400) return 'B';
+    if (score >= 300) return 'CCC';
+    if (score >= 200) return 'CC';
+    return 'C';
+  };
+
   // 실제 데���터를 기반으로 guideRows 생성
   const getGuideRows = () => {
     if (!storeSummaryData) {
@@ -473,11 +529,7 @@ const HybridEvaluationResult = () => {
       {
         t: '매출 안정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
-        g: getSalesGrade(
-          data.momGrowthRate || 0,
-          data.yoyGrowthRate || 0,
-          data.salesCv || 1,
-        ),
+        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.sales_summary_score_scaled) : 'N/A',
         details: [
           {
             section: '매출 현황',
@@ -506,11 +558,7 @@ const HybridEvaluationResult = () => {
       {
         t: '현금흐름 건전성',
         d: '영업이익과 현금 보유 상황을 분석한 결과입니다.',
-        g: getCashFlowGrade(
-          data.operatingProfitRatio || 0,
-          data.avgAccountBalance || 0,
-          data.cashflowCv || 1,
-        ),
+        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.financial_info_score_scaled) : 'N/A',
         details: [
           {
             section: '수익성',
@@ -533,13 +581,7 @@ const HybridEvaluationResult = () => {
       {
         t: 'ESG',
         d: '환경·사회·지배구조 리스크 관리와 실천 활동을 평가합니다.',
-        g: getESGGrade(
-          data.participateEnergyEffSupport === true,
-          data.hygieneCertified === true,
-          data.employmentInsuranceEmployees || 0,
-          data.customerReviewAvgRating || 0,
-          data.foodWasteKgPerDay || 0,
-        ),
+        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.operational_info_score_scaled) : 'N/A',
         details: [
           {
             section: '환경',
@@ -599,12 +641,12 @@ const HybridEvaluationResult = () => {
               <div className="text-center text-sm text-gray-600">종합 점수</div>
               <div className="mt-1 flex items-end justify-center gap-2">
                 <div className="text-5xl font-extrabold text-gray-900">
-                  {creditResult?.totalScore || 0}
+                  {hybridScoreData?.total_credit_score || 0}
                 </div>
                 <div className="pb-1 text-gray-600">/ 1000</div>
               </div>
               <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
-                {creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A'}{' '}
+                {hybridScoreData ? getTotalGrade(hybridScoreData.total_credit_score) : 'N/A'}{' '}
                 등급
               </div>
             </div>
