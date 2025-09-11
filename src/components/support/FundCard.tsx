@@ -10,6 +10,7 @@ type FundListItem = {
   term: string;
   limitAmount: string;
   saved: boolean;
+  loanType: '대리대출' | '직접대출';
 };
 
 const FundCard: React.FC<{
@@ -53,7 +54,19 @@ const FundCard: React.FC<{
         >
           {item.status}
         </span>
-        <span className="text-xs font-semibold text-gray-500 animate-fade-in">대리대출</span>
+        <span 
+          className="text-xs font-semibold animate-fade-in px-2 py-1 rounded-full"
+          style={{
+            backgroundColor: item.loanType === '대리대출' 
+              ? 'rgba(239, 68, 68, 0.1)' 
+              : 'rgba(59, 130, 246, 0.1)',
+            color: item.loanType === '대리대출' 
+              ? '#dc2626' 
+              : colors.blue
+          }}
+        >
+          {item.loanType}
+        </span>
       </div>
 
       <div className="font-bold text-lg text-gray-800 pr-8 animate-slide-up">{item.name}</div>
