@@ -38,7 +38,7 @@ const Header = () => {
   const path = location.pathname;
   const title = routeTitle(path);
   const isCommunity = path.startsWith('/community');
-  
+
   // 메인 네비게이션 페이지들 (뒤로가기 버튼을 숨길 페이지들)
   const mainNavPages = ['/', '/guide', '/support', '/community', '/mypage'];
   const isMainNavPage = mainNavPages.includes(path);
