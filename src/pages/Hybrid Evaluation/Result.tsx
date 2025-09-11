@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
 import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
 import { creditEvaluationResultApi } from '../../api/creditEvaluationResultApi';
 import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
+import {
+  hybridCreditScoreApi,
+  type HybridCreditScoreResponse,
+} from '../../api/hybridCreditScoreApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { createPortal } from 'react-dom';
+import Header from '../../components/common/Header';
+import Navbar from '../../components/common/Navbar';
+
+import { colors } from '@/styles/colors';
 
 const TabButton = ({
   label,
@@ -95,15 +102,10 @@ const ExpandableRow = ({
   );
 };
 
-const ResultOverlay = ({
-  onClose,
-  evaluationResult,
-}: {
-  onClose: () => void;
-  evaluationResult?: CreditEvaluationResponse | null;
-}) => {
+const HybridEvaluationResult = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   // sessionId 우선순위: URL 파라미터 > useAuthStore
   const currentSessionId = sessionId ? parseInt(sessionId) : user?.sessionId;
@@ -115,6 +117,8 @@ const ResultOverlay = ({
   );
   const [storeSummaryData, setStoreSummaryData] =
     useState<StoreSummaryResponse | null>(null);
+  const [hybridScoreData, setHybridScoreData] =
+    useState<HybridCreditScoreResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -164,7 +168,7 @@ const ResultOverlay = ({
           );
         }
 
-        // 매장 요약 데���터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
+        // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
         if (currentSessionId) {
           try {
             console.log('매장 요약 데이터 조회 시작');
@@ -196,6 +200,70 @@ const ResultOverlay = ({
             'sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.',
           );
         }
+
+        // 하이브리드 신용점수 결과 조회
+        if (currentSessionId) {
+          try {
+            console.log(
+              '🔍 하이브리드 신용점수 결과 조회 시작:',
+              currentSessionId,
+            );
+            const hybridResponse =
+              await hybridCreditScoreApi.getResult(currentSessionId);
+            console.log('🔍 하이브리드 신용점수 결과 응답:', hybridResponse);
+
+            if (hybridResponse.success) {
+              setHybridScoreData(hybridResponse.data);
+              console.log(
+                '✅ 하이브리드 신용점수 데이터 설정 완료:',
+                hybridResponse.data,
+              );
+            } else {
+              console.log(
+                '⚠️ 하이브리드 신용점수 결과가 없음:',
+                hybridResponse.message,
+              );
+            }
+          } catch (hybridError) {
+            console.error('❌ 하이브리드 신용점수 조회 실패:', hybridError);
+          }
+        } else {
+          console.warn(
+            'sessionId를 찾을 수 없어 하이브리드 신용점수를 조회할 수 없습니다.',
+          );
+        }
+
+        // traditional_credit_score 업데이트 (credit_evaluation_result의 total_score를 member_credit의 traditional_credit_score로)
+        if (currentSessionId) {
+          try {
+            console.log(
+              '🔄 Traditional Credit Score 업데이트 시작:',
+              currentSessionId,
+            );
+            const updateResponse =
+              await hybridCreditScoreApi.updateTraditionalScore(
+                currentSessionId,
+              );
+            console.log(
+              '🔄 Traditional Credit Score 업데이트 응답:',
+              updateResponse,
+            );
+
+            if (updateResponse.success) {
+              console.log('✅ Traditional Credit Score 업데이트 완료');
+            } else {
+              console.log(
+                '⚠️ Traditional Credit Score 업데이트 실패:',
+                updateResponse.message,
+              );
+            }
+          } catch (updateError) {
+            console.error(
+              '❌ Traditional Credit Score 업데이트 실패:',
+              updateError,
+            );
+          }
+        }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);
       } finally {
@@ -204,7 +272,7 @@ const ResultOverlay = ({
     };
 
     loadData();
-  }, [currentSessionId]); // sessionId 변경 시 재��행
+  }, [currentSessionId]); // sessionId 변경 시 재실행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {
@@ -218,7 +286,7 @@ const ResultOverlay = ({
     return 'D';
   };
 
-  // 실제 데이터�� 기반으로 legacyRows 생성
+  // 실제 데이터 기반으로 legacyRows 생성
   const getLegacyRows = () => {
     if (!creditData || !creditResult) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -226,7 +294,7 @@ const ResultOverlay = ({
 
     return [
       {
-        t: '상환이력',
+        t: '상환력',
         d: '연체 발생/해제 이력과 상환 성실도를 평가합니다.',
         score: creditResult.repaymentHistoryScore,
         maxScore: 284,
@@ -315,7 +383,7 @@ const ResultOverlay = ({
           {
             section: '대안신용점수',
             items: [
-              `대안신용점수: ${creditData.alternativeCreditScore || 0}��� (최대 100점)`,
+              `대안신용점수: ${creditData.alternativeCreditScore || 0} (최대 100점)`,
             ],
           },
         ],
@@ -341,7 +409,7 @@ const ResultOverlay = ({
         },
         {
           section: '상환 성실도',
-          items: ['원리금 연체 없��� 납부', '자동이체 정상'],
+          items: ['원리금 연체 없게 납부', '자동이체 정상'],
         },
       ],
     },
@@ -409,7 +477,20 @@ const ResultOverlay = ({
     return 'C';
   };
 
-  // 실제 데���터를 기반으로 guideRows 생성
+  // 하이브리드 점수를 등급으로 변환하는 함수 (0~1000 구간)
+  const getHybridScoreGrade = (score: number): string => {
+    if (score >= 900) return 'AAA';
+    if (score >= 800) return 'AA';
+    if (score >= 700) return 'A';
+    if (score >= 600) return 'BBB';
+    if (score >= 500) return 'BB';
+    if (score >= 400) return 'B';
+    if (score >= 300) return 'CCC';
+    if (score >= 200) return 'CC';
+    return 'C';
+  };
+
+  // 실제 데이터를 기반으로 guideRows 생성
   const getGuideRows = () => {
     if (!storeSummaryData) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -476,11 +557,9 @@ const ResultOverlay = ({
       {
         t: '매출 안정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
-        g: getSalesGrade(
-          data.momGrowthRate || 0,
-          data.yoyGrowthRate || 0,
-          data.salesCv || 1,
-        ),
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.sales_summary_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '매출 현황',
@@ -509,11 +588,9 @@ const ResultOverlay = ({
       {
         t: '현금흐름 건전성',
         d: '영업이익과 현금 보유 상황을 분석한 결과입니다.',
-        g: getCashFlowGrade(
-          data.operatingProfitRatio || 0,
-          data.avgAccountBalance || 0,
-          data.cashflowCv || 1,
-        ),
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.financial_info_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '수익성',
@@ -536,13 +613,9 @@ const ResultOverlay = ({
       {
         t: 'ESG',
         d: '환경·사회·지배구조 리스크 관리와 실천 활동을 평가합니다.',
-        g: getESGGrade(
-          data.participateEnergyEffSupport === true,
-          data.hygieneCertified === true,
-          data.employmentInsuranceEmployees || 0,
-          data.customerReviewAvgRating || 0,
-          data.foodWasteKgPerDay || 0,
-        ),
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.operational_info_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '환경',
@@ -576,103 +649,110 @@ const ResultOverlay = ({
 
   const rows = tab === 'legacy' ? legacyRows : guideRows;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9998] overflow-auto bg-white p-6">
-      <div className="mx-auto w-full max-w-sm space-y-5">
-        <h3 className="text-center text-2xl font-extrabold text-navy">
-          하이브리드 신용평가 결과
-        </h3>
+  return (
+    <>
+      <Header />
+      <div
+        className="px-4 pt-20 pb-24 space-y-5 min-h-screen"
+        style={{ background: colors.bgSoft }}
+      >
+        <div className="mx-auto w-full max-w-sm space-y-5">
+          <h3 className="text-center text-2xl font-extrabold text-navy">
+            하이브리드 신용평가 결과
+          </h3>
 
-        {loading ? (
-          <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
-            <div className="text-center text-sm text-gray-600 flex justify-center">
-              <LoadingSpinner type="dots" color="#25437B" />
-            </div>
-            <div className="mt-4 animate-pulse">
-              <div className="h-16 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
-            <div className="text-center text-sm text-gray-600">종합 점수</div>
-            <div className="mt-1 flex items-end justify-center gap-2">
-              <div className="text-5xl font-extrabold text-gray-900">
-                {creditResult?.totalScore || 0}
-              </div>
-              <div className="pb-1 text-gray-600">/ 1000</div>
-            </div>
-            <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
-              {creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A'}{' '}
-              등급
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between px-1">
-          <TabButton
-            label="기존 신용 분석"
-            active={tab === 'legacy'}
-            onClick={() => setTab('legacy')}
-          />
-          <TabButton
-            label="guideON 분석"
-            active={tab === 'guideon'}
-            onClick={() => setTab('guideon')}
-          />
-        </div>
-        <div className="h-0.5 w-full rounded bg-gray-200" />
-
-        <div className="space-y-3">
           {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm animate-pulse"
-                >
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : rows.length > 0 ? (
-            rows.map((r) => (
-              <ExpandableRow
-                key={r.t}
-                title={r.t}
-                desc={r.d}
-                grade={r.g}
-                score={r.score}
-                maxScore={r.maxScore}
-                details={r.details}
-              />
-            ))
-          ) : (
-            <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
-              <div className="text-gray-500">
-                {tab === 'legacy'
-                  ? '신용평가 데이터를 찾을 수 없습니다.'
-                  : '매장 요약 데��터를 찾을 수 없습니다.'}
+            <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
+              <div className="text-center text-sm text-gray-600 flex justify-center">
+                <LoadingSpinner type="dots" color="#25437B" />
               </div>
-              <div className="text-sm text-gray-400 mt-1">
-                {tab === 'legacy'
-                  ? '먼저 신용평가를 진행해주세요.'
-                  : '매장 데이터가 아직 준비되지 않았습니다.'}
+              <div className="mt-4 animate-pulse">
+                <div className="h-16 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border p-5 shadow-sm bg-white border-gray-200">
+              <div className="text-center text-sm text-gray-600">종합 점수</div>
+              <div className="mt-1 flex items-end justify-center gap-2">
+                <div className="text-5xl font-extrabold text-gray-900">
+                  {hybridScoreData?.total_credit_score || 0}
+                </div>
+                <div className="pb-1 text-gray-600">/ 1000</div>
+              </div>
+              <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
+                {hybridScoreData
+                  ? getTotalGrade(hybridScoreData.total_credit_score)
+                  : 'N/A'}{' '}
+                등급
               </div>
             </div>
           )}
-        </div>
 
-        <button
-          onClick={onClose}
-          className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50"
-        >
-          닫기
-        </button>
+          <div className="flex items-center justify-between px-1">
+            <TabButton
+              label="기존 신용 분석"
+              active={tab === 'legacy'}
+              onClick={() => setTab('legacy')}
+            />
+            <TabButton
+              label="guideON 분석"
+              active={tab === 'guideon'}
+              onClick={() => setTab('guideon')}
+            />
+          </div>
+          <div className="h-0.5 w-full rounded bg-gray-200" />
+
+          <div className="space-y-3">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm animate-pulse"
+                  >
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : rows.length > 0 ? (
+              rows.map((r) => (
+                <ExpandableRow
+                  key={r.t}
+                  title={r.t}
+                  desc={r.d}
+                  grade={r.g}
+                  score={r.score}
+                  maxScore={r.maxScore}
+                  details={r.details}
+                />
+              ))
+            ) : (
+              <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
+                <div className="text-gray-500">
+                  {tab === 'legacy'
+                    ? '신용평가 데이터를 찾을 수 없습니다.'
+                    : '매장 요약 데아터를 찾을 수 없습니다.'}
+                </div>
+                <div className="text-sm text-gray-400 mt-1">
+                  {tab === 'legacy'
+                    ? '먼저 신용평가를 진행해주세요.'
+                    : '매장 데이터가 아직 준비되지 않았습니다.'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full rounded-md border py-3 font-semibold text-gray-800 border-gray-300 hover:bg-gray-50"
+          >
+            이전으로
+          </button>
+        </div>
       </div>
-    </div>,
-    document.body,
+    </>
   );
 };
 
-export default ResultOverlay;
+export default HybridEvaluationResult;
