@@ -3,6 +3,7 @@ import { colors } from '@/styles/colors';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { creditEvaluationApi } from '@/api/creditEvaluationApi';
 import { useState } from 'react';
+import ProcessStepHeader from '@/components/guide/ProcessStepHeader';
 
 
 
@@ -54,15 +55,10 @@ const HybridEvaluation = () => {
   };
 
   return (
-    <>
-
-      <div
-        className="px-4 py-6 h-screen space-y-5"
-        style={{ background: colors.bgSoft }}
-      >
-        <h1 className="text-center text-xl font-extrabold text-navy">
-          하이브리드 신용평가
-        </h1>
+    <div className="w-full min-h-screen flex flex-col" style={{ background: colors.bgSoft }}>
+      <ProcessStepHeader currentStep={2} />
+      
+      <div className="px-4 py-6 flex-1 space-y-5">
 
       <section className="rounded-2xl p-5 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-paleBlue">
         <p className="font-semibold mb-1 text-navy">안녕하세요 홍길동님</p>
@@ -132,8 +128,7 @@ const HybridEvaluation = () => {
         {isInitializing ? '데이터 초기화 중...' : '신용도 확인 시작하기'}
       </button>
       </div>
-
-    </>
+    </div>
   );
 };
 

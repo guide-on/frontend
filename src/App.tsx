@@ -68,7 +68,6 @@ function AppChrome() {
     '/hybrid-evaluation/complete',
   ]);
   const hideHeaderPrefixes = [
-    '/hybrid-evaluation/start', // 파라미터 대응
     '/hybrid-evaluation/complete', // 파라미터 대응
     '/bank-connect/', // 파라미터 대응
   ];
@@ -84,12 +83,10 @@ function AppChrome() {
     '/auth/find',
     '/bank-connect',
     '/bank-connect/complete',
-    '/hybrid-evaluation/start',
     '/hybrid-evaluation/complete',
   ]);
   const hideNavbarPrefixes = [
     '/simulation/', // 목록/상세 공통
-    '/hybrid-evaluation/start', // 파라미터 대응
     '/hybrid-evaluation/complete', // 파라미터 대응
     '/bank-connect/', // 파라미터 대응
   ];
