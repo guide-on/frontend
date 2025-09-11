@@ -10,18 +10,18 @@ interface UploadCardProps {
 export const UploadCard: React.FC<UploadCardProps> = ({
   onPdfPicked,
   fileName,
-  acceptedFileTypes = "application/pdf",
+  acceptedFileTypes = 'application/pdf',
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  
+
   return (
-    <div className="rounded-md p-4 space-y-3 border bg-white border-lightBlue/50">
+    <div>
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-md bg-paleBlue text-navy hover:bg-lightBlue/20 transition"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/50 hover:bg-lightBlue/20 transition shadow-[0_12px_36px_rgba(17,24,39,0.06)]"
       >
         <FaFileUpload />
-        <span>
+        <span className="text-sm">
           {fileName ? `업로드됨: ${fileName}` : '파일을 클릭하여 업로드'}
         </span>
       </button>

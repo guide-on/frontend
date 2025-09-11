@@ -1,10 +1,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+
 import {
   FaBars,
   FaTimes,
   FaCheckCircle,
 } from 'react-icons/fa';
+
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -19,6 +21,7 @@ import { SalesSection } from './components/SalesSection';
 import { CashflowSection } from './components/CashflowSection';
 import { CeoSection } from './components/CeoSection';
 
+
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { colors } from '@/styles/colors';
 
@@ -30,7 +33,7 @@ const CATEGORY_CONTENT: Record<
 > = {
   sales: {
     title: '매출 안정성 및 성장성',
-    desc: '사업이 실제로 돈을 얼마나 잘 벌고 있는지를 평가합니다.',
+    desc: '사업이 실제로 돈을 얼마나 꾸준히 벌고 있는지를 평가합니다. 전월·전년 대비 꾸준히 성장하고 있는지 등을 파악하여, 지속 가능한 수익 구조를 갖추고 있는지를 판단합니다.',
     items: ['월/분기별 매출 추이', '매출 변동성', '전년/월 동기 대비 성장률'],
   },
   cashflow: {
@@ -201,7 +204,7 @@ const StartHybridEvaluation = () => {
   const [evaluationResult, setEvaluationResult] =
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 현금흐름 데이터 업데이트 함수
   const handleCashflowUpdate = async () => {
     if (!sessionId) {
@@ -306,6 +309,7 @@ const StartHybridEvaluation = () => {
     }
   };
 
+
   const handleSubmit = async () => {
     setShowResult(false);
     setSubmitting(true);
@@ -314,9 +318,14 @@ const StartHybridEvaluation = () => {
 
     try {
       // sessionId 검증
-      console.log('🚀 [StartHybridEvaluation] handleSubmit - using sessionId:', sessionId);
+      console.log(
+        '🚀 [StartHybridEvaluation] handleSubmit - using sessionId:',
+        sessionId,
+      );
       if (!sessionId) {
-        throw new Error('세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.');
+        throw new Error(
+          '세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.',
+        );
       }
 
       const progressInterval = setInterval(() => {
@@ -359,7 +368,7 @@ const StartHybridEvaluation = () => {
           navigate(`/hybrid-evaluation/complete/${sessionId}`);
         }, 500);
       } else {
-        throw new Error(response.message || '평��� 생성에 실패했습니다.');
+        throw new Error(response.message || '평    생성에 실패했습니다.');
       }
     } catch (err: any) {
       setSubmitting(false);
@@ -373,7 +382,10 @@ const StartHybridEvaluation = () => {
   };
 
   return (
-    <div className="px-4 py-6 space-y-5" style={{ background: colors.bgSoft }}>
+    <div
+      className="px-4 py-6 space-y-5 min-h-screen"
+      style={{ background: colors.bgSoft }}
+    >
       <h2 className="flex items-center justify-between text-base font-bold text-navy">
         <span>항목 선택</span>
         <button
@@ -456,14 +468,20 @@ const StartHybridEvaluation = () => {
             onCsvUploadComplete={(fileName) => {
               // sales 항목을 완료로 표시
               setCompleted((prev) => ({ ...prev, sales: true }));
-              
+
               // 파일명 저장
               setFileNames((prev) => ({ ...prev, sales: fileName }));
-              
+
               // 로컬 스토리지에 상태 저장
               try {
-                localStorage.setItem('hybridStart.completed', JSON.stringify({ ...completed, sales: true }));
-                localStorage.setItem('hybridStart.files', JSON.stringify({ ...fileNames, sales: fileName }));
+                localStorage.setItem(
+                  'hybridStart.completed',
+                  JSON.stringify({ ...completed, sales: true }),
+                );
+                localStorage.setItem(
+                  'hybridStart.files',
+                  JSON.stringify({ ...fileNames, sales: fileName }),
+                );
               } catch (storageError) {
                 console.warn('로컬 스토리지 저장 실패:', storageError);
               }
@@ -523,7 +541,7 @@ const StartHybridEvaluation = () => {
                       상세내용
                     </th>
                     <th className="border border-gray-200 p-2 text-right font-semibold">
-                      활��비중
+                      활 비중
                     </th>
                   </tr>
                 </thead>
@@ -744,9 +762,9 @@ const StartHybridEvaluation = () => {
                       <ScoreChip v="--" />
                     </td>
                     <td className="border border-gray-200 p-2" rowSpan={8}>
-                      보증 및 대출의 발��은 상환부담에 따른 신용위험이 있는
+                      보증 및 대출의 발 은 상환부담에 따른 신용위험이 있는
                       것으로 판단되어 평가상 영향력을 행사하며, 반대로 상환
-                      시에는 신용위���이 감소된 것으로 판단되어 신용평점에
+                      시에는 신용위 이 감소된 것으로 판단되어 신용평점에
                       긍정적인 영향을 주게 됩니다.
                     </td>
                   </tr>
@@ -1030,7 +1048,7 @@ const StartHybridEvaluation = () => {
         title="관련 서류 첨부 도움말"
       >
         <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-          <li>매출·현금흐름 관련 증빙(PDF, 스캔본 등)��� 업로드하세요.</li>
+          <li>매출·현금흐름 관련 증빙(PDF, 스캔본 등) 업로드하세요.</li>
           <li>파일 형식: PDF 권장, 최대 20MB.</li>
           <li>민감정보는 가급적 마스킹 후 제출해 주세요.</li>
         </ul>
@@ -1052,7 +1070,7 @@ const StartHybridEvaluation = () => {
               <li>
                 본 서비스는 신용점수 조회 및 신용평가 보조 기능을 제공합니다.
               </li>
-              <li>부정 사용 방지를 위해 본인인증이 필요����� 수 있습니다.</li>
+              <li>부정 사용 방지를 위해 본인인증이 필요 수 있습니다.</li>
               <li>
                 약관은 관련 법령 개정 또는 서비스 정책에 따라 변경될 수
                 있습니다.
@@ -1065,7 +1083,7 @@ const StartHybridEvaluation = () => {
             </div>
             <ul className="list-disc pl-4 space-y-1">
               <li>
-                수집 ���목: 성명, 생년월일, 연락처, CI/DI, 신용점수·등급,
+                수집 목: 성명, 생년월일, 연락처, CI/DI, 신용점수·등급,
                 대출·연체정보 등.
               </li>
               <li>
@@ -1120,7 +1138,7 @@ const StartHybridEvaluation = () => {
         <div className="space-y-3 text-sm text-gray-700">
           <p>
             현금흐름 분석을 위해 사업자(또는 대표자) 명의의 은행 계좌를 연결하고
-            최근 거래내역 조회����� 동의해 주세요.
+            최근 거래내역 조회 동의해 주세요.
           </p>
           <div className="rounded-md border border-gray-200 p-3">
             <div className="text-xs font-bold mb-1">동의 내용 요약</div>
