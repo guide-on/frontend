@@ -20,6 +20,7 @@ import { SalesSection } from './components/SalesSection';
 import { CashflowSection } from './components/CashflowSection';
 import { CeoSection } from './components/CeoSection';
 import { UploadCard } from './components/UploadCard';
+import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { colors } from '@/styles/colors';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
@@ -203,6 +204,58 @@ const StartHybridEvaluation = () => {
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   
+  // 현금흐름 데이터 업데이트 함수
+  const handleCashflowUpdate = async () => {
+    if (!sessionId) {
+      console.error('세션 ID가 없습니다.');
+      setError('세션 ID가 없어 현금흐름 데이터 업데이트를 진행할 수 없습니다.');
+      return;
+    }
+
+    try {
+      console.log('🔄 현금흐름 데이터 업데이트 시작:', sessionId);
+      
+      const response = await storeSummaryApi.updateCashflowData(parseInt(sessionId));
+      
+      if (response.success) {
+        console.log('✅ 현금흐름 데이터 업데이트 성공:', response.message);
+        
+        // cashflow 항목을 완료로 표시
+        const nextCompleted = {
+          ...completed,
+          cashflow: true,
+        } as Record<CategoryKey, boolean>;
+        setCompleted(nextCompleted);
+        
+        // 로컬 스토리지에 상태 저장
+        try {
+          localStorage.setItem(
+            'hybridStart.completed',
+            JSON.stringify(nextCompleted),
+          );
+        } catch (storageError) {
+          console.warn('로컬 스토리지 저장 실패:', storageError);
+        }
+        
+        // 은행 연결 페이지로 이동
+        navigate('/bank-connect');
+      } else {
+        throw new Error(response.message || '현금흐름 데이터 업데이트에 실패했습니다.');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ 현금흐름 데이터 업데이트 실패:', error);
+      
+      let errorMessage = '현금흐름 데이터 업데이트 중 오류가 발생했습니다.';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+    }
+  };
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -1048,21 +1101,12 @@ const StartHybridEvaluation = () => {
             </button>
             <button
               disabled={!bankConsentChecked}
-              onClick={() => {
+              onClick={async () => {
                 setBankConsentOpen(false);
                 setBankConsentChecked(false);
-                const nextCompleted = {
-                  ...completed,
-                  cashflow: true,
-                } as Record<CategoryKey, boolean>;
-                setCompleted(nextCompleted);
-                try {
-                  localStorage.setItem(
-                    'hybridStart.completed',
-                    JSON.stringify(nextCompleted),
-                  );
-                } catch {}
-                navigate('/bank-connect');
+                
+                // 현금흐름 데이터 업데이트 API 호출
+                await handleCashflowUpdate();
               }}
               className="flex-1 rounded-md py-2 text-white disabled:opacity-50 bg-blue hover:bg-navy transition"
             >

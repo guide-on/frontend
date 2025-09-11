@@ -130,6 +130,13 @@ class StoreSummaryApi {
     );
     return response.data;
   }
+
+  async updateCashflowData(sessionId: number): Promise<StoreSummaryDetailResponse> {
+    const response: AxiosResponse<StoreSummaryDetailResponse> = await api.put(
+      `/api/store-summary/update-cashflow/${sessionId}`
+    );
+    return response.data;
+  }
 }
 
 export const storeSummaryApi = new StoreSummaryApi();
