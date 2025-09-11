@@ -16,14 +16,20 @@ const routeTitle = (path: string): string => {
     return '하이브리드 신용평가';
 
   // 계좌 연결 플로우
-  if (path === '/bank-connect' || /^\/bank-connect\/\d+/.test(path)) return '계좌 연결';
+  if (path === '/bank-connect' || /^\/bank-connect\/\d+/.test(path))
+    return '계좌 연결';
   if (path.startsWith('/bank-connect/complete')) return '계좌 연결 완료';
 
   // 사업계획서 평가
-  if (path === '/guide/business-plan' || path.startsWith('/guide/business-plan/'))
-    return '사업계���서 평가';
+  if (
+    path === '/guide/business-plan' ||
+    path.startsWith('/guide/business-plan/')
+  )
+    return '사업계획서 평가';
 
   // 2) 가이드 하위
+  if (path.startsWith('/guide/documents/')) return '서류 검증';
+  if (path.startsWith('/guide/upload/')) return '서류 검증';
   if (path.startsWith('/guide')) return '대출가이드';
 
   // 3) 커뮤니티 하위
@@ -49,7 +55,6 @@ const Header = () => {
   const title = routeTitle(path);
   const isCommunity = path.startsWith('/community');
 
-
   // 메인 네비게이션 페이지들과 정책자금 목록 페이지 (뒤로가기 버튼을 숨길 페이지들)
   const mainNavPages = [
     '/',
@@ -59,7 +64,9 @@ const Header = () => {
     '/mypage',
   ];
   const isMainNavPage =
-    mainNavPages.includes(path) || /^\/guide\/policy\/\d+$/.test(path) || /^\/guide\/documents\/\d+$/.test(path);
+    mainNavPages.includes(path) ||
+    /^\/guide\/policy\/\d+$/.test(path) ||
+    /^\/guide\/documents\/\d+$/.test(path);
 
   return (
     <header className="fixed top-0 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md shadow-sm w-full max-w-[480px]">

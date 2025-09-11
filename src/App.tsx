@@ -37,6 +37,8 @@ import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 // 사업계획서
 import BusinessPlanResult from './pages/evaluation/BusinessPlanResult';
 import BusinessPlanReady from './pages/evaluation/BusinessPlanReady';
+import BusinessPlanAnalysisLoading from './pages/evaluation/BusinessPlanAnalysisLoading';
+import OverallProgressComplete from './pages/evaluation/OverallProgressComplete';
 
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
@@ -70,6 +72,10 @@ function AppChrome() {
     '/hybrid-evaluation/complete', // 파라미터 대응
     '/bank-connect/', // 파라미터 대응
   ];
+  
+  // 사업계획서 분석/완료 페이지 체크
+  const isBusinessPlanHiddenPage = pathname.includes('/business-plan/analysis-loading') || 
+                                   pathname.includes('/business-plan/overall-complete');
 
   // === Navbar 숨김 조건 ===
   const hideNavbarExact = new Set<string>([
@@ -90,11 +96,13 @@ function AppChrome() {
 
   const isHeaderHidden =
     hideHeaderExact.has(pathname) ||
-    hideHeaderPrefixes.some((p) => pathname.startsWith(p));
+    hideHeaderPrefixes.some((p) => pathname.startsWith(p)) ||
+    isBusinessPlanHiddenPage;
 
   const isNavbarHidden =
     hideNavbarExact.has(pathname) ||
-    hideNavbarPrefixes.some((p) => pathname.startsWith(p));
+    hideNavbarPrefixes.some((p) => pathname.startsWith(p)) ||
+    isBusinessPlanHiddenPage;
 
   // Header / Navbar 유무에 따른 main 패딩
   const paddingTop = isHeaderHidden ? 0 : 64; // px
@@ -171,6 +179,14 @@ function AppChrome() {
             <Route
               path="/guide/:sessionId/business-plan/ready"
               element={<BusinessPlanReady />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/analysis-loading"
+              element={<BusinessPlanAnalysisLoading />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/overall-complete"
+              element={<OverallProgressComplete />}
             />
 
             {/* 인증 */}

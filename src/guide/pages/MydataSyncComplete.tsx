@@ -15,8 +15,8 @@ export default function MydataSyncComplete() {
 
   useEffect(() => {
     console.log(`[3] 연동 완료 페이지 로드 ID: ${sessionId}`);
-    // 마이데이터 연동 시도 기록 (완료 페이지까지 왔으면 시도한 것으로 간주, 영구 저장)
-    localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
+    // 마이데이터 연동 성공 기록 (완료 페이지까지 왔으면 성공한 것으로 간주)
+    localStorage.setItem(`mydata_success_${sessionId}`, 'true');
 
     let mounted = true;
     const load = async () => {

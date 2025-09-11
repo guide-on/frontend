@@ -57,12 +57,12 @@ const BusinessPlanResult: React.FC = () => {
   }, [sessionId]);
 
   return (
-    <div className="px-4 py-5">
+    <div className="px-4 py-5" style={{ background: colors.bgSoft, minHeight: '100vh' }}>
       <div className="max-w-sm mx-auto w-full" style={{ maxWidth: 400 }}>
         <div className="pt-1">
           <div
-            className="bg-white border p-5 rounded-2xl shadow-sm"
-            style={{ borderColor: colors.navyBorder }}
+            className="bg-white p-5 rounded-2xl"
+            style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}
           >
             {loading ? (
               <div className="text-sm text-gray-600">불러오는 중…</div>
@@ -89,57 +89,64 @@ const BusinessPlanResult: React.FC = () => {
             ) : null}
           </div>
 
-          <div className="mt-2 flex border-b border-gray-200 mb-1">
-            <button
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-all ${tab === 'legacy' ? 'tab-active' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setTab('legacy')}
-            >
-              포인트 요약
-            </button>
-            <button
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-all ${tab === 'guideon' ? 'tab-active' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setTab('guideon')}
-            >
-              세부 평가 항목
-            </button>
-          </div>
-
-          {tab === 'legacy' && (
-            <div className="mt-5 space-y-3">
-              <div
-                className="rounded-xl bg-paleBlue border p-3"
-                style={{ borderColor: colors.lightBlue }}
+          <div 
+            className="mt-4 bg-white rounded-2xl"
+            style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}
+          >
+            <div className="flex border-b border-gray-200">
+              <button
+                className={`flex-1 py-3 px-4 text-center font-semibold transition-all ${tab === 'legacy' ? 'tab-active' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setTab('legacy')}
               >
-                <div className="text-xs font-semibold text-navy mb-1">강점</div>
-                <ul className="list-disc pl-4 text-xs text-navy space-y-1">
-                  {(data?.strengths ?? []).map((v, i) => (
-                    <li key={i}>{v}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="rounded-xl bg-rose-50 border border-rose-200 p-3">
-                <div className="text-xs font-semibold text-rose-700 mb-1">
-                  개선
-                </div>
-                <ul className="list-disc pl-4 text-xs text-rose-800 space-y-1">
-                  {(data?.risks ?? []).map((v, i) => (
-                    <li key={i}>{v}</li>
-                  ))}
-                </ul>
-              </div>
+                포인트 요약
+              </button>
+              <button
+                className={`flex-1 py-3 px-4 text-center font-semibold transition-all ${tab === 'guideon' ? 'tab-active' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setTab('guideon')}
+              >
+                세부 평가 항목
+              </button>
             </div>
-          )}
 
-          {tab === 'guideon' && (
-            <div className="mt-4 space-y-3">
+            {tab === 'legacy' && (
+              <div className="p-4 space-y-3">
+                <div
+                  className="rounded-xl p-3"
+                  style={{ backgroundColor: '#eff6ff' }}
+                >
+                  <div className="text-xs font-semibold text-navy mb-1">강점</div>
+                  <ul className="list-disc pl-4 text-xs text-navy space-y-1">
+                    {(data?.strengths ?? []).map((v, i) => (
+                      <li key={i}>{v}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div 
+                  className="rounded-xl p-3"
+                  style={{ backgroundColor: '#fef2f2' }}
+                >
+                  <div className="text-xs font-semibold text-rose-700 mb-1">
+                    개선
+                  </div>
+                  <ul className="list-disc pl-4 text-xs text-rose-800 space-y-1">
+                    {(data?.risks ?? []).map((v, i) => (
+                      <li key={i}>{v}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {tab === 'guideon' && (
+              <div className="p-4 space-y-3">
               {(data?.sections ?? []).map((s: SectionDetail) => {
                 const key = String(s.sectionId);
                 const bar = s.weight ? (s.score * 100) / s.weight : 0;
                 return (
                   <div
                     key={key}
-                    className="rounded-2xl border"
-                    style={{ borderColor: colors.navyBorder }}
+                    className="rounded-2xl bg-white"
+                    style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}
                   >
                     <button
                       type="button"
@@ -218,8 +225,9 @@ const BusinessPlanResult: React.FC = () => {
                   </div>
                 );
               })}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
         <style>{`

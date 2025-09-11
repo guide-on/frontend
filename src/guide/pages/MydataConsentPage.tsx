@@ -58,14 +58,13 @@ export default function MydataConsentPage() {
     setLoading(true);
     setError(null);
     try {
-      // 마이데이터 연동 시도 기록 (영구 저장)
-      localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
-      
       await mydataSync(sessionId, {
         serviceTerms: !!checked.serviceTerms,
         privacyPolicy: !!checked.privacyPolicy,
         thirdPartyConsent: !!checked.thirdPartyConsent,
       });
+      // 성공 시에만 연동 완료 기록
+      localStorage.setItem(`mydata_success_${sessionId}`, 'true');
       nav(`/guide/mydata-result/${sessionId}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : '연동 중 오류가 발생했습니다.');
@@ -75,8 +74,8 @@ export default function MydataConsentPage() {
   };
 
   const onSkip = () => {
-    // 마이데이터 연동 시도 기록 (건너뛰기도 시도한 것으로 간주, 영구 저장)
-    localStorage.setItem(`mydata_attempted_${sessionId}`, 'true');
+    // 이번 세션에서는 건너뛰기 (브라우저 재시작하면 다시 물어봄)
+    sessionStorage.setItem(`mydata_skipped_${sessionId}`, 'true');
     nav(`/guide/documents/${sessionId}`);
   };
 

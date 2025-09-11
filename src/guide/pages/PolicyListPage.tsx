@@ -211,9 +211,9 @@ export function PolicyListPage() {
       <section className="rounded-xl p-4 flex flex-col gap-3 bg-white mx-4">
         <p className="font-bold text-lg">신청가능 자금 목록</p>
         {loading && (
-          <div className="flex items-center justify-center py-4">
+          <div className="flex flex-col items-center justify-center py-4 gap-4">
             <LoadingSpinner type="dots" size="md" color={colors.navy} />
-            <span className="ml-3 text-sm text-gray-600">불러오는 중</span>
+            <div className="text-sm text-gray-600">불러오는 중</div>
           </div>
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
