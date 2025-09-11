@@ -106,6 +106,7 @@ const StoreMap = () => {
             const firstWord = placeName.split(' ')[0]; // 첫 번째 단어 추출
 
             try {
+              console.log('검색 요청 중:', firstWord);
               const response = await fetch(
                 `/search/${encodeURIComponent(firstWord)}`,
                 {
