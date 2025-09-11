@@ -99,6 +99,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
   const [fileUploadSuccess, setFileUploadSuccess] = useState<
     Record<number, boolean>
   >({});
+  const [isConsentButtonClicked, setIsConsentButtonClicked] = useState(false);
 
   const currentStep = ESG_STEPS[esgStep - 1];
 
@@ -130,6 +131,8 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       return;
     }
 
+    // 버튼 클릭 상태 설정 (1번만 클릭 가능하도록)
+    setIsConsentButtonClicked(true);
     setStep3Loading(true);
     setStep3Error(null);
 
@@ -662,7 +665,8 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                         step3Mydata.serviceTerms &&
                         step3Mydata.privacyPolicy &&
                         step3Mydata.thirdPartyConsent &&
-                        !step3Loading
+                        !step3Loading &&
+                        !isConsentButtonClicked
                           ? 'bg-navy hover:bg-blue'
                           : 'bg-gray-400 cursor-not-allowed'
                       }`}
@@ -671,10 +675,10 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                           step3Mydata.serviceTerms &&
                           step3Mydata.privacyPolicy &&
                           step3Mydata.thirdPartyConsent
-                        ) || step3Loading
+                        ) || step3Loading || isConsentButtonClicked
                       }
                     >
-                      {step3Loading ? '연동 중…' : '동의하고 연동하기'}
+                      {step3Loading ? '연동 중…' : isConsentButtonClicked ? '연동 완료' : '동의하고 연동하기'}
                     </button>
 
                     <div className="text-center">

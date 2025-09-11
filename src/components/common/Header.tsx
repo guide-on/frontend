@@ -10,12 +10,18 @@ const routeTitle = (path: string): string => {
   if (path === '/mypage') return '마이페이지';
   if (path === '/community') return '커뮤니티';
   if (path === '/simulation') return '시뮬레이션 내역';
-  if (path === '/hybrid-evaluation' || path === '/hybrid-evaluation/start')
+
+  // 하이브리드 평가 - 모든 하위 경로 공통 타이틀
+  if (path === '/hybrid-evaluation' || path.startsWith('/hybrid-evaluation/'))
     return '하이브리드 신용평가';
+
+  // 계좌 연결 플로우
+  if (path === '/bank-connect' || /^\/bank-connect\/\d+/.test(path)) return '계좌 연결';
+  if (path.startsWith('/bank-connect/complete')) return '계좌 연결 완료';
 
   // 사업계획서 평가
   if (path === '/guide/business-plan' || path.startsWith('/guide/business-plan/'))
-    return '사업계획서 평가';
+    return '사업계���서 평가';
 
   // 2) 가이드 하위
   if (path.startsWith('/guide')) return '대출가이드';
