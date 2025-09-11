@@ -91,7 +91,7 @@ export function RequiredDocumentsPage() {
           const mydataSuccess = localStorage.getItem(
             `mydata_success_${sessionId}`,
           );
-          
+
           // 이번 세션에서 건너뛰기 했는지 확인 (세션 저장)
           const mydataSkipped = sessionStorage.getItem(
             `mydata_skipped_${sessionId}`,
@@ -206,11 +206,11 @@ export function RequiredDocumentsPage() {
       </section>
 
       {loading && (
-        <div className="flex items-center justify-center py-8">
+        <div className="flex flex-col items-center justify-center py-8 gap-4">
           <LoadingSpinner type="dots" size="md" color={colors.navy} />
-          <span className="ml-3 text-sm text-gray-600">
+          <div className="text-sm text-gray-600">
             서류 목록을 불러오는 중
-          </span>
+          </div>
         </div>
       )}
 
@@ -328,7 +328,7 @@ export function RequiredDocumentsPage() {
               style={{ backgroundColor: colors.navy }}
               onClick={() => nav(`/hybrid-evaluation/${sessionId}`)}
             >
-              서류 확인 중
+              다음 단계로 이동
             </button>
           </div>
         </>
