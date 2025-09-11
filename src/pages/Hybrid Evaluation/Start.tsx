@@ -23,6 +23,7 @@ import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { colors } from '@/styles/colors';
 import Header from '../../components/common/Header';
 import Navbar from '../../components/common/Navbar';
+import ProcessStepHeader from '@/components/guide/ProcessStepHeader';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -423,9 +424,10 @@ const StartHybridEvaluation = () => {
 
   return (
     <>
-      <Header />
+      <ProcessStepHeader currentStep={2} />
+
       <div
-        className="px-4 pt-20 pb-24 space-y-5 min-h-screen"
+        className="px-4 pt-4 pb-24 space-y-5 min-h-screen"
         style={{ background: colors.bgSoft }}
       >
         <h2 className="flex items-center justify-between text-base font-bold text-navy">
@@ -1253,7 +1255,6 @@ const StartHybridEvaluation = () => {
           </div>
         </Modal>
       </div>
-      <Navbar />
     </>
   );
 };
