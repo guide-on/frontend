@@ -4,11 +4,13 @@ import { FaFileUpload } from 'react-icons/fa';
 interface UploadCardProps {
   onPdfPicked: (file: File) => void;
   fileName?: string;
+  acceptedFileTypes?: string;
 }
 
 export const UploadCard: React.FC<UploadCardProps> = ({
   onPdfPicked,
   fileName,
+  acceptedFileTypes = "application/pdf",
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   
@@ -26,7 +28,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf"
+        accept={acceptedFileTypes}
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];

@@ -1,9 +1,49 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { ESG_STEPS } from './EsgSteps';
 import { UploadCard } from './UploadCard';
-import { FaQuestionCircle } from 'react-icons/fa';
+import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
+import StoreMap from './StoreMap';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
+
+const Modal = ({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-[343px] max-h-[calc(100vh-64px)] mx-4 overflow-auto rounded-xl bg-white shadow-lg">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-white/95 px-4 py-3 backdrop-blur">
+          {title ? (
+            <h4 className="text-sm font-extrabold tracking-tight text-navy">
+              {title}
+            </h4>
+          ) : (
+            <div />
+          )}
+          <button
+            aria-label="닫기"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <div className="px-4 py-3">{children}</div>
+      </div>
+    </div>
+  );
+};
 
 interface EsgSectionProps {
   completed: Record<CategoryKey, boolean>;
@@ -23,19 +63,75 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
     1: undefined,
     2: undefined,
     3: undefined,
-    4: undefined,
+    31: undefined,
+    32: undefined,
   });
-  const [esgManual, setEsgManual] = useState({
-    energyConsumption: '',
-    recyclingRate: '',
-    safetyIncidents: '',
-    notes: '',
+  const [step1Manual, setStep1Manual] = useState({
+    electricityCustomerNumber: '',
+    gasCustomerNumber: '',
+    waterCustomerNumber: '',
+    energyEfficiencyRate: '',
+    energyEfficiencyBusinessNumber: '',
+    highEfficiencyDeviceBusinessNumber: '',
   });
+  const [step2Manual, setStep2Manual] = useState({
+    yellowUmbrellaId: '',
+    businessName: '',
+  });
+  const [step3Mydata, setStep3Mydata] = useState({
+    serviceTerms: false,
+    privacyPolicy: false,
+    thirdPartyConsent: false,
+  });
+  const [step3Loading, setStep3Loading] = useState(false);
+  const [step3Error, setStep3Error] = useState<string | null>(null);
+  const [isEnergyModalOpen, setEnergyModalOpen] = useState(false);
 
   const currentStep = ESG_STEPS[esgStep - 1];
 
-  const handleManualChange = (field: keyof typeof esgManual, value: string) => {
-    setEsgManual({ ...esgManual, [field]: value });
+  const handleStep1ManualChange = (
+    field: keyof typeof step1Manual,
+    value: string,
+  ) => {
+    setStep1Manual({ ...step1Manual, [field]: value });
+  };
+
+  const handleStep2ManualChange = (
+    field: keyof typeof step2Manual,
+    value: string,
+  ) => {
+    setStep2Manual({ ...step2Manual, [field]: value });
+  };
+
+  const handleStep3MydataToggle = (key: keyof typeof step3Mydata) => {
+    setStep3Mydata((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleStep3MydataSync = async () => {
+    const allChecked =
+      step3Mydata.serviceTerms &&
+      step3Mydata.privacyPolicy &&
+      step3Mydata.thirdPartyConsent;
+    if (!allChecked) {
+      alert('모두 동의해 주세요.');
+      return;
+    }
+
+    setStep3Loading(true);
+    setStep3Error(null);
+
+    try {
+      // 마이데이터 연동 API 호출 (실제 구현에서는 mydataSync 함수 사용)
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // 시뮬레이션
+      // 성공 시 처리
+      alert('마이데이터 연동이 완료되었습니다.');
+    } catch (e) {
+      setStep3Error(
+        e instanceof Error ? e.message : '연동 중 오류가 발생했습니다.',
+      );
+    } finally {
+      setStep3Loading(false);
+    }
   };
 
   const handleFileUpload = (file: File) => {
@@ -44,7 +140,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
 
   return (
     <>
-      <h3 className="text-xl font-extrabold text-navy">{currentStep.title}</h3>
+      <h3 className="text-xl font-bold text-navy">{currentStep.title}</h3>
       <p className="text-sm text-gray-600">{currentStep.desc}</p>
 
       <div className="flex items-center gap-2">
@@ -58,7 +154,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
         </button>
       </div>
 
-      <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl p-3 text-sm space-y-1 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
         {currentStep.items.map((item) => (
           <div key={item} className="flex items-start gap-2">
             <span>•</span>
@@ -67,67 +163,367 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
         ))}
       </div>
 
-      {esgStep !== 4 ? (
-        <>
-          <div className="flex items-center gap-2 pt-2">
-            <span className="font-semibold text-gray-900">관련 서류 첨부</span>
+      {/* {esgStep === 1 || esgStep === 2 ? (
+        <div className="flex items-center gap-2 pt-2">
+          <span className="font-semibold text-gray-900">수기 입력</span>
+        </div>
+      ) : esgStep === 3 ? (
+        <div className="flex items-center gap-2 pt-2">
+          <span className="font-semibold text-gray-900">마이데이터 연동</span>
+        </div>
+      ) : null} */}
+
+      {/* 자원관리 섹션 */}
+      {esgStep === 1 && (
+        <div className="flex flex-col gap-2 pt-2">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-gray-900">에너지 자원 관리</span>
             <button
-              aria-label="도움말"
-              onClick={onAttachHelpClick}
+              aria-label="에너지 자원 관리 도움말"
+              onClick={() => setEnergyModalOpen(true)}
               className="text-blue hover:text-navy"
             >
               <FaQuestionCircle />
             </button>
           </div>
-          <UploadCard
-            fileName={esgFiles[esgStep]}
-            onPdfPicked={handleFileUpload}
-          />
-        </>
-      ) : (
-        <div className="flex items-center gap-2 pt-2">
-          <span className="font-semibold text-gray-900">수기 입력</span>
+          <div className="mt-2 space-y-3">
+            <div className="rounded-xl p-3 space-y-3 shadow-[0_12px_36px_rgba(17,24,39,0.06)] bg-white">
+              <div className="space-y-2 grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
+                <label className="text-sm text-gray-700">
+                  <span className="block font-medium mb-2">
+                    한국전력공사 고객번호
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                    value={step1Manual.electricityCustomerNumber}
+                    onChange={(e) =>
+                      handleStep1ManualChange(
+                        'electricityCustomerNumber',
+                        e.target.value,
+                      )
+                    }
+                    placeholder="'&mdash;' 없이 10자리 숫자 입력"
+                  />
+                </label>
+                <label className="text-sm text-gray-700">
+                  <span className="block font-medium mb-2">
+                    도시가스 고객번호
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                    value={step1Manual.gasCustomerNumber}
+                    onChange={(e) =>
+                      handleStep1ManualChange(
+                        'gasCustomerNumber',
+                        e.target.value,
+                      )
+                    }
+                    placeholder="7-17자리의 고유 번호 입력"
+                  />
+                </label>
+                <label className="text-sm text-gray-700">
+                  <span className="block font-medium mb-2">
+                    상수도요금 고객번호
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                    value={step1Manual.waterCustomerNumber}
+                    onChange={(e) =>
+                      handleStep1ManualChange(
+                        'waterCustomerNumber',
+                        e.target.value,
+                      )
+                    }
+                    placeholder="'&mdash;' 없이 14자리 숫자 입력"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <span className="font-semibold text-gray-900">수기 입력</span>
+            <div className="rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-900">수기 입력</span>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                  에너지 효율성
+                </h4>
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-700">
+                    <span className="block font-medium mb-1">
+                      에너지효율등급 가전 비율 (%)
+                    </span>
+                    <input
+                      type="number"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2"
+                      value={step1Manual.energyEfficiencyRate}
+                      onChange={(e) =>
+                        handleStep1ManualChange(
+                          'energyEfficiencyRate',
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="text-sm text-gray-700">
+                    <span className="block font-medium mb-1">
+                      에너지효율향상 지원사업 참여 여부 (사업자 번호)
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2"
+                      value={step1Manual.energyEfficiencyBusinessNumber}
+                      onChange={(e) =>
+                        handleStep1ManualChange(
+                          'energyEfficiencyBusinessNumber',
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="text-sm text-gray-700">
+                    <span className="block font-medium mb-1">
+                      고효율기기 구매 지원사업 참여 여부 (사업자 번호)
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2"
+                      value={step1Manual.highEfficiencyDeviceBusinessNumber}
+                      onChange={(e) =>
+                        handleStep1ManualChange(
+                          'highEfficiencyDeviceBusinessNumber',
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {esgStep === 4 && (
+      {esgStep === 2 && (
         <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
-          <div className="grid grid-cols-1 gap-3">
-            <label className="text-sm text-gray-700">
-              <span className="block font-medium mb-1">에너지 사용량(월간 kWh)</span>
-              <input
-                type="number"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-                value={esgManual.energyConsumption}
-                onChange={(e) => handleManualChange('energyConsumption', e.target.value)}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                지역사회 상생
+              </h4>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-700">
+                  <span className="block font-medium mb-1">
+                    노란우산 공제 아이디
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                    value={step2Manual.yellowUmbrellaId}
+                    onChange={(e) =>
+                      handleStep2ManualChange(
+                        'yellowUmbrellaId',
+                        e.target.value,
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                고객 만족 및 안전도
+              </h4>
+              <div className="space-y-2">
+                <StoreMap />
+                <label className="text-sm text-gray-700"></label>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                식품/위생 안전 관리
+              </h4>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-semibold text-gray-900 text-sm">
+                  관련 서류 첨부
+                </span>
+                <button
+                  aria-label="도움말"
+                  onClick={onAttachHelpClick}
+                  className="text-blue hover:text-navy"
+                >
+                  <FaQuestionCircle />
+                </button>
+              </div>
+              <UploadCard
+                fileName={esgFiles[esgStep]}
+                onPdfPicked={handleFileUpload}
               />
-            </label>
-            <label className="text-sm text-gray-700">
-              <span className="block font-medium mb-1">폐기물 재활용률(%)</span>
-              <input
-                type="number"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-                value={esgManual.recyclingRate}
-                onChange={(e) => handleManualChange('recyclingRate', e.target.value)}
-              />
-            </label>
-            <label className="text-sm text-gray-700">
-              <span className="block font-medium mb-1">안전사고 건수(월간)</span>
-              <input
-                type="number"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-                value={esgManual.safetyIncidents}
-                onChange={(e) => handleManualChange('safetyIncidents', e.target.value)}
-              />
-            </label>
-            <label className="text-sm text-gray-700">
-              <span className="block font-medium mb-1">기타 메모</span>
-              <textarea
-                className="w-full rounded-md border border-gray-300 px-3 py-2 min-h-[80px]"
-                value={esgManual.notes}
-                onChange={(e) => handleManualChange('notes', e.target.value)}
-              />
-            </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {esgStep === 3 && (
+        <div className="mt-2 rounded-md border p-3 space-y-3 bg-paleBlue/30 border-lightBlue">
+          <div>
+            <p className="font-bold text-sm mb-2">마이데이터 연동 동의</p>
+            <p className="text-xs text-gray-600 mb-4">
+              성실납세 이력, 4대 보험료 납부 이력 자동 수집을 위해 아래 약관에
+              동의해 주세요.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div
+              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+              onClick={() => handleStep3MydataToggle('serviceTerms')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={step3Mydata.serviceTerms}
+                  onChange={() => handleStep3MydataToggle('serviceTerms')}
+                  className="pointer-events-none"
+                />
+                <div>
+                  <div className="font-semibold text-sm">서비스 이용 약관</div>
+                  <div className="text-xs text-gray-500">
+                    마이데이터 서비스 이용을 위한 약관입니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+              onClick={() => handleStep3MydataToggle('privacyPolicy')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={step3Mydata.privacyPolicy}
+                  onChange={() => handleStep3MydataToggle('privacyPolicy')}
+                  className="pointer-events-none"
+                />
+                <div>
+                  <div className="font-semibold text-sm">개인정보 처리방침</div>
+                  <div className="text-xs text-gray-500">
+                    마이데이터 수집/처리 관련 개인정보 처리 방침입니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="bg-white rounded-lg p-3 border cursor-pointer hover:border-gray-300 transition-colors"
+              onClick={() => handleStep3MydataToggle('thirdPartyConsent')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={step3Mydata.thirdPartyConsent}
+                  onChange={() => handleStep3MydataToggle('thirdPartyConsent')}
+                  className="pointer-events-none"
+                />
+                <div>
+                  <div className="font-semibold text-sm">제3자 제공 동의</div>
+                  <div className="text-xs text-gray-500">
+                    제3자에게 정보 제공에 대한 동의입니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {step3Error && (
+            <div className="text-sm text-red-600">{step3Error}</div>
+          )}
+
+          <div className="pt-2">
+            <button
+              onClick={handleStep3MydataSync}
+              className={`w-full py-3 rounded-lg font-semibold text-white mb-2 transition ${
+                step3Mydata.serviceTerms &&
+                step3Mydata.privacyPolicy &&
+                step3Mydata.thirdPartyConsent &&
+                !step3Loading
+                  ? 'bg-navy hover:bg-blue'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              disabled={
+                !(
+                  step3Mydata.serviceTerms &&
+                  step3Mydata.privacyPolicy &&
+                  step3Mydata.thirdPartyConsent
+                ) || step3Loading
+              }
+            >
+              {step3Loading ? '연동 중…' : '동의하고 연동하기'}
+            </button>
+
+            <div className="text-center">
+              <button className="text-sm text-gray-600" disabled={step3Loading}>
+                연동하지 않고 서류 제출
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+              투명한 정보 공개
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-gray-700 text-sm">
+                    알레르기 유발 성분 표시
+                  </span>
+                  <button
+                    aria-label="도움말"
+                    onClick={onAttachHelpClick}
+                    className="text-blue hover:text-navy"
+                  >
+                    <FaQuestionCircle />
+                  </button>
+                </div>
+                <UploadCard
+                  fileName={esgFiles[31]} // step 3-1용 파일
+                  onPdfPicked={(f) => {
+                    setEsgFiles((prev) => ({ ...prev, 31: f.name }));
+                  }}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-gray-700 text-sm">
+                    원산지/가격 표시 준수
+                  </span>
+                  <button
+                    aria-label="도움말"
+                    onClick={onAttachHelpClick}
+                    className="text-blue hover:text-navy"
+                  >
+                    <FaQuestionCircle />
+                  </button>
+                </div>
+                <UploadCard
+                  fileName={esgFiles[32]} // step 3-2용 파일
+                  onPdfPicked={(f) => {
+                    setEsgFiles((prev) => ({ ...prev, 32: f.name }));
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -165,22 +561,6 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
             이전
           </button>
           <button
-            onClick={() => setEsgStep(4)}
-            className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
-          >
-            다음
-          </button>
-        </div>
-      )}
-      {esgStep === 4 && (
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={() => setEsgStep(3)}
-            className="flex-1 rounded-md border border-gray-300 py-3 text-gray-700"
-          >
-            이전
-          </button>
-          <button
             onClick={onComplete}
             className="flex-1 rounded-md py-3 text-white bg-blue hover:bg-navy transition"
           >
@@ -188,6 +568,53 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
           </button>
         </div>
       )}
+
+      <Modal
+        open={isEnergyModalOpen}
+        onClose={() => setEnergyModalOpen(false)}
+        title="에너지 자원 관리 도움말"
+      >
+        <div className="space-y-3 text-sm text-gray-700">
+          <p>
+            에너지 자원 관리는 기업의 환경 경영과 지속가능성을 평가하는 중요한 지표입니다.
+          </p>
+          
+          <div className="space-y-2">
+            <h5 className="font-semibold text-gray-800">평가 항목 설명</h5>
+            
+            <div className="space-y-2">
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h6 className="font-medium text-gray-800 mb-1">전력 사용량 관리</h6>
+                <p className="text-xs text-gray-600">
+                  한국전력공사 고객번호를 통해 전력 사용 효율성과 절약 노력을 평가합니다.
+                </p>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h6 className="font-medium text-gray-800 mb-1">가스 사용량 관리</h6>
+                <p className="text-xs text-gray-600">
+                  도시가스 사용량을 통해 에너지 효율성과 친환경 경영을 평가합니다.
+                </p>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h6 className="font-medium text-gray-800 mb-1">상수도 사용량 관리</h6>
+                <p className="text-xs text-gray-600">
+                  물 사용량 관리를 통해 자원 절약과 환경 보호 노력을 확인합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 p-3 rounded-md">
+            <h6 className="font-medium text-blue-800 mb-1">에너지 효율화 사업</h6>
+            <p className="text-xs text-blue-600">
+              정부 지원 에너지 효율화 사업 참여는 기업의 친환경 경영 의지와 
+              실질적인 에너지 절약 노력을 보여주는 중요한 지표입니다.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };

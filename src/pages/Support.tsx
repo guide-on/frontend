@@ -38,9 +38,18 @@ import type {
   MainFilter,
   PlaceDetail,
 } from '../types/support';
+import { getLoanType } from '../utils/loanTypeMapping';
 
 
 const Support: React.FC = () => {
+  // loanType을 설정하는 헬퍼 함수
+  const addLoanTypeToFunds = (funds: any[]): FundListItem[] => {
+    return funds.map(fund => ({
+      ...fund,
+      loanType: getLoanType(fund.name)
+    }));
+  };
+
   // State
   const [funds, setFunds] = useState<FundListItem[]>([]);
   const [search, setSearch] = useState('');
@@ -160,7 +169,7 @@ const Support: React.FC = () => {
       try {
         const res = await getFundsList();
         if (res.status === 200 && Array.isArray(res.data)) {
-          setFunds(res.data);
+          setFunds(addLoanTypeToFunds(res.data));
         } else {
           setFunds([]);
         }
@@ -288,7 +297,7 @@ const Support: React.FC = () => {
       try {
         const res = await getFundsList();
         if (res.status === 200 && Array.isArray(res.data)) {
-          setFunds(res.data);
+          setFunds(addLoanTypeToFunds(res.data));
         } else {
           setFunds([]);
         }
@@ -301,7 +310,8 @@ const Support: React.FC = () => {
       try {
         const res = await getFundsList();
         if (res.status === 200 && Array.isArray(res.data)) {
-          const filteredFunds = res.data.filter((fund: FundListItem) => fund.status === '접수중');
+          const fundsWithLoanType = addLoanTypeToFunds(res.data);
+          const filteredFunds = fundsWithLoanType.filter((fund: FundListItem) => fund.status === '접수중');
           setFunds(filteredFunds);
         } else {
           setFunds([]);
@@ -319,7 +329,7 @@ const Support: React.FC = () => {
       try {
         const res = await getFundsList();
         if (res.status === 200 && Array.isArray(res.data)) {
-          setFunds(res.data);
+          setFunds(addLoanTypeToFunds(res.data));
         } else {
           setFunds([]);
         }
@@ -333,7 +343,7 @@ const Support: React.FC = () => {
         const res = await getBookmarkedFunds();
         if (res.status === 200 && Array.isArray(res.data)) {
           setBookmarkFunds(
-            res.data.map((fund: any) => ({ ...fund, saved: true })),
+            addLoanTypeToFunds(res.data).map((fund: any) => ({ ...fund, saved: true })),
           );
         } else {
           setBookmarkFunds([]);
@@ -388,7 +398,7 @@ const Support: React.FC = () => {
     setSearching(true);
     try {
       const data = await searchFunds(search);
-      setFunds(Array.isArray(data.data) ? data.data : []);
+      setFunds(Array.isArray(data.data) ? addLoanTypeToFunds(data.data) : []);
     } finally {
       setSearching(false);
     }
@@ -439,7 +449,7 @@ const Support: React.FC = () => {
     try {
       const res = await getFundsList();
       if (res.status === 200 && Array.isArray(res.data)) {
-        let fundsToSet = res.data;
+        let fundsToSet = addLoanTypeToFunds(res.data);
         
         // 접수중 필터 적용
         if (activeMainFilter === 'receiving') {

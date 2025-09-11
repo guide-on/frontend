@@ -1,16 +1,14 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import {
   FaBars,
   FaQuestionCircle,
-  FaFileUpload,
   FaTimes,
   FaCheckCircle,
 } from 'react-icons/fa';
-import { colors } from '../../styles/colors';
 import LoadingOverlay from './Loading';
 import ResultOverlay from './Result';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   creditEvaluationApi,
   type CreditEvaluationCreateRequest,
@@ -18,7 +16,11 @@ import {
 } from '../../api/creditEvaluationApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { EsgSection } from './components/EsgSection';
+import { SalesSection } from './components/SalesSection';
+import { CashflowSection } from './components/CashflowSection';
+import { CeoSection } from './components/CeoSection';
 import { UploadCard } from './components/UploadCard';
+import { colors } from '@/styles/colors';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -53,7 +55,6 @@ const CATEGORY_CONTENT: Record<
     ],
   },
 };
-
 
 const Modal = ({
   open,
@@ -107,10 +108,10 @@ const CategoryButton = ({
   <button
     onClick={onClick}
     className={[
-      'w-full rounded-md px-4 py-3 text-sm flex items-center justify-between border transition-colors',
+      'w-full rounded-xl px-4 py-3 text-sm flex items-center justify-between transition-colors shadow-[0_12px_36px_rgba(17,24,39,0.06)]',
       active
-        ? 'bg-paleBlue border-lightBlue font-bold text-navy shadow-sm'
-        : 'bg-white border-gray-200 hover:bg-gray-50',
+        ? 'bg-paleBlue font-semibold text-navy shadow-sm'
+        : 'bg-white hover:bg-gray-50',
     ].join(' ')}
   >
     <span className="truncate text-left">{label}</span>
@@ -135,10 +136,13 @@ const ScoreChip = ({ v }: { v: string }) => {
   );
 };
 
-
 const StartHybridEvaluation = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  console.log('🔍 [StartHybridEvaluation] URL sessionId:', sessionId);
+  console.log('🔍 [StartHybridEvaluation] user.sessionId:', user?.sessionId);
   const [selected, setSelected] = useState<CategoryKey>('sales');
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [isAttachHelpModalOpen, setAttachHelpModalOpen] = useState(false);
@@ -153,7 +157,9 @@ const StartHybridEvaluation = () => {
     esg: undefined,
     ceo: undefined,
   };
-  const [fileNames, setFileNames] = useState<Record<CategoryKey, string | undefined>>(() => {
+  const [fileNames, setFileNames] = useState<
+    Record<CategoryKey, string | undefined>
+  >(() => {
     try {
       const raw = localStorage.getItem('hybridStart.files');
       if (raw) return { ...defaultFileNames, ...JSON.parse(raw) };
@@ -166,13 +172,15 @@ const StartHybridEvaluation = () => {
     esg: false,
     ceo: false,
   };
-  const [completed, setCompleted] = useState<Record<CategoryKey, boolean>>(() => {
-    try {
-      const raw = localStorage.getItem('hybridStart.completed');
-      if (raw) return { ...defaultCompleted, ...JSON.parse(raw) };
-    } catch {}
-    return defaultCompleted;
-  });
+  const [completed, setCompleted] = useState<Record<CategoryKey, boolean>>(
+    () => {
+      try {
+        const raw = localStorage.getItem('hybridStart.completed');
+        if (raw) return { ...defaultCompleted, ...JSON.parse(raw) };
+      } catch {}
+      return defaultCompleted;
+    },
+  );
 
   const content = useMemo(() => CATEGORY_CONTENT[selected], [selected]);
 
@@ -194,7 +202,7 @@ const StartHybridEvaluation = () => {
   const [evaluationResult, setEvaluationResult] =
     useState<CreditEvaluationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+  
 
   const handleSubmit = async () => {
     setShowResult(false);
@@ -203,11 +211,18 @@ const StartHybridEvaluation = () => {
     setError(null);
 
     try {
+      // sessionId 검증
+      console.log('🚀 [StartHybridEvaluation] handleSubmit - using sessionId:', sessionId);
+      if (!sessionId) {
+        throw new Error('세션 ID가 없어 신용평가를 진행할 수 없습니다. 다시 로그인해주세요.');
+      }
+
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 2, 90));
       }, 100);
 
       const evaluationData: CreditEvaluationCreateRequest = {
+        sessionId: sessionId,
         totalOverdueCount: 0,
         recent12mOverdueCount: 0,
         maxOverdueDays: 0,
@@ -239,7 +254,7 @@ const StartHybridEvaluation = () => {
         setEvaluationResult(response.data);
         setTimeout(() => {
           setSubmitting(false);
-          navigate('/hybrid-evaluation/complete');
+          navigate(`/hybrid-evaluation/complete/${sessionId}`);
         }, 500);
       } else {
         throw new Error(response.message || '평��� 생성에 실패했습니다.');
@@ -256,7 +271,7 @@ const StartHybridEvaluation = () => {
   };
 
   return (
-    <div className="px-4 py-6 space-y-5">
+    <div className="px-4 py-6 space-y-5" style={{ background: colors.bgSoft }}>
       <h2 className="flex items-center justify-between text-base font-bold text-navy">
         <span>항목 선택</span>
         <button
@@ -307,106 +322,73 @@ const StartHybridEvaluation = () => {
               setCompleted((prev) => ({ ...prev, esg: true }));
             }}
           />
-        ) : (
-          <>
-            <h3 className="text-xl font-extrabold text-navy">{content.title}</h3>
-            <p className="text-sm text-gray-600">{content.desc}</p>
-
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900">평가 항목</span>
-              <button
-                aria-label="도움말"
-                onClick={() => setHelpModalOpen(true)}
-                className="text-blue hover:text-navy"
-              >
-                <FaQuestionCircle />
-              </button>
-            </div>
-
-            <div className="rounded-md p-3 text-sm space-y-1 border border-gray-200 bg-white shadow-sm">
-              {content.items.map((it) => (
-                <div key={it} className="flex items-start gap-2">
-                  <span>•</span>
-                  <span>{it}</span>
-                </div>
-              ))}
-            </div>
-
-            {selected === 'ceo' && (
-              <div className="mt-2 rounded-md border p-3 space-y-2 bg-paleBlue/30 border-lightBlue">
-                <p className="text-sm text-gray-700">
-                  <span className="font-semibold">신용정보 조회 동의:</span>{' '}
-                  신용점수를 조회하기 위한 서비스 이용 약관 및 개인(신용)정보 조회
-                  동의 절차를 진행합니다.
-                </p>
-                <button
-                  aria-label="신용정보 조회 동의"
-                  onClick={() => setConsentModalOpen(true)}
-                  className="w-full rounded-md py-3 text-white font-medium bg-blue hover:bg-navy transition"
-                >
-                  신용정보 조회 동의
-                </button>
-              </div>
-            )}
-
-            {selected === 'cashflow' && (
-              <div className="mt-2 rounded-md border p-3 space-y-2 bg-paleBlue/30 border-lightBlue">
-                <p className="text-sm text-gray-700">
-                  <span className="font-semibold">계좌연결 및 조회 동의:</span>{' '}
-                  현금흐름 분석을 위해 사업자(또는 대표자) 명의 계좌를 연결하고 최근
-                  거래내역 조회에 동의해 주세요.
-                </p>
-                <button
-                  aria-label="계좌연결 및 조회 동의"
-                  onClick={() => setBankConsentOpen(true)}
-                  className="w-full rounded-md py-3 text-white font-medium bg-blue hover:bg-navy transition"
-                >
-                  계좌연결 및 조회 동의
-                </button>
-              </div>
-            )}
-
-            {selected !== 'ceo' && selected !== 'cashflow' && (
-              <>
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="font-semibold text-gray-900">관련 서류 첨부</span>
-                  <button
-                    aria-label="도움말"
-                    onClick={() => setAttachHelpModalOpen(true)}
-                    className="text-blue hover:text-navy"
-                  >
-                    <FaQuestionCircle />
-                  </button>
-                </div>
-                <UploadCard
-                  fileName={fileNames[selected]}
-                  onPdfPicked={(f) => {
-                    const nextFiles = { ...fileNames, [selected]: f.name };
-                    const nextCompleted = { ...completed, [selected]: true } as Record<CategoryKey, boolean>;
-                    setFileNames(nextFiles);
-                    setCompleted(nextCompleted);
-                    try {
-                      localStorage.setItem('hybridStart.files', JSON.stringify(nextFiles));
-                      localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
-                    } catch {}
-                  }}
-                />
-              </>
-            )}
-            {error && (
-              <div className="mt-4 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
-                {error}
-              </div>
-            )}
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? '처리 중...' : '제출하기'}
-            </button>
-          </>
-        )}
+        ) : selected === 'sales' ? (
+          <SalesSection
+            content={content}
+            fileNames={fileNames}
+            completed={completed}
+            error={error}
+            isSubmitting={isSubmitting}
+            sessionId={sessionId || ''}
+            onHelpClick={() => setHelpModalOpen(true)}
+            onAttachHelpClick={() => setAttachHelpModalOpen(true)}
+            onFileUpload={(f) => {
+              const nextFiles = { ...fileNames, [selected]: f.name };
+              const nextCompleted = {
+                ...completed,
+                [selected]: true,
+              } as Record<CategoryKey, boolean>;
+              setFileNames(nextFiles);
+              setCompleted(nextCompleted);
+              try {
+                localStorage.setItem(
+                  'hybridStart.files',
+                  JSON.stringify(nextFiles),
+                );
+                localStorage.setItem(
+                  'hybridStart.completed',
+                  JSON.stringify(nextCompleted),
+                );
+              } catch {}
+            }}
+            onCsvUploadComplete={(fileName) => {
+              // sales 항목을 완료로 표시
+              setCompleted((prev) => ({ ...prev, sales: true }));
+              
+              // 파일명 저장
+              setFileNames((prev) => ({ ...prev, sales: fileName }));
+              
+              // 로컬 스토리지에 상태 저장
+              try {
+                localStorage.setItem('hybridStart.completed', JSON.stringify({ ...completed, sales: true }));
+                localStorage.setItem('hybridStart.files', JSON.stringify({ ...fileNames, sales: fileName }));
+              } catch (storageError) {
+                console.warn('로컬 스토리지 저장 실패:', storageError);
+              }
+            }}
+            onSubmit={handleSubmit}
+          />
+        ) : selected === 'cashflow' ? (
+          <CashflowSection
+            content={content}
+            completed={completed}
+            error={error}
+            isSubmitting={isSubmitting}
+            onHelpClick={() => setHelpModalOpen(true)}
+            onBankConsentClick={() => setBankConsentOpen(true)}
+            onSubmit={handleSubmit}
+          />
+        ) : selected === 'ceo' ? (
+          <CeoSection
+            content={content}
+            completed={completed}
+            error={error}
+            isSubmitting={isSubmitting}
+            onHelpClick={() => setHelpModalOpen(true)}
+            onConsentClick={() => setConsentModalOpen(true)}
+            onSubmit={handleSubmit}
+          />
+        ) : null}
       </section>
 
       {isSubmitting && <LoadingOverlay progress={progress} />}
@@ -1069,10 +1051,16 @@ const StartHybridEvaluation = () => {
               onClick={() => {
                 setBankConsentOpen(false);
                 setBankConsentChecked(false);
-                const nextCompleted = { ...completed, cashflow: true } as Record<CategoryKey, boolean>;
+                const nextCompleted = {
+                  ...completed,
+                  cashflow: true,
+                } as Record<CategoryKey, boolean>;
                 setCompleted(nextCompleted);
                 try {
-                  localStorage.setItem('hybridStart.completed', JSON.stringify(nextCompleted));
+                  localStorage.setItem(
+                    'hybridStart.completed',
+                    JSON.stringify(nextCompleted),
+                  );
                 } catch {}
                 navigate('/bank-connect');
               }}

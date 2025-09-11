@@ -113,47 +113,59 @@ const ResultOverlay = ({
         setLoading(true);
 
         // 신용평가 결과 조회 (에러가 나도 계속 진행)
-        try {
-          const resultResponse = await creditEvaluationResultApi.get();
-          if (resultResponse.success) {
-            setCreditResult(resultResponse.data);
+        if (user?.sessionId) {
+          try {
+            const resultResponse = await creditEvaluationResultApi.get(user.sessionId);
+            if (resultResponse.success) {
+              setCreditResult(resultResponse.data);
+            }
+          } catch (resultError) {
+            console.warn(
+              '신용평가 결과 조회 실패 (데이터가 없을 수 있음):',
+              resultError,
+            );
           }
-        } catch (resultError) {
-          console.warn(
-            '신용평가 결과 조회 실패 (데이터가 없을 수 있음):',
-            resultError,
-          );
+        } else {
+          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
         }
 
         // 최신 신용평가 데이터 조회 (에러가 나도 계속 진행)
-        try {
-          const listResponse = await creditEvaluationApi.getList({});
-          if (listResponse.success && listResponse.data.length > 0) {
-            setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
+        if (user?.sessionId) {
+          try {
+            const listResponse = await creditEvaluationApi.getList({ sessionId: user.sessionId });
+            if (listResponse.success && listResponse.data.length > 0) {
+              setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
+            }
+          } catch (listError) {
+            console.warn(
+              '신용평가 데이터 조회 실패 (데이터가 없을 수 있음):',
+              listError,
+            );
           }
-        } catch (listError) {
-          console.warn(
-            '신용평가 데이터 조회 실패 (데이터가 없을 수 있음):',
-            listError,
-          );
+        } else {
+          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
         }
 
-        // 매장 요약 데이터 조회 (guideON 분석용) - 현재 로그인한 사용자의 member_id로 조회
-        try {
-          console.log('매장 요약 데이터 조회 시작');
-          const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(undefined, 1, 1);
-          console.log('매장 요약 데이터 응답:', storeSummaryResponse);
-          if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
-            setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
-            console.log('매장 요약 데이터 설정 완료:', storeSummaryResponse.data[0]);
-          } else {
-            console.log('매장 요약 데이터가 없음 - success:', storeSummaryResponse.success, 'data length:', storeSummaryResponse.data?.length || 0);
+        // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
+        if (user?.sessionId) {
+          try {
+            console.log('매장 요약 데이터 조회 시작');
+            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(user.sessionId, 1, 1);
+            console.log('매장 요약 데이터 응답:', storeSummaryResponse);
+            if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
+              setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
+              console.log('매장 요약 데이터 설정 완료:', storeSummaryResponse.data[0]);
+            } else {
+              console.log('매장 요약 데이터가 없음 - success:', storeSummaryResponse.success, 'data length:', storeSummaryResponse.data?.length || 0);
+            }
+          } catch (storeSummaryError) {
+            console.error(
+              '매장 요약 데이터 조회 실패:',
+              storeSummaryError,
+            );
           }
-        } catch (storeSummaryError) {
-          console.error(
-            '매장 요약 데이터 조회 실패:',
-            storeSummaryError,
-          );
+        } else {
+          console.warn('사용자 sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
         }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);

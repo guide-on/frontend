@@ -27,7 +27,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 flex items-center gap-1 transform"
         style={{
           backgroundColor: activeMainFilter === 'filter' ? colors.navy : 'white',
-          color: activeMainFilter === 'filter' ? 'white' : colors.navy,
+          color: activeMainFilter === 'filter' ? 'white' : '#000000',
         }}
         onClick={onFilterClick}
       >
@@ -38,7 +38,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'map' ? colors.navy : 'white',
-          color: activeMainFilter === 'map' ? 'white' : colors.navy,
+          color: activeMainFilter === 'map' ? 'white' : '#000000',
         }}
         onClick={onMapClick}
       >
@@ -48,7 +48,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'receiving' ? colors.navy : 'white',
-          color: activeMainFilter === 'receiving' ? 'white' : colors.navy,
+          color: activeMainFilter === 'receiving' ? 'white' : '#000000',
         }}
         onClick={onReceivingClick}
       >
@@ -58,7 +58,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
         className="px-2.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95 transform"
         style={{
           backgroundColor: activeMainFilter === 'announcements' ? colors.navy : 'white',
-          color: activeMainFilter === 'announcements' ? 'white' : colors.navy,
+          color: activeMainFilter === 'announcements' ? 'white' : '#000000',
         }}
         onClick={onAnnouncementsClick}
       >
