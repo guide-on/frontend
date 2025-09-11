@@ -40,11 +40,15 @@ const ExpandableRow = ({
   title,
   desc,
   grade,
+  score,
+  maxScore,
   details,
 }: {
   title: string;
   desc: string;
-  grade: string;
+  grade?: string;
+  score?: number;
+  maxScore?: number;
   details: { section: string; items: string[] }[];
 }) => {
   const [open, setOpen] = useState(false);
@@ -52,8 +56,10 @@ const ExpandableRow = ({
     <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between">
         <div className="font-bold text-gray-900">{title}</div>
-        <div className="rounded-full text-white text-sm font-bold w-8 h-8 flex items-center justify-center bg-blue">
-          {grade}
+        <div className="rounded-lg text-white text-sm font-bold px-2 py-1 flex items-center justify-center bg-blue">
+          {score !== undefined && maxScore !== undefined
+            ? `${score}/${maxScore}`
+            : grade}
         </div>
       </div>
       <div className="mt-1 text-sm text-gray-600">{desc}</div>
@@ -98,7 +104,7 @@ const ResultOverlay = ({
 }) => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
-  
+
   // sessionId 우선순위: URL 파라미터 > useAuthStore
   const currentSessionId = sessionId ? parseInt(sessionId) : user?.sessionId;
   const [tab, setTab] = useState<'legacy' | 'guideon'>('legacy');
@@ -107,9 +113,8 @@ const ResultOverlay = ({
   const [creditData, setCreditData] = useState<CreditEvaluationResponse | null>(
     null,
   );
-  const [storeSummaryData, setStoreSummaryData] = useState<StoreSummaryResponse | null>(
-    null,
-  );
+  const [storeSummaryData, setStoreSummaryData] =
+    useState<StoreSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -121,7 +126,8 @@ const ResultOverlay = ({
         // 신용평가 결과 조회 (에러가 나도 계속 진행)
         if (currentSessionId) {
           try {
-            const resultResponse = await creditEvaluationResultApi.get(currentSessionId);
+            const resultResponse =
+              await creditEvaluationResultApi.get(currentSessionId);
             if (resultResponse.success) {
               setCreditResult(resultResponse.data);
             }
@@ -132,13 +138,17 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
+          console.warn(
+            'sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.',
+          );
         }
 
         // 최신 신용평가 데이터 조회 (에러가 나도 계속 진행)
         if (currentSessionId) {
           try {
-            const listResponse = await creditEvaluationApi.getList({ sessionId: currentSessionId });
+            const listResponse = await creditEvaluationApi.getList({
+              sessionId: currentSessionId,
+            });
             if (listResponse.success && listResponse.data.length > 0) {
               setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
             }
@@ -149,29 +159,42 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
+          console.warn(
+            'sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.',
+          );
         }
 
-        // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
+        // 매장 요약 데���터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
         if (currentSessionId) {
           try {
             console.log('매장 요약 데이터 조회 시작');
-            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(currentSessionId, 1, 1);
+            const storeSummaryResponse =
+              await storeSummaryApi.getMyStoreSummary(currentSessionId, 1, 1);
             console.log('매장 요약 데이터 응답:', storeSummaryResponse);
-            if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
+            if (
+              storeSummaryResponse.success &&
+              storeSummaryResponse.data.length > 0
+            ) {
               setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
-              console.log('매장 요약 데이터 설정 완료:', storeSummaryResponse.data[0]);
+              console.log(
+                '매장 요약 데이터 설정 완료:',
+                storeSummaryResponse.data[0],
+              );
             } else {
-              console.log('매장 요약 데이터가 없음 - success:', storeSummaryResponse.success, 'data length:', storeSummaryResponse.data?.length || 0);
+              console.log(
+                '매장 요약 데이터가 없음 - success:',
+                storeSummaryResponse.success,
+                'data length:',
+                storeSummaryResponse.data?.length || 0,
+              );
             }
           } catch (storeSummaryError) {
-            console.error(
-              '매장 요약 데이터 조회 실패:',
-              storeSummaryError,
-            );
+            console.error('매장 요약 데이터 조회 실패:', storeSummaryError);
           }
         } else {
-          console.warn('sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
+          console.warn(
+            'sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.',
+          );
         }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);
@@ -181,7 +204,7 @@ const ResultOverlay = ({
     };
 
     loadData();
-  }, [currentSessionId]); // sessionId 변경 시 재실행
+  }, [currentSessionId]); // sessionId 변경 시 재��행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {
@@ -205,7 +228,8 @@ const ResultOverlay = ({
       {
         t: '상환이력',
         d: '연체 발생/해제 이력과 상환 성실도를 평가합니다.',
-        g: getGradeFromScore(creditResult.repaymentHistoryScore, 284),
+        score: creditResult.repaymentHistoryScore,
+        maxScore: 284,
         details: [
           {
             section: '연체 이력',
@@ -229,7 +253,8 @@ const ResultOverlay = ({
       {
         t: '부채수준',
         d: '대출 잔액, 보증채무 등 부담 수준을 평가합니다.',
-        g: getGradeFromScore(creditResult.debtLevelScore, 318),
+        score: creditResult.debtLevelScore,
+        maxScore: 318,
         details: [
           {
             section: '부채 현황',
@@ -251,7 +276,8 @@ const ResultOverlay = ({
       {
         t: '신용거래기간',
         d: '신용계좌 보유 기간과 경과 기간을 평가합니다.',
-        g: getGradeFromScore(creditResult.creditPeriodScore, 123),
+        score: creditResult.creditPeriodScore,
+        maxScore: 123,
         details: [
           {
             section: '신용기간',
@@ -266,7 +292,8 @@ const ResultOverlay = ({
       {
         t: '신용형태',
         d: '카드 이용 패턴과 현금서비스/할부 사용 등을 평가합니다.',
-        g: getGradeFromScore(creditResult.creditPatternScore, 275),
+        score: creditResult.creditPatternScore,
+        maxScore: 275,
         details: [
           {
             section: '신용형태',
@@ -282,7 +309,8 @@ const ResultOverlay = ({
       {
         t: '비금융/마이데이터',
         d: '공과금·통신요금 납부 및 마이데이터 자산 정보를 반영합니다.',
-        g: getGradeFromScore(creditResult.nonFinancialScore, 100),
+        score: creditResult.nonFinancialScore,
+        maxScore: 100,
         details: [
           {
             section: '대안신용점수',
@@ -313,7 +341,7 @@ const ResultOverlay = ({
         },
         {
           section: '상환 성실도',
-          items: ['원리금 연체 없이 납부', '자동이체 정상'],
+          items: ['원리금 연체 없��� 납부', '자동이체 정상'],
         },
       ],
     },
@@ -368,18 +396,20 @@ const ResultOverlay = ({
     },
   ];
 
-  // 총점에서 등급 계산
+  // 총점에서 등급 계산 (0~1000 구간)
   const getTotalGrade = (score: number): string => {
-    if (score >= 850) return 'A+';
-    if (score >= 750) return 'A';
-    if (score >= 650) return 'B+';
-    if (score >= 550) return 'B';
-    if (score >= 450) return 'C+';
-    if (score >= 350) return 'C';
-    return 'D';
+    if (score >= 900) return 'AAA';
+    if (score >= 800) return 'AA';
+    if (score >= 700) return 'A';
+    if (score >= 600) return 'BBB';
+    if (score >= 500) return 'BB';
+    if (score >= 400) return 'B';
+    if (score >= 300) return 'CCC';
+    if (score >= 200) return 'CC';
+    return 'C';
   };
 
-  // 실제 데이터를 기반으로 guideRows 생성
+  // 실제 데���터를 기반으로 guideRows 생성
   const getGuideRows = () => {
     if (!storeSummaryData) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -388,7 +418,11 @@ const ResultOverlay = ({
     const data = storeSummaryData;
 
     // 매출 성장률 기반 등급 계산
-    const getSalesGrade = (momGrowth: number, yoyGrowth: number, cv: number): string => {
+    const getSalesGrade = (
+      momGrowth: number,
+      yoyGrowth: number,
+      cv: number,
+    ): string => {
       const avgGrowth = (momGrowth + yoyGrowth) / 2;
       if (avgGrowth >= 15 && cv < 0.3) return 'A+';
       if (avgGrowth >= 10 && cv < 0.4) return 'A';
@@ -400,7 +434,11 @@ const ResultOverlay = ({
     };
 
     // 현금흐름 등급 계산
-    const getCashFlowGrade = (profitRatio: number, avgBalance: number, cv: number): string => {
+    const getCashFlowGrade = (
+      profitRatio: number,
+      avgBalance: number,
+      cv: number,
+    ): string => {
       if (profitRatio > 20 && avgBalance > 50000000 && cv < 0.3) return 'A+';
       if (profitRatio > 15 && avgBalance > 30000000 && cv < 0.4) return 'A';
       if (profitRatio > 10 && avgBalance > 20000000 && cv < 0.5) return 'B+';
@@ -412,11 +450,11 @@ const ResultOverlay = ({
 
     // ESG 등급 계산
     const getESGGrade = (
-      energyEff: boolean, 
-      hygiene: boolean, 
-      employeeCount: number, 
+      energyEff: boolean,
+      hygiene: boolean,
+      employeeCount: number,
       reviewRating: number,
-      wasteManagement: number
+      wasteManagement: number,
     ): string => {
       let score = 0;
       if (energyEff) score += 20;
@@ -439,9 +477,9 @@ const ResultOverlay = ({
         t: '매출 안정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
         g: getSalesGrade(
-          data.momGrowthRate || 0, 
-          data.yoyGrowthRate || 0, 
-          data.salesCv || 1
+          data.momGrowthRate || 0,
+          data.yoyGrowthRate || 0,
+          data.salesCv || 1,
         ),
         details: [
           {
@@ -474,7 +512,7 @@ const ResultOverlay = ({
         g: getCashFlowGrade(
           data.operatingProfitRatio || 0,
           data.avgAccountBalance || 0,
-          data.cashflowCv || 1
+          data.cashflowCv || 1,
         ),
         details: [
           {
@@ -503,7 +541,7 @@ const ResultOverlay = ({
           data.hygieneCertified === true,
           data.employmentInsuranceEmployees || 0,
           data.customerReviewAvgRating || 0,
-          data.foodWasteKgPerDay || 0
+          data.foodWasteKgPerDay || 0,
         ),
         details: [
           {
@@ -527,23 +565,6 @@ const ResultOverlay = ({
             items: [
               `원산지·가격표시 위반: ${data.originPriceViolationCount || 0}회`,
               `세금납부 성실도: ${data.taxPaymentIntegrity || 0}%`,
-            ],
-          },
-        ],
-      },
-      {
-        t: '대표자 금융 신용도(기존 신용점수)',
-        d: '대표자의 신용정보를 통해 상환능력 리스크를 보완 평가합니다.',
-        g: creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A',
-        details: [
-          {
-            section: '평가 요소',
-            items: [
-              '상환이력 - 연체 발생/해제 이력과 상환 성실도',
-              '부채수준 - 대출 잔액, 보증채무 등 부담 수준',
-              '신용거래기간 - 신용계좌 보유 기간과 경과 기간',
-              '신용형태 - 카드 이용 패턴과 현금서비스/할부 사용',
-              '비금융/마이데이터 - 공과금·통신요금 납부 실적',
             ],
           },
         ],
@@ -578,46 +599,11 @@ const ResultOverlay = ({
               <div className="text-5xl font-extrabold text-gray-900">
                 {creditResult?.totalScore || 0}
               </div>
-              <div className="pb-1 text-gray-600">/ 980</div>
+              <div className="pb-1 text-gray-600">/ 1000</div>
             </div>
             <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
               {creditResult ? getTotalGrade(creditResult.totalScore) : 'N/A'}{' '}
               등급
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-gray-600">
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">상환이력</div>
-                <div>
-                  {creditResult
-                    ? getGradeFromScore(creditResult.repaymentHistoryScore, 284)
-                    : 'N/A'}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">부채수준</div>
-                <div>
-                  {creditResult
-                    ? getGradeFromScore(creditResult.debtLevelScore, 318)
-                    : 'N/A'}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">신용거래기간</div>
-                <div>
-                  {creditData && creditData.creditHistoryMonths
-                    ? `${Math.floor(creditData.creditHistoryMonths / 12)}년 ${creditData.creditHistoryMonths % 12}개월`
-                    : 'N/A'}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">신용형태</div>
-                <div>
-                  {creditResult
-                    ? getGradeFromScore(creditResult.creditPatternScore, 275)
-                    : 'N/A'}
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -656,6 +642,8 @@ const ResultOverlay = ({
                 title={r.t}
                 desc={r.d}
                 grade={r.g}
+                score={r.score}
+                maxScore={r.maxScore}
                 details={r.details}
               />
             ))
@@ -664,14 +652,12 @@ const ResultOverlay = ({
               <div className="text-gray-500">
                 {tab === 'legacy'
                   ? '신용평가 데이터를 찾을 수 없습니다.'
-                  : '매장 요약 데이터를 찾을 수 없습니다.'
-                }
+                  : '매장 요약 데��터를 찾을 수 없습니다.'}
               </div>
               <div className="text-sm text-gray-400 mt-1">
                 {tab === 'legacy'
                   ? '먼저 신용평가를 진행해주세요.'
-                  : '매장 데이터가 아직 준비되지 않았습니다.'
-                }
+                  : '매장 데이터가 아직 준비되지 않았습니다.'}
               </div>
             </div>
           )}
@@ -685,7 +671,7 @@ const ResultOverlay = ({
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 
