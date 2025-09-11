@@ -1,9 +1,12 @@
+// src/simulation/pages/SimulationList.tsx
 import { useEffect, useMemo, useState } from 'react';
 import type { SimulationListItem } from '../types';
 import ResultCard from '../components/ResultCard';
 import ListFilterBar from '../components/ListFilterBar';
-import { MOCK_LIST } from '../utils/mock';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { fetchSimulationList } from '../api';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { AUTH_REQUIRED_EVENT } from '@/community/utils/api';
 
 type Status = 'ALL' | 'COMPLETED' | 'IN_PROGRESS' | 'FAILED' | 'PENDING';
 type Sort = 'LATEST' | 'OLDEST';
@@ -14,13 +17,31 @@ export default function SimulationListPage() {
     const [status, setStatus] = useState<Status>('ALL');
     const [sort, setSort] = useState<Sort>('LATEST');
 
+    const user = useAuthStore((s) => s.user);
+    const isLoggedIn = !!user?.email || (user?.roles?.length ?? 0) > 0;
+
+    // ✅ 로그인 안 했으면 즉시 모달 띄우고 API 호출 안 함
     useEffect(() => {
-        const t = setTimeout(() => {
-            setRaw(MOCK_LIST);
+        if (!isLoggedIn) {
+            window.dispatchEvent(new Event(AUTH_REQUIRED_EVENT));
             setLoading(false);
-        }, 200);
-        return () => clearTimeout(t);
-    }, []);
+        }
+    }, [isLoggedIn]);
+
+    // 실제 데이터 호출
+    useEffect(() => {
+        if (!isLoggedIn) return; // 차단
+        let alive = true;
+        (async () => {
+            try {
+                const list = await fetchSimulationList(0, 50);
+                if (alive) setRaw(list);
+            } finally {
+                if (alive) setLoading(false);
+            }
+        })();
+        return () => { alive = false; };
+    }, [isLoggedIn]);
 
     const list = useMemo(() => {
         let arr = raw.slice();
@@ -33,6 +54,7 @@ export default function SimulationListPage() {
         return arr;
     }, [raw, status, sort]);
 
+    // UI
     return (
         <div className="max-w-[420px] mx-auto p-4">
             <ListFilterBar status={status} setStatus={setStatus} sort={sort} setSort={setSort} />
@@ -41,10 +63,17 @@ export default function SimulationListPage() {
                     <LoadingSpinner type="dots" color="#25437B" />
                 </div>
             )}
-            {!loading && list.length === 0 && <div className="text-sm text-gray-500">해당 조건의 내역이 없습니다.</div>}
-            <div className="space-y-3">
-                {list.map((it) => <ResultCard key={it.id} item={it} />)}
-            </div>
+            {!loading && !isLoggedIn && (
+                <div className="text-sm text-gray-500">로그인 후 이용해주세요.</div>
+            )}
+            {!loading && isLoggedIn && list.length === 0 && (
+                <div className="text-sm text-gray-500">해당 조건의 내역이 없습니다.</div>
+            )}
+            {isLoggedIn && (
+                <div className="space-y-3">
+                    {list.map((it) => <ResultCard key={it.id} item={it} />)}
+                </div>
+            )}
         </div>
     );
 }

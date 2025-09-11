@@ -220,6 +220,7 @@ export type DocumentItem = {
   documentId?: string | number;
   name: string;
   mydataEligible: boolean;
+  isMydataRetrieved?: boolean;
   status: 'pending' | 'completed' | 'failed';
 };
 
