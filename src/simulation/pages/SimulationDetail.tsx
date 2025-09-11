@@ -10,6 +10,7 @@ import type { SimulationStepCode, SimulationStatus } from '../types';
 import { fetchSimulationDetail, type DetailVM } from '../api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { AUTH_REQUIRED_EVENT } from '@/community/utils/api';
+import { getSessionStep } from '@/api/sessionApi';
 
 // 스텝 상태 계산
 function stepStatus(vm: DetailVM): Array<{ stepCode: SimulationStepCode; status: SimulationStatus }> {
@@ -51,18 +52,52 @@ export default function SimulationDetailPage() {
     }, [isLoggedIn]);
 
     useEffect(() => {
-        if (!isLoggedIn) return;
+        if (!isLoggedIn || !id) return;
         let alive = true;
         (async () => {
             try {
+                // 먼저 현재 단계 확인
+                const stepData = await getSessionStep(id);
+                if (!alive) return;
+                
+                // currentStep이 RESULT가 아니면 해당 단계로 리다이렉트
+                if (stepData.currentStep !== 'RESULT') {
+                    let redirectPath = '';
+                    switch (stepData.currentStep) {
+                        case 'DOCS':
+                            redirectPath = `/guide/documents/${id}`;
+                            break;
+                        case 'CREDIT':
+                            redirectPath = `/hybrid-evaluation/${id}`;
+                            break;
+                        case 'PLAN':
+                            redirectPath = `/guide/${id}/business-plan/ready`;
+                            break;
+                    }
+                    if (redirectPath) {
+                        nav(redirectPath, { replace: true });
+                        return;
+                    }
+                }
+                
+                // RESULT 단계면 시뮬레이션 상세 데이터 로드
                 const data = await fetchSimulationDetail(Number(id));
                 if (alive) setVm(data);
+            } catch (error) {
+                console.error('세션 단계 확인 또는 시뮬레이션 데이터 로드 실패:', error);
+                // 에러 발생 시에도 시뮬레이션 데이터 로드 시도
+                try {
+                    const data = await fetchSimulationDetail(Number(id));
+                    if (alive) setVm(data);
+                } catch (fallbackError) {
+                    console.error('시뮬레이션 데이터 로드 실패:', fallbackError);
+                }
             } finally {
                 if (alive) setLoading(false);
             }
         })();
         return () => { alive = false; };
-    }, [id, isLoggedIn]);
+    }, [id, isLoggedIn, nav]);
 
     // ---- 계산부: 가중합/태그/등급 등 ----
     const metrics = useMemo(() => {
