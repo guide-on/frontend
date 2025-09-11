@@ -37,6 +37,8 @@ import MydataSyncComplete from '@/guide/pages/MydataSyncComplete';
 // 사업계획서
 import BusinessPlanResult from './pages/evaluation/BusinessPlanResult';
 import BusinessPlanReady from './pages/evaluation/BusinessPlanReady';
+import BusinessPlanAnalysisLoading from './pages/evaluation/BusinessPlanAnalysisLoading';
+import OverallProgressComplete from './pages/evaluation/OverallProgressComplete';
 
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
@@ -168,6 +170,14 @@ function AppChrome() {
             <Route
               path="/guide/:sessionId/business-plan/ready"
               element={<BusinessPlanReady />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/analysis-loading"
+              element={<BusinessPlanAnalysisLoading />}
+            />
+            <Route
+              path="/guide/:sessionId/business-plan/overall-complete"
+              element={<OverallProgressComplete />}
             />
 
             {/* 인증 */}

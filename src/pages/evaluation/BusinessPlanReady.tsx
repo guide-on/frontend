@@ -79,7 +79,10 @@ export default function BusinessPlanReady() {
   }, [data]);
 
   return (
-    <div className="px-4 py-5" style={{ background: colors.bgSoft, minHeight: '100vh' }}>
+    <div
+      className="px-4 py-5"
+      style={{ background: colors.bgSoft, minHeight: '100vh' }}
+    >
       <div className="max-w-sm mx-auto">
         {/* 헤더 문구 */}
         <section className="rounded-2xl p-6 bg-white shadow-sm mb-4">
@@ -94,10 +97,10 @@ export default function BusinessPlanReady() {
         </section>
 
         {/* 미니 �����어로 */}
-        <section 
+        <section
           className="mb-4 rounded-2xl overflow-hidden shadow-sm"
-          style={{ 
-            background: 'linear-gradient(to right, #eff6ff, #eef2ff)' 
+          style={{
+            background: 'linear-gradient(to right, #eff6ff, #eef2ff)',
           }}
         >
           <div className="p-6 flex items-center gap-4">
@@ -112,7 +115,10 @@ export default function BusinessPlanReady() {
                 최근 업로드하신 파일을 기반으로 평가합니다.
               </div>
             </div>
-            <Sparkles className="ml-auto w-6 h-6" style={{ color: colors.blue }} />
+            <Sparkles
+              className="ml-auto w-6 h-6"
+              style={{ color: colors.blue }}
+            />
           </div>
         </section>
 
@@ -145,7 +151,10 @@ export default function BusinessPlanReady() {
               },
             ].map((item) => (
               <li key={item.title} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 w-4 h-4" style={{ color: colors.blue }} />
+                <CheckCircle2
+                  className="mt-0.5 w-4 h-4"
+                  style={{ color: colors.blue }}
+                />
                 <p className="text-[13px]">
                   <span className="font-semibold text-gray-900">
                     {item.title}
@@ -172,30 +181,16 @@ export default function BusinessPlanReady() {
         </section>
 
         {/* 하단 액션 */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <Link
-            to={`/guide/documents/${data?.sessionId ?? sessionId}`}
-            className="text-center rounded-xl py-3 font-semibold text-gray-700 bg-white hover:bg-gray-50 shadow-sm"
-          >
-            서류 확인
-          </Link>
+        <div className="mt-6">
           <button
-            onClick={async () => {
+            onClick={() => {
               if (!sessionId) return;
-              try {
-                setStarting(true);
-                await planEvalApi.evaluate(sessionId);
-              } catch (e) {
-                console.error('평가 시작 실패', e);
-              } finally {
-                navigate(`/guide/${sessionId}/business-plan/result`);
-              }
+              navigate(`/guide/${sessionId}/business-plan/analysis-loading`);
             }}
-            // disabled={!businessPlanSubmitted || starting}
-            className="rounded-xl py-3 font-bold text-white shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-xl py-4 font-bold text-white shadow-md transition hover:opacity-90"
             style={{ background: colors.navy }}
           >
-            {starting ? '시작 중…' : '평가 시작'}
+            결과 확인하기
           </button>
         </div>
 
