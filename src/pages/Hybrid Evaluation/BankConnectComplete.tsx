@@ -1,8 +1,9 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 
 export default function BankConnectComplete() {
   const navigate = useNavigate();
+  const { sessionId } = useParams<{ sessionId: string }>();
   const location = useLocation() as { state?: { banks?: string[] } };
   const banks = location.state?.banks || [];
   return (
@@ -13,7 +14,12 @@ export default function BankConnectComplete() {
         <p className="text-sm text-gray-600">선택한 {banks.length}개 은행과의 연결이 완료되었습니다.</p>
       )}
       <button
-        onClick={() => navigate('/hybrid-evaluation/start', { replace: true })}
+        onClick={() => {
+          const targetPath = sessionId 
+            ? `/hybrid-evaluation/start/${sessionId}`
+            : '/hybrid-evaluation/start';
+          navigate(targetPath, { replace: true });
+        }}
         className="w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition"
       >
         신용평가로 돌아가기

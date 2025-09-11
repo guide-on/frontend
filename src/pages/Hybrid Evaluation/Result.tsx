@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
 import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
@@ -94,7 +95,11 @@ const ResultOverlay = ({
   onClose: () => void;
   evaluationResult?: CreditEvaluationResponse | null;
 }) => {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
+  
+  // sessionId 우선순위: URL 파라미터 > useAuthStore
+  const currentSessionId = sessionId ? parseInt(sessionId) : user?.sessionId;
   const [tab, setTab] = useState<'legacy' | 'guideon'>('legacy');
   const [creditResult, setCreditResult] =
     useState<CreditEvaluationResultResponse | null>(null);
@@ -113,9 +118,9 @@ const ResultOverlay = ({
         setLoading(true);
 
         // 신용평가 결과 조회 (에러가 나도 계속 진행)
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
-            const resultResponse = await creditEvaluationResultApi.get(user.sessionId);
+            const resultResponse = await creditEvaluationResultApi.get(currentSessionId);
             if (resultResponse.success) {
               setCreditResult(resultResponse.data);
             }
@@ -126,13 +131,13 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
         }
 
         // 최신 신용평가 데이터 조회 (에러가 나도 계속 진행)
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
-            const listResponse = await creditEvaluationApi.getList({ sessionId: user.sessionId });
+            const listResponse = await creditEvaluationApi.getList({ sessionId: currentSessionId });
             if (listResponse.success && listResponse.data.length > 0) {
               setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
             }
@@ -143,14 +148,14 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
         }
 
         // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
             console.log('매장 요약 데이터 조회 시작');
-            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(user.sessionId, 1, 1);
+            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(currentSessionId, 1, 1);
             console.log('매장 요약 데이터 응답:', storeSummaryResponse);
             if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
               setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
@@ -165,7 +170,7 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
         }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);
@@ -175,7 +180,7 @@ const ResultOverlay = ({
     };
 
     loadData();
-  }, []); // 컴포넌트 마운트 시에만 실행
+  }, [currentSessionId]); // sessionId 변경 시 재실행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {
