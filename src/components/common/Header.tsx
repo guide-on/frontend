@@ -18,6 +18,8 @@ const routeTitle = (path: string): string => {
     return '사업계획서 평가';
 
   // 2) 가이드 하위
+  if (path.startsWith('/guide/documents/')) return '서류 검증';
+  if (path.startsWith('/guide/upload/')) return '서류 검증';
   if (path.startsWith('/guide')) return '대출가이드';
 
   // 3) 커뮤니티 하위
