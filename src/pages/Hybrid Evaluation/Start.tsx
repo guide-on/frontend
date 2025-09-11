@@ -233,8 +233,8 @@ const StartHybridEvaluation = () => {
           console.warn('로컬 스토리지 저장 실패:', storageError);
         }
 
-        // 은행 연결 페이지로 이동
-        navigate('/bank-connect');
+        // 은행 연결 페이지로 이동 (현재 sessionId 포함)
+        navigate(`/bank-connect/${sessionId}`);
       } else {
         throw new Error(
           response.message || '현금흐름 데이터 업데이트에 실패했습니다.',
@@ -427,6 +427,7 @@ const StartHybridEvaluation = () => {
         {selected === 'esg' ? (
           <EsgSection
             completed={completed}
+            sessionId={sessionId || ''}
             onHelpClick={() => setHelpModalOpen(true)}
             onAttachHelpClick={() => setAttachHelpModalOpen(true)}
             onComplete={() => {

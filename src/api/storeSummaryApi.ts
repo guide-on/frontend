@@ -137,6 +137,13 @@ class StoreSummaryApi {
     );
     return response.data;
   }
+
+  async updateEsgData(sessionId: number, energyEffRatio: number): Promise<StoreSummaryDetailResponse> {
+    const response: AxiosResponse<StoreSummaryDetailResponse> = await api.put(
+      `/api/store-summary/update-esg/${sessionId}?energyEffRatio=${energyEffRatio}`
+    );
+    return response.data;
+  }
 }
 
 export const storeSummaryApi = new StoreSummaryApi();

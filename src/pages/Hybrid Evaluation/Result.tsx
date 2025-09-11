@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import type { CreditEvaluationResponse } from '../../api/creditEvaluationApi';
 import type { CreditEvaluationResultResponse } from '../../api/creditEvaluationResultApi';
 import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
@@ -7,6 +8,7 @@ import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { createPortal } from 'react-dom';
 
 const TabButton = ({
   label,
@@ -94,7 +96,11 @@ const ResultOverlay = ({
   onClose: () => void;
   evaluationResult?: CreditEvaluationResponse | null;
 }) => {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { user } = useAuthStore();
+  
+  // sessionId 우선순위: URL 파라미터 > useAuthStore
+  const currentSessionId = sessionId ? parseInt(sessionId) : user?.sessionId;
   const [tab, setTab] = useState<'legacy' | 'guideon'>('legacy');
   const [creditResult, setCreditResult] =
     useState<CreditEvaluationResultResponse | null>(null);
@@ -113,9 +119,9 @@ const ResultOverlay = ({
         setLoading(true);
 
         // 신용평가 결과 조회 (에러가 나도 계속 진행)
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
-            const resultResponse = await creditEvaluationResultApi.get(user.sessionId);
+            const resultResponse = await creditEvaluationResultApi.get(currentSessionId);
             if (resultResponse.success) {
               setCreditResult(resultResponse.data);
             }
@@ -126,13 +132,13 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 신용평가 결과를 조회할 수 없습니다.');
         }
 
         // 최신 신용평가 데이터 조회 (에러가 나도 계속 진행)
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
-            const listResponse = await creditEvaluationApi.getList({ sessionId: user.sessionId });
+            const listResponse = await creditEvaluationApi.getList({ sessionId: currentSessionId });
             if (listResponse.success && listResponse.data.length > 0) {
               setCreditData(listResponse.data[0]); // 첫 번째 (최신) 데이터 사용
             }
@@ -143,14 +149,14 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 신용평가 데이터를 조회할 수 없습니다.');
         }
 
         // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
-        if (user?.sessionId) {
+        if (currentSessionId) {
           try {
             console.log('매장 요약 데이터 조회 시작');
-            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(user.sessionId, 1, 1);
+            const storeSummaryResponse = await storeSummaryApi.getMyStoreSummary(currentSessionId, 1, 1);
             console.log('매장 요약 데이터 응답:', storeSummaryResponse);
             if (storeSummaryResponse.success && storeSummaryResponse.data.length > 0) {
               setStoreSummaryData(storeSummaryResponse.data[0]); // 첫 번째 (최신) 데이터 사용
@@ -165,7 +171,7 @@ const ResultOverlay = ({
             );
           }
         } else {
-          console.warn('사용자 sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
+          console.warn('sessionId를 찾을 수 없어 매장 요약 데이터를 조회할 수 없습니다.');
         }
       } catch (error) {
         console.error('Failed to load credit evaluation data:', error);
@@ -175,7 +181,7 @@ const ResultOverlay = ({
     };
 
     loadData();
-  }, []); // 컴포넌트 마운트 시에만 실행
+  }, [currentSessionId]); // sessionId 변경 시 재실행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {
@@ -189,7 +195,7 @@ const ResultOverlay = ({
     return 'D';
   };
 
-  // 실제 데이터를 기반으로 legacyRows 생성
+  // 실제 데이터�� 기반으로 legacyRows 생성
   const getLegacyRows = () => {
     if (!creditData || !creditResult) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -281,7 +287,7 @@ const ResultOverlay = ({
           {
             section: '대안신용점수',
             items: [
-              `대안신용점수: ${creditData.alternativeCreditScore || 0}점 (최대 100점)`,
+              `대안신용점수: ${creditData.alternativeCreditScore || 0}��� (최대 100점)`,
             ],
           },
         ],
@@ -549,8 +555,8 @@ const ResultOverlay = ({
 
   const rows = tab === 'legacy' ? legacyRows : guideRows;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-white p-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[9998] overflow-auto bg-white p-6">
       <div className="mx-auto w-full max-w-sm space-y-5">
         <h3 className="text-center text-2xl font-extrabold text-navy">
           하이브리드 신용평가 결과
@@ -656,7 +662,7 @@ const ResultOverlay = ({
           ) : (
             <div className="rounded-xl border p-4 border-gray-200 bg-white shadow-sm text-center">
               <div className="text-gray-500">
-                {tab === 'legacy' 
+                {tab === 'legacy'
                   ? '신용평가 데이터를 찾을 수 없습니다.'
                   : '매장 요약 데이터를 찾을 수 없습니다.'
                 }
@@ -678,7 +684,8 @@ const ResultOverlay = ({
           닫기
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

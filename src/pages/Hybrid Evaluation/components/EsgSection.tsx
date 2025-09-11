@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
 import { ESG_STEPS } from './EsgSteps';
 import { UploadCard } from './UploadCard';
 import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
 import StoreMap from './StoreMap';
 import api from '@/api';
 import axios from 'axios';
+import { storeSummaryApi } from '../../../api/storeSummaryApi';
 
 type CategoryKey = 'sales' | 'cashflow' | 'esg' | 'ceo';
 
@@ -50,6 +50,7 @@ const Modal = ({
 
 interface EsgSectionProps {
   completed: Record<CategoryKey, boolean>;
+  sessionId: string;
   onHelpClick: () => void;
   onAttachHelpClick: () => void;
   onComplete: () => void;
@@ -57,11 +58,11 @@ interface EsgSectionProps {
 
 export const EsgSection: React.FC<EsgSectionProps> = ({
   completed,
+  sessionId,
   onHelpClick,
   onAttachHelpClick,
   onComplete,
 }) => {
-  const { sessionId } = useParams<{ sessionId: string }>();
   const [esgStep, setEsgStep] = useState(1);
   const [esgFiles, setEsgFiles] = useState<Record<number, string | undefined>>({
     1: undefined,
@@ -93,6 +94,8 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
   const [step3Error, setStep3Error] = useState<string | null>(null);
   const [isEnergyModalOpen, setEnergyModalOpen] = useState(false);
   const [isMydataSuccessModalOpen, setMydataSuccessModalOpen] = useState(false);
+  const [esgError, setEsgError] = useState<string | null>(null);
+  const [isUpdatingEsg, setIsUpdatingEsg] = useState(false);
 
   const currentStep = ESG_STEPS[esgStep - 1];
 
@@ -158,8 +161,64 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
       setEsgStep(3);
     } catch (error) {
       console.error('Error calling sentimental analysis API:', error);
-      // 에러가 발생해도 다음 단계로 이동 (필요에 따라 수정 가능)
+      // 에러가 발생해도 다음 단계로 이동 (필요��� 따라 수정 가능)
       setEsgStep(3);
+    }
+  };
+
+  // ESG 데이터 업데이트 함수
+  const handleEsgUpdate = async () => {
+    if (!sessionId) {
+      console.error('세션 ID가 없습니다.');
+      setEsgError('세션 ID가 없어 ESG 데이터 업데이트를 진행할 수 없습니다.');
+      return;
+    }
+
+    // 계산된 에너지 효율 기기 비율 가져오기
+    const totalCount = Number(step1Manual.totalApplianceCount);
+    const highEffCount = Number(step1Manual.highEfficiencyApplianceCount);
+
+    if (!totalCount || !highEffCount || totalCount === 0) {
+      setEsgError('에너지 효율 기기 정보를 올바르게 입력해주세요.');
+      return;
+    }
+
+    const energyEffRatio = Math.round((highEffCount / totalCount) * 100);
+
+    try {
+      setIsUpdatingEsg(true);
+      setEsgError(null);
+
+      console.log('🔄 ESG 데이터 업데이트 시작:', sessionId, energyEffRatio);
+
+      const response = await storeSummaryApi.updateEsgData(
+        parseInt(sessionId),
+        energyEffRatio,
+      );
+
+      if (response.success) {
+        console.log('✅ ESG 데이터 업데이트 성공:', response.message);
+
+        // ESG 완료 상태 표시
+        onComplete();
+      } else {
+        throw new Error(
+          response.message || 'ESG 데이터 업데이트에 실패했습니다.',
+        );
+      }
+    } catch (error: any) {
+      console.error('❌ ESG 데이터 업데이트 실패:', error);
+
+      let errorMessage = 'ESG 데이터 업데이트 중 오류가 발생했습니다.';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      setEsgError(errorMessage);
+    } finally {
+      setIsUpdatingEsg(false);
     }
   };
 
@@ -654,7 +713,7 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
                 원산지/가격 표시 준수
               </span>
               <button
-                aria-label="원산지/가격 표시 준수 도움말"
+                aria-label="원��지/가격 표시 준수 도움말"
                 onClick={onAttachHelpClick}
                 className="text-blue hover:text-navy"
               >
@@ -673,12 +732,33 @@ export const EsgSection: React.FC<EsgSectionProps> = ({
         </div>
       )}
 
+      {esgError && (
+        <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+          {esgError}
+        </div>
+      )}
+
+      {esgError && (
+        <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+          {esgError}
+        </div>
+      )}
+
       {esgStep === 1 && (
         <button
-          onClick={() => setEsgStep(2)}
+          onClick={async () => {
+            // ESG 데이터 업데이트 API 호출
+            await handleEsgUpdate();
+
+            // API 호출 성공 후 다음 단계로 이동
+            if (!esgError) {
+              setEsgStep(2);
+            }
+          }}
+          disabled={isUpdatingEsg}
           className="mt-4 w-full rounded-md py-3 text-white font-semibold bg-navy hover:bg-blue shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          다음
+          {isUpdatingEsg ? 'ESG 데이터 업데이트 중...' : '다음'}
         </button>
       )}
       {esgStep === 2 && (
