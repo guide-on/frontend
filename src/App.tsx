@@ -43,6 +43,7 @@ import OverallProgressComplete from './pages/evaluation/OverallProgressComplete'
 // 하이브리드 평가
 import HybridEvaluation from './pages/Hybrid Evaluation';
 import StartHybridEvaluation from './pages/Hybrid Evaluation/Start.tsx';
+import HybridEvaluationLoading from './pages/Hybrid Evaluation/Loading.tsx';
 import BankConnect from './pages/Hybrid Evaluation/BankConnect';
 import BankConnectComplete from './pages/Hybrid Evaluation/BankConnectComplete';
 import HybridEvaluationComplete from './pages/Hybrid Evaluation/Complete.tsx';
@@ -68,6 +69,7 @@ function AppChrome() {
     '/hybrid-evaluation/complete',
   ]);
   const hideHeaderPrefixes = [
+    '/hybrid-evaluation/loading', // 파라미터 대응
     '/hybrid-evaluation/complete', // 파라미터 대응
     '/bank-connect/', // 파라미터 대응
   ];
@@ -87,6 +89,7 @@ function AppChrome() {
   ]);
   const hideNavbarPrefixes = [
     '/simulation/', // 목록/상세 공통
+    '/hybrid-evaluation/loading', // 파라미터 대응
     '/hybrid-evaluation/complete', // 파라미터 대응
     '/bank-connect/', // 파라미터 대응
   ];
@@ -209,6 +212,10 @@ function AppChrome() {
             <Route
               path="/hybrid-evaluation/start/:sessionId"
               element={<StartHybridEvaluation />}
+            />
+            <Route
+              path="/hybrid-evaluation/loading/:sessionId"
+              element={<HybridEvaluationLoading />}
             />
             <Route
               path="/hybrid-evaluation/complete"
