@@ -32,18 +32,18 @@
 }
 
 @layer components {
-    .community .container-mobile { @apply w-full max-w-[375px] mx-auto px-4; }
+    .community .container-mobile { @apply w-full max-w-[480px] mx-auto px-4; }
 
     .community .app-shell{
         min-height: 100dvh;
-        background: linear-gradient(180deg, #EFF4FF 0%, #F7FAFF 35%, #FFFFFF 60%);
+        background: #F9F9F9;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
 
     .community .main-content{
         padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom,0px));
-        padding-top: calc(36px + var(--header-extra));
+        padding-top: calc(64px + var(--header-extra));
     }
 
     .community .card { @apply bg-white rounded-2xl border border-gray-100 shadow-[0_6px_18px_rgba(0,0,0,0.06)]; }
@@ -64,7 +64,7 @@
         overflow: visible;
     }
     .community .topbar-inner{
-        @apply w-full max-w-[375px] mx-auto px-4 grid;
+        @apply w-full max-w-[480px] mx-auto px-4 grid;
         height: var(--header-bar-h);
         grid-template-columns: var(--topbar-side-w) 1fr var(--topbar-side-w);
         align-items: center;
@@ -100,19 +100,46 @@
 
     /* ── 하단 탭바 ── */
     .community .bottombar { position: fixed; left:0; right:0; bottom:0; z-index:50; background:var(--brand-gray); border-top:1px solid #e5e7eb; padding-bottom: env(safe-area-inset-bottom,0px); }
-    .community .bottombar-inner { @apply w-full max-w-[375px] mx-auto px-4 grid grid-cols-5; height: var(--bottombar-h); }
+    .community .bottombar-inner { @apply w-full max-w-[480px] mx-auto px-4 grid grid-cols-5; height: var(--bottombar-h); }
     .community .bottombar-item { @apply flex flex-col items-center justify-center text-[11px] text-gray-600 gap-0.5; }
     .community .bottombar-item-active { @apply font-semibold; color: var(--brand-primary); }
     .community .bottombar-item-active svg { color: var(--brand-primary); }
 
     /* FAB */
+    .fab{
+        position: fixed !important; 
+        right: 16px !important;
+        bottom: 82px !important;
+        z-index: 9999 !important; 
+        width: 56px !important; 
+        height: 56px !important; 
+        border-radius: 9999px !important;
+        display: flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+        color: #fff !important; 
+        background: var(--brand-primary) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.18) !important;
+        border: none !important;
+        cursor: pointer !important;
+    }
+    
     .community .fab{
-        position: fixed; right: 16px;
-        bottom: calc(var(--bottombar-h) + 12px + env(safe-area-inset-bottom,0px));
-        z-index: 60; width:56px; height:56px; border-radius:9999px;
-        display:flex; align-items:center; justify-content:center;
-        color:#fff; background:var(--brand-primary);
-        box-shadow:0 10px 22px rgba(0,0,0,0.18);
+        position: fixed !important; 
+        right: 16px !important;
+        bottom: 82px !important;
+        z-index: 9999 !important; 
+        width: 56px !important; 
+        height: 56px !important; 
+        border-radius: 9999px !important;
+        display: flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+        color: #fff !important; 
+        background: var(--brand-primary) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.18) !important;
+        border: none !important;
+        cursor: pointer !important;
     }
 
     /* 캐러셀 */
