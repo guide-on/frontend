@@ -6,13 +6,14 @@ import type { StoreSummaryResponse } from '../../api/storeSummaryApi';
 import { creditEvaluationResultApi } from '../../api/creditEvaluationResultApi';
 import { creditEvaluationApi } from '../../api/creditEvaluationApi';
 import { storeSummaryApi } from '../../api/storeSummaryApi';
-import { 
-  hybridCreditScoreApi, 
-  type HybridCreditScoreResponse 
+import {
+  hybridCreditScoreApi,
+  type HybridCreditScoreResponse,
 } from '../../api/hybridCreditScoreApi';
 import { useAuthStore } from '../../stores/useAuthStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-
+import Header from '../../components/common/Header';
+import Navbar from '../../components/common/Navbar';
 
 import { colors } from '@/styles/colors';
 
@@ -116,7 +117,7 @@ const HybridEvaluationResult = () => {
   );
   const [storeSummaryData, setStoreSummaryData] =
     useState<StoreSummaryResponse | null>(null);
-  const [hybridScoreData, setHybridScoreData] = 
+  const [hybridScoreData, setHybridScoreData] =
     useState<HybridCreditScoreResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -126,7 +127,7 @@ const HybridEvaluationResult = () => {
       try {
         setLoading(true);
 
-        // 신용평가 결과 조회 (���러가 나도 계속 진행)
+        // 신용평가 결과 조회 (에러가 나도 계속 진행)
         if (currentSessionId) {
           try {
             const resultResponse =
@@ -167,7 +168,7 @@ const HybridEvaluationResult = () => {
           );
         }
 
-        // 매장 요약 데���터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
+        // 매장 요약 데이터 조회 (guideON 분석용) - sessionId가 있을 때만 조회
         if (currentSessionId) {
           try {
             console.log('매장 요약 데이터 조회 시작');
@@ -203,37 +204,64 @@ const HybridEvaluationResult = () => {
         // 하이브리드 신용점수 결과 조회
         if (currentSessionId) {
           try {
-            console.log('🔍 하이브리드 신용점수 결과 조회 시작:', currentSessionId);
-            const hybridResponse = await hybridCreditScoreApi.getResult(currentSessionId);
+            console.log(
+              '🔍 하이브리드 신용점수 결과 조회 시작:',
+              currentSessionId,
+            );
+            const hybridResponse =
+              await hybridCreditScoreApi.getResult(currentSessionId);
             console.log('🔍 하이브리드 신용점수 결과 응답:', hybridResponse);
-            
+
             if (hybridResponse.success) {
               setHybridScoreData(hybridResponse.data);
-              console.log('✅ 하이브리드 신용점수 데이터 설정 완료:', hybridResponse.data);
+              console.log(
+                '✅ 하이브리드 신용점수 데이터 설정 완료:',
+                hybridResponse.data,
+              );
             } else {
-              console.log('⚠️ 하이브리드 신용점수 결과가 없음:', hybridResponse.message);
+              console.log(
+                '⚠️ 하이브리드 신용점수 결과가 없음:',
+                hybridResponse.message,
+              );
             }
           } catch (hybridError) {
             console.error('❌ 하이브리드 신용점수 조회 실패:', hybridError);
           }
         } else {
-          console.warn('sessionId를 찾을 수 없어 하이브리드 신용점수를 조회할 수 없습니다.');
+          console.warn(
+            'sessionId를 찾을 수 없어 하이브리드 신용점수를 조회할 수 없습니다.',
+          );
         }
 
         // traditional_credit_score 업데이트 (credit_evaluation_result의 total_score를 member_credit의 traditional_credit_score로)
         if (currentSessionId) {
           try {
-            console.log('🔄 Traditional Credit Score 업데이트 시작:', currentSessionId);
-            const updateResponse = await hybridCreditScoreApi.updateTraditionalScore(currentSessionId);
-            console.log('🔄 Traditional Credit Score 업데이트 응답:', updateResponse);
-            
+            console.log(
+              '🔄 Traditional Credit Score 업데이트 시작:',
+              currentSessionId,
+            );
+            const updateResponse =
+              await hybridCreditScoreApi.updateTraditionalScore(
+                currentSessionId,
+              );
+            console.log(
+              '🔄 Traditional Credit Score 업데이트 응답:',
+              updateResponse,
+            );
+
             if (updateResponse.success) {
               console.log('✅ Traditional Credit Score 업데이트 완료');
             } else {
-              console.log('⚠️ Traditional Credit Score 업데이트 실패:', updateResponse.message);
+              console.log(
+                '⚠️ Traditional Credit Score 업데이트 실패:',
+                updateResponse.message,
+              );
             }
           } catch (updateError) {
-            console.error('❌ Traditional Credit Score 업데이트 실패:', updateError);
+            console.error(
+              '❌ Traditional Credit Score 업데이트 실패:',
+              updateError,
+            );
           }
         }
       } catch (error) {
@@ -244,7 +272,7 @@ const HybridEvaluationResult = () => {
     };
 
     loadData();
-  }, [currentSessionId]); // sessionId 변경 시 재��행
+  }, [currentSessionId]); // sessionId 변경 시 재실행
 
   // 점수를 등급으로 변환하는 함수
   const getGradeFromScore = (score: number, maxScore: number): string => {
@@ -258,7 +286,7 @@ const HybridEvaluationResult = () => {
     return 'D';
   };
 
-  // 실제 데이터�� 기반으로 legacyRows 생성
+  // 실제 데이터 기반으로 legacyRows 생성
   const getLegacyRows = () => {
     if (!creditData || !creditResult) {
       return []; // 데이터가 없으면 빈 배열 반환
@@ -266,7 +294,7 @@ const HybridEvaluationResult = () => {
 
     return [
       {
-        t: '상환���력',
+        t: '상환력',
         d: '연체 발생/해제 이력과 상환 성실도를 평가합니다.',
         score: creditResult.repaymentHistoryScore,
         maxScore: 284,
@@ -355,7 +383,7 @@ const HybridEvaluationResult = () => {
           {
             section: '대안신용점수',
             items: [
-              `대안신용점수: ${creditData.alternativeCreditScore || 0}��� (최대 100점)`,
+              `대안신용점수: ${creditData.alternativeCreditScore || 0} (최대 100점)`,
             ],
           },
         ],
@@ -381,7 +409,7 @@ const HybridEvaluationResult = () => {
         },
         {
           section: '상환 성실도',
-          items: ['원리금 연체 없��� 납부', '자동이체 정상'],
+          items: ['원리금 연체 없게 납부', '자동이체 정상'],
         },
       ],
     },
@@ -413,7 +441,7 @@ const HybridEvaluationResult = () => {
     },
     {
       t: '신용형태',
-      d: '카드 이용 패턴과 현금서비스/할부 사용 등을 평���합니다.',
+      d: '카드 이용 패턴과 현금서비스/할부 사용 등을 평가합니다.',
       g: 'A',
       details: [
         {
@@ -462,10 +490,10 @@ const HybridEvaluationResult = () => {
     return 'C';
   };
 
-  // 실제 데���터를 기반으로 guideRows 생성
+  // 실제 데이터를 기반으로 guideRows 생성
   const getGuideRows = () => {
     if (!storeSummaryData) {
-      return []; // 데이터가 없으면 빈 배��� 반환
+      return []; // 데이터가 없으면 빈 배열 반환
     }
 
     const data = storeSummaryData;
@@ -529,7 +557,9 @@ const HybridEvaluationResult = () => {
       {
         t: '매출 안정성 및 성장성',
         d: '매출 변동성과 성장률을 종합적으로 분석한 결과입니다.',
-        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.sales_summary_score_scaled) : 'N/A',
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.sales_summary_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '매출 현황',
@@ -558,7 +588,9 @@ const HybridEvaluationResult = () => {
       {
         t: '현금흐름 건전성',
         d: '영업이익과 현금 보유 상황을 분석한 결과입니다.',
-        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.financial_info_score_scaled) : 'N/A',
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.financial_info_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '수익성',
@@ -581,7 +613,9 @@ const HybridEvaluationResult = () => {
       {
         t: 'ESG',
         d: '환경·사회·지배구조 리스크 관리와 실천 활동을 평가합니다.',
-        g: hybridScoreData ? getHybridScoreGrade(hybridScoreData.operational_info_score_scaled) : 'N/A',
+        g: hybridScoreData
+          ? getHybridScoreGrade(hybridScoreData.operational_info_score_scaled)
+          : 'N/A',
         details: [
           {
             section: '환경',
@@ -617,9 +651,9 @@ const HybridEvaluationResult = () => {
 
   return (
     <>
-
+      <Header />
       <div
-        className="px-4 py-6 space-y-5 min-h-screen"
+        className="px-4 pt-20 pb-24 space-y-5 min-h-screen"
         style={{ background: colors.bgSoft }}
       >
         <div className="mx-auto w-full max-w-sm space-y-5">
@@ -646,7 +680,9 @@ const HybridEvaluationResult = () => {
                 <div className="pb-1 text-gray-600">/ 1000</div>
               </div>
               <div className="mx-auto mt-2 w-24 rounded-full px-3 py-1 text-center text-white text-xs font-bold bg-blue">
-                {hybridScoreData ? getTotalGrade(hybridScoreData.total_credit_score) : 'N/A'}{' '}
+                {hybridScoreData
+                  ? getTotalGrade(hybridScoreData.total_credit_score)
+                  : 'N/A'}{' '}
                 등급
               </div>
             </div>
@@ -696,7 +732,7 @@ const HybridEvaluationResult = () => {
                 <div className="text-gray-500">
                   {tab === 'legacy'
                     ? '신용평가 데이터를 찾을 수 없습니다.'
-                    : '매장 요약 데��터를 찾을 수 없습니다.'}
+                    : '매장 요약 데아터를 찾을 수 없습니다.'}
                 </div>
                 <div className="text-sm text-gray-400 mt-1">
                   {tab === 'legacy'
@@ -715,7 +751,6 @@ const HybridEvaluationResult = () => {
           </button>
         </div>
       </div>
-
     </>
   );
 };

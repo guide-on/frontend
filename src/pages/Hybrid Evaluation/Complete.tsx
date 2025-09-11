@@ -1,12 +1,18 @@
 import { useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 
 
 const HybridEvaluationComplete = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
+  const navigate = useNavigate();
   
   console.log('🔍 [HybridEvaluationComplete] URL sessionId:', sessionId);
+  
+  const handleNextClick = () => {
+    // sessionId를 path variable로 포함하여 business-plan/ready 페이지로 이동
+    navigate(`/guide/${sessionId}/business-plan/ready`);
+  };
   
   const confetti = useMemo(() => {
     const colors = ['#1F6FFF', '#62A1FF', '#B3D4FF', '#16a34a', '#f59e0b', '#ef4444'];
@@ -99,19 +105,13 @@ const HybridEvaluationComplete = () => {
             </div>
           </div>
 
-          <div className="mt-7 w-full max-w-sm space-y-3">
-            <Link
-              to="/"
+          <div className="mt-7 w-full max-w-sm">
+            <button
+              onClick={handleNextClick}
               className="block w-full rounded-md bg-navy px-4 py-3 text-center font-semibold text-white shadow-md transition hover:bg-blue"
             >
-              메인으로 가기
-            </Link>
-            <Link
-              to="/hybrid-evaluation"
-              className="block w-full rounded-md border border-lightBlue/70 bg-white px-4 py-3 text-center font-semibold text-navy transition hover:bg-paleBlue"
-            >
-              하이브리드 평가 홈으로
-            </Link>
+              다음으로 가기
+            </button>
           </div>
         </div>
 
