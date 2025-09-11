@@ -137,6 +137,12 @@ export const creditEvaluationApi = {
     const { data } = await api.post<CommonResponseDTO<string>>(`${BASE_URL}/initialize/${sessionId}`);
     return data;
   },
+
+  // 신용평가 데이터 업데이트 (신용정보 조회 동의 후)
+  async updateCreditData(sessionId: number): Promise<CommonResponseDTO<CreditEvaluationResponse>> {
+    const { data } = await api.put<CommonResponseDTO<CreditEvaluationResponse>>(`${BASE_URL}/update-credit-data/${sessionId}`);
+    return data;
+  },
 };
 
 export default creditEvaluationApi;
