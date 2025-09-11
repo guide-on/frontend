@@ -41,6 +41,7 @@ export type FundListItem = {
   term: string;
   limitAmount: string;
   saved: boolean;
+  loanType: '대리대출' | '직접대출';
 };
 
 export type FundDetail = FundListItem & {
