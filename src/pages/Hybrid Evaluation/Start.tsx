@@ -430,6 +430,7 @@ const StartHybridEvaluation = () => {
         {selected === 'esg' ? (
           <EsgSection
             completed={completed}
+            sessionId={sessionId || ''}
             onHelpClick={() => setHelpModalOpen(true)}
             onAttachHelpClick={() => setAttachHelpModalOpen(true)}
             onComplete={() => {
